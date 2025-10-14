@@ -21,7 +21,6 @@ export default defineConfig({
 		},
 	},
 	build: {
-		outDir: resolve(__dirname, '../public'),
 		emptyOutDir: true,
 	},
 	server: {
