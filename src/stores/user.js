@@ -22,11 +22,19 @@ export const useUserStore = defineStore('user', {
 		},
 		isSuperModerator: (state) => {
 			state.validate();
-			return state.user?.info && (state.user.info.is_supermoderator || state.user.info.is_admin);
+			return (
+				state.user?.info &&
+				(state.user.info.is_supermoderator || state.user.info.is_admin)
+			);
 		},
 		isModerator: (state) => {
 			state.validate();
-			return state.user?.info && (state.user.info.is_moderator || state.user.info.is_supermoderator || state.user.info.is_admin);
+			return (
+				state.user?.info &&
+				(state.user.info.is_moderator ||
+					state.user.info.is_supermoderator ||
+					state.user.info.is_admin)
+			);
 		},
 		isVerifier: (state) => {
 			state.validate();
@@ -50,7 +58,11 @@ export const useUserStore = defineStore('user', {
 
 	actions: {
 		validate() {
-			if (this.expires - Date.now() > 0 || this.user?.access_token === undefined || this.user?.access_token?.length === 0) {
+			if (
+				this.expires - Date.now() > 0 ||
+				this.user?.access_token === undefined ||
+				this.user?.access_token?.length === 0
+			) {
 				this.user = undefined;
 				this.expires = 0;
 				this.user.access_token = undefined;

@@ -20,7 +20,9 @@ export default {
 				console.log(message.value);
 
 				setTimeout(() => {
-					this.messages = this.messages.filter((m) => m.id !== message.id);
+					this.messages = this.messages.filter(
+						(m) => m.id !== message.id,
+					);
 				}, 5000);
 			};
 		}
@@ -36,7 +38,12 @@ export default {
 
 <template>
 	<transition-group class="toasts" name="toast" tag="div">
-		<div v-for="message in this.messages" :key="message.id" :class="`toast toast-${message.severity}`" @click="copyMessage(message)">
+		<div
+			v-for="message in this.messages"
+			:key="message.id"
+			:class="`toast toast-${message.severity}`"
+			@click="copyMessage(message)"
+		>
 			{{ message.value }}
 		</div>
 	</transition-group>
