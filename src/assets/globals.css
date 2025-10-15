@@ -36,5 +36,22 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	outline: none;
+	border: none;
 	font-family: var(--font-family-default);
+}
+
+/* MARK: Scrollbar */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: var(--background-color-alt);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--text-color-default);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--text-color-alt);
 }
