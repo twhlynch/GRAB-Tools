@@ -1,10 +1,13 @@
 <template>
-	<span class="icon">
+	<span class="svg-icon">
 		<slot />
 	</span>
 </template>
 
-<style scoped>
-.icon {
+<style>
+.svg-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 </style>
