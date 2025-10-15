@@ -6,7 +6,7 @@ import * as config from './config';
 import router from './router';
 import App from './App.vue';
 
-import './assets/globals.css';
+import '#assets/globals.css';
 
 const app = createApp(App);
 app.config.globalProperties.$config = config;
