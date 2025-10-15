@@ -33,6 +33,9 @@ export default defineConfig({
 			'#icons': fileURLToPath(
 				new URL('./src/icons', import.meta.url), //
 			),
+			'#tools': fileURLToPath(
+				new URL('./src/tools', import.meta.url), //
+			),
 		},
 	},
 	build: {
