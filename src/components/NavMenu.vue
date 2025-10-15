@@ -48,7 +48,7 @@ export default {
 			<span>Games</span>
 			<RocketIcon class="nav-hideable" />
 		</a>
-		<a href="/discord" class="nav-button">
+		<a href="https://discord.grabvr.tools" class="nav-button">
 			<span>Discord</span>
 			<DiscordIcon class="nav-hideable" />
 		</a>
