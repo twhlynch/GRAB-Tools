@@ -8,7 +8,8 @@
 		"preview": "vite preview",
 		"host": "vite --host",
 		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
-		"format": "prettier --write src/"
+		"format": "prettier --write src/",
+		"tauri": "tauri"
 	},
 	"dependencies": {
 		"pako": "^2.1.0",
@@ -21,6 +22,7 @@
 	},
 	"devDependencies": {
 		"@rushstack/eslint-patch": "^1.2.0",
+		"@tauri-apps/cli": "^2.8.4",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"@vue/eslint-config-prettier": "^7.1.0",
 		"eslint": "^8.34.0",
