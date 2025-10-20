@@ -1,0 +1,87 @@
+name: publish android release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-android:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # linux
+      - name: install linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      # java
+      - name: setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # android sdk
+      - name: setup android SDK
+        uses: android-actions/setup-android@v3
+
+      # android ndk
+      - name: install android NDK
+        run: sdkmanager "ndk;28.2.13676358"
+
+      # node
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      # npm
+      - name: install npm dependencies
+        run: npm install
+
+      # rust
+      - name: install rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      # signing
+      - name: android signing
+        run: |
+          cd src-tauri/gen/android
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > keystore.properties
+          echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
+          base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
+          echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
+
+      # build
+      - name: build app
+        run: npm run tauri android build --release
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
+
+      # version
+      - name: get node project version
+        id: package-version
+        run: |
+          VERSION=$(cat package.json | jq -r '.version')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # release
+      - name: publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: GRAB Tools v${{ steps.package-version.outputs.version }}
+          tag_name: app-v${{ steps.package-version.outputs.version }}
+          generate_release_notes: true
+          files: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
