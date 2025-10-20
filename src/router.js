@@ -8,6 +8,7 @@ import StatsPage from '#pages/StatsPage.vue';
 import ToolsPage from '#pages/ToolsPage.vue';
 import GamesPage from '#pages/GamesPage.vue';
 import ErrorPage from '#pages/ErrorPage.vue';
+import PrivacyPage from '#pages/PrivacyPage.vue';
 import EditorPage from '#pages/EditorPage.vue';
 
 const routes = [
@@ -19,6 +20,7 @@ const routes = [
 			{ path: 'stats', component: StatsPage },
 			{ path: 'tools', component: ToolsPage },
 			{ path: 'games', component: GamesPage },
+			{ path: 'privacy', component: PrivacyPage },
 			{ path: ':pathMatch(.*)*', component: ErrorPage },
 		],
 	},
