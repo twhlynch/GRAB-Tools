@@ -10,15 +10,18 @@ import XMLIcon from '#icons/XMLIcon.vue';
 import ChatIcon from '#icons/ChatIcon.vue';
 import CubeIcon from '#icons/CubeIcon.vue';
 import GrowIcon from '#icons/GrowIcon.vue';
+import PlayIcon from '#icons/PlayIcon.vue';
 
 import Bookmarklet from '#components/Bookmarklet.vue';
 
 import LevelCompiler from '#tools/LevelCompiler.vue';
+import VideoGenerator from '#tools/VideoGenerator.vue';
 
 export default {
 	components: {
 		Bookmarklet,
 		LevelCompiler,
+		VideoGenerator,
 		ShrinkIcon,
 		BrushIcon,
 		DownloadsIcon,
@@ -27,6 +30,7 @@ export default {
 		ChatIcon,
 		CubeIcon,
 		GrowIcon,
+		PlayIcon,
 	},
 	data() {
 		return {};
@@ -102,6 +106,14 @@ export default {
 			</button>
 			<button
 				class="button"
+				id="video-generator-tool-button"
+				@click="selectTool('video-generator')"
+			>
+				Video Gen
+				<PlayIcon />
+			</button>
+			<button
+				class="button"
 				id="download-tool-button"
 				@click="selectTool('download')"
 			>
@@ -151,6 +163,7 @@ export default {
 		</section>
 		<section id="tools">
 			<LevelCompiler id="level-compiler-tool" />
+			<VideoGenerator id="video-generator-tool" />
 			<div id="custom-colors-tool">
 				<h2>Custom Colors</h2>
 				<p>

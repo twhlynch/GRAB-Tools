@@ -29,7 +29,10 @@ async function encodeLevel(level) {
 	const message = root.lookupType('COD.Level.Level');
 
 	const errMsg = message.verify(level);
-	if (errMsg) throw new Error(errMsg);
+	if (errMsg) {
+		window.toast(errMsg, 'error');
+		return null;
+	}
 
 	return message.encode(message.fromObject(level)).finish();
 }

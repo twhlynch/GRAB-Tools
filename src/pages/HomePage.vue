@@ -76,7 +76,6 @@ export default {
 				>JSON Level Editor</a
 			>
 			<a class="button" href="/search" target="_blank">Advanced Search</a>
-			<a class="button" href="/video" target="_blank">Video Generator</a>
 			<a class="button" href="/list" target="_blank">
 				<GHLLogoIcon class="ghl-icon" />
 				Hardest Levels
