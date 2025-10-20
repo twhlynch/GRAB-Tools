@@ -62,8 +62,8 @@ export default {
 	justify-content: flex-start;
 }
 .toast {
-	background: var(--dark);
-	border: 2px solid var(--layer);
+	background: var(--bg);
+	border: 2px solid transparent;
 	color: white;
 	padding: 10px 20px;
 	border-radius: 10px;

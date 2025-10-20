@@ -10,6 +10,7 @@
 	--background-color-alt: #aec7de;
 	--text-color-link: #2f81f7;
 	--border-color: #5b5f6488;
+	--bg: #1d1d1d;
 	--font-weight-default: 400;
 	--font-weight-bold: 600;
 	--font-family-default: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana,
@@ -30,6 +31,11 @@
 	--first-color: #d4982955;
 	--second-color: #81818155;
 	--third-color: #dd710d55;
+
+	--red: #ce3017;
+	--green: #09974c;
+	--blue: #275db4;
+	--yellow: #ffae00;
 }
 
 * {
