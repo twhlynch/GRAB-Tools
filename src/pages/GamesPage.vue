@@ -1,24 +1,5 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
 export default {
-	components: {},
-
-	data() {
-		return {
-			test: undefined,
-		};
-	},
-	computed: {
-		...mapState(useUserStore, [
-			'isModerator',
-			'accessToken',
-			'isLoggedIn', //
-		]),
-	},
-
-	methods: {},
 	created() {
 		document.title = 'Games | GRAB Tools';
 	},
@@ -47,16 +28,6 @@ export default {
 								href="https://www.meta.com/en-gb/experiences/4104088956355944/"
 								class="button-sml"
 								>Oculus</a
-							>
-							<a
-								href="https://store.steampowered.com/app/1701130/GRAB/"
-								class="button-sml"
-								>Steam</a
-							>
-							<a
-								href="https://sidequestvr.com/app/4222/grab"
-								class="button-sml"
-								>SideQuest</a
 							>
 						</div>
 					</div>
