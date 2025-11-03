@@ -5,6 +5,7 @@ import ToolsIcon from '@/icons/ToolsIcon.vue';
 import RocketIcon from '@/icons/RocketIcon.vue';
 import DiscordIcon from '@/icons/DiscordIcon.vue';
 import GlobeIcon from '@/icons/GlobeIcon.vue';
+import LoginButton from '@/components/LoginButton.vue';
 
 export default {
 	components: {
@@ -14,6 +15,7 @@ export default {
 		RocketIcon,
 		DiscordIcon,
 		GlobeIcon,
+		LoginButton,
 	},
 
 	mounted() {
@@ -48,7 +50,7 @@ export default {
 			<span>Games</span>
 			<RocketIcon class="nav-hideable" />
 		</a>
-		<a href="https://discord.grabvr.tools" class="nav-button">
+		<a href="http://discord.grabvr.tools" class="nav-button">
 			<span>Discord</span>
 			<DiscordIcon class="nav-hideable" />
 		</a>
@@ -56,6 +58,7 @@ export default {
 			<span>Wiki</span>
 			<GlobeIcon class="nav-hideable" />
 		</a>
+		<LoginButton />
 	</nav>
 </template>
 
@@ -119,16 +122,6 @@ export default {
 }
 
 @media screen and (max-width: 512px) {
-	.nav-button {
-		font-size: 0;
-		gap: 0;
-		border: none;
-	}
-	.nav-hideable {
-		display: flex;
-	}
-}
-@media screen and (max-width: 400px) {
 	.nav-button {
 		font-size: 0;
 		gap: 0;

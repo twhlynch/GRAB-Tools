@@ -1,75 +1,60 @@
+import { SERVER_URL } from '@/config';
 import { defineStore } from 'pinia';
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
+		user_name: undefined,
+		meta_id: undefined,
 		user: undefined,
-		expires: 0,
-		accessToken: undefined,
 	}),
 
 	getters: {
-		accessToken: (state) => {
-			state.validate();
-			return state.accessToken;
+		is_logged_in: (state) => {
+			return state.user_name !== undefined;
 		},
-		isLoggedIn: (state) => {
-			state.validate();
-			return !!state.user;
+		is_admin: (state) => {
+			return state.user?.is_admin;
 		},
-		isAdmin: (state) => {
-			state.validate();
-			return state.user?.info && state.user.info.is_admin;
+		is_supermoderator: (state) => {
+			return state.user?.is_admin || state.user?.is_supermoderator;
 		},
-		isSuperModerator: (state) => {
-			state.validate();
+		is_moderator: (state) => {
 			return (
-				state.user?.info &&
-				(state.user.info.is_supermoderator || state.user.info.is_admin)
+				state.user?.is_admin ||
+				state.user?.is_supermoderator ||
+				state.user?.is_moderator
 			);
 		},
-		isModerator: (state) => {
-			state.validate();
+		is_verifier: (state) => {
 			return (
-				state.user?.info &&
-				(state.user.info.is_moderator ||
-					state.user.info.is_supermoderator ||
-					state.user.info.is_admin)
+				state.user?.is_admin ||
+				state.user?.is_supermoderator ||
+				state.user?.is_moderator ||
+				state.user?.is_verifier
 			);
 		},
-		isVerifier: (state) => {
-			state.validate();
-			return (
-				state.user?.info &&
-				(state.user.info.is_verifier ||
-					state.user.info.is_moderator ||
-					state.user.info.is_supermoderator ||
-					state.user.info.is_admin)
-			);
+		user_id: (state) => {
+			return state.user?.user_id;
 		},
-		userID: (state) => {
-			state.validate();
-			return state.user?.info?.user_id;
-		},
-		userInfo: (state) => {
-			state.validate();
-			return state.user?.info;
+		user_info: (state) => {
+			return state.user;
 		},
 	},
 
 	actions: {
-		validate() {
-			if (
-				this.expires - Date.now() > 0 ||
-				this.user?.access_token === undefined ||
-				this.user?.access_token?.length === 0
-			) {
-				this.user = undefined;
-				this.expires = 0;
-				this.user.access_token = undefined;
+		async login(auth_info) {
+			const { org_scoped_id, code } = auth_info;
+			const response = await fetch(
+				`${SERVER_URL}get_access_token?service_token=${org_scoped_id}:${code}`,
+			);
+			if (response.ok) {
+				const data = await response.json();
+				this.user_name = data.alias;
+				this.meta_id = data.id;
 			}
 		},
-		async login(userName, userID) {
-			// TODO:
+		async logout() {
+			this.$reset();
 		},
 	},
 	persist: true,

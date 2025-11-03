@@ -1,18 +1,9 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
 import NavMenu from '@/components/NavMenu.vue';
 
 export default {
 	components: {
 		NavMenu,
-	},
-	data() {
-		return {};
-	},
-	computed: {
-		...mapState(useUserStore, ['isLoggedIn']),
 	},
 };
 </script>
@@ -76,67 +67,67 @@ main {
 		color: var(--text-color-alt);
 		padding-bottom: var(--padding-secondary);
 	}
-	svg {
-		height: 24px;
-		width: 24px;
-		color: var(--text-color-default);
+}
+svg {
+	height: 24px;
+	width: 24px;
+	color: var(--text-color-default);
+}
+.button {
+	text-decoration: none;
+	color: var(--text-color-default);
+	font-size: var(--font-size-default);
+	font-weight: var(--font-weight-bold);
+	padding: var(--padding-secondary);
+	border-radius: var(--border-radius);
+	border: solid 2px var(--border-color);
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	gap: var(--padding-secondary);
+	background-color: #0000;
+	cursor: pointer;
+	transition: background-color 0.2s ease-in-out;
+	:hover {
+		background-color: #5f8cc213;
 	}
-	.button {
-		text-decoration: none;
-		color: var(--text-color-default);
-		font-size: var(--font-size-default);
-		font-weight: var(--font-weight-bold);
-		padding: var(--padding-secondary);
-		border-radius: var(--border-radius);
-		border: solid 2px var(--border-color);
-		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
-		align-items: center;
-		gap: var(--padding-secondary);
-		background-color: #0000;
-		cursor: pointer;
-		transition: background-color 0.2s ease-in-out;
-		:hover {
-			background-color: #5f8cc213;
-		}
-	}
-	.button-sml {
-		text-decoration: none;
-		color: var(--text-color-default);
-		font-size: calc(var(--font-size-default) * 0.8);
-		font-weight: var(--font-weight-bold);
-		padding-block: calc(var(--padding-secondary) / 4);
-		padding-inline: calc(var(--padding-secondary) / 2);
-		border-radius: var(--border-radius);
-		border: solid 1px #4683ce70;
-		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
-		align-items: center;
-		gap: var(--padding-secondary);
-		background-color: #5f8cc235;
-		width: fit-content;
-		cursor: pointer;
-	}
-	.button-super-sml {
-		text-decoration: none;
-		color: var(--text-color-default);
-		font-size: calc(var(--font-size-default) / 2);
-		font-weight: var(--font-weight-bold);
-		padding-block: calc(var(--padding-secondary) / 8);
-		padding-inline: calc(var(--padding-secondary) / 4);
-		border-radius: var(--border-radius);
-		border: solid 1px #4683ce70;
-		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
-		align-items: center;
-		gap: var(--padding-secondary);
-		background-color: #5f8cc235;
-		width: fit-content;
-		cursor: pointer;
-	}
+}
+.button-sml {
+	text-decoration: none;
+	color: var(--text-color-default);
+	font-size: calc(var(--font-size-default) * 0.8);
+	font-weight: var(--font-weight-bold);
+	padding-block: calc(var(--padding-secondary) / 4);
+	padding-inline: calc(var(--padding-secondary) / 2);
+	border-radius: var(--border-radius);
+	border: solid 1px #4683ce70;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: var(--padding-secondary);
+	background-color: #5f8cc235;
+	width: fit-content;
+	cursor: pointer;
+}
+.button-super-sml {
+	text-decoration: none;
+	color: var(--text-color-default);
+	font-size: calc(var(--font-size-default) / 2);
+	font-weight: var(--font-weight-bold);
+	padding-block: calc(var(--padding-secondary) / 8);
+	padding-inline: calc(var(--padding-secondary) / 4);
+	border-radius: var(--border-radius);
+	border: solid 1px #4683ce70;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	gap: var(--padding-secondary);
+	background-color: #5f8cc235;
+	width: fit-content;
+	cursor: pointer;
 }
 
 /* footer */

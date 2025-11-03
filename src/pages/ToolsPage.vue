@@ -1,7 +1,4 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
 import ShrinkIcon from '@/icons/ShrinkIcon.vue';
 import BrushIcon from '@/icons/BrushIcon.vue';
 import DownloadsIcon from '@/icons/DownloadsIcon.vue';
@@ -31,12 +28,6 @@ export default {
 		CubeIcon,
 		GrowIcon,
 		PlayIcon,
-	},
-	data() {
-		return {};
-	},
-	computed: {
-		...mapState(useUserStore, ['isLoggedIn']),
 	},
 	methods: {
 		setTab(tab) {

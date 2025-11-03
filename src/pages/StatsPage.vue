@@ -10,12 +10,9 @@ export default {
 			test: undefined,
 		};
 	},
+
 	computed: {
-		...mapState(useUserStore, [
-			'isModerator',
-			'accessToken',
-			'isLoggedIn', //
-		]),
+		...mapState(useUserStore, ['is_logged_in', 'user_info.user_id']),
 	},
 
 	methods: {},

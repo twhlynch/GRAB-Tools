@@ -1,16 +1,5 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
-export default {
-	components: {},
-	data() {
-		return {};
-	},
-	computed: {
-		...mapState(useUserStore, ['isLoggedIn']),
-	},
-};
+export default {};
 </script>
 
 <template>

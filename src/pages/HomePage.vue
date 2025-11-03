@@ -1,7 +1,4 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
 import Bookmarklet from '@/components/Bookmarklet.vue';
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
 import GithubIcon from '@/icons/GithubIcon.vue';
@@ -23,13 +20,6 @@ export default {
 		return {
 			test: undefined,
 		};
-	},
-	computed: {
-		...mapState(useUserStore, [
-			'isModerator',
-			'accessToken',
-			'isLoggedIn', //
-		]),
 	},
 
 	methods: {},

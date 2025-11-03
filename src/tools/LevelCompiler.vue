@@ -1,19 +1,8 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
 import encoding from '@/assets/tools/encoding.js';
 import compiler from '@/assets/tools/compiler.js';
 
 export default {
-	components: {},
-
-	data() {
-		return {};
-	},
-	computed: {
-		...mapState(useUserStore, []),
-	},
-
 	methods: {
 		showQuestMultiSelect() {
 			const getByID = (id) => document.getElementById(id);

@@ -11,11 +11,7 @@ export default {
 		};
 	},
 	computed: {
-		...mapState(useUserStore, [
-			'isModerator',
-			'accessToken',
-			'isLoggedIn', //
-		]),
+		...mapState(useUserStore, ['is_logged_in']),
 	},
 
 	methods: {},
