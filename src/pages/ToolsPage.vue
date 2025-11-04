@@ -14,6 +14,7 @@ import Bookmarklet from '@/components/Bookmarklet.vue';
 import LevelCompiler from '@/tools/LevelCompiler.vue';
 import VideoGenerator from '@/tools/VideoGenerator.vue';
 import SVGDrawer from '@/tools/SVGDrawer.vue';
+import LevelJSON from '@/tools/LevelJSON.vue';
 
 export default {
 	components: {
@@ -21,6 +22,7 @@ export default {
 		LevelCompiler,
 		VideoGenerator,
 		SVGDrawer,
+		LevelJSON,
 		ShrinkIcon,
 		BrushIcon,
 		DownloadsIcon,
@@ -131,8 +133,8 @@ export default {
 			</button>
 			<button
 				class="button"
-				id="level-to-json-tool-button"
-				@click="selectTool('level-to-json')"
+				id="level-json-tool-button"
+				@click="selectTool('level-json')"
 			>
 				JSON
 				<XMLIcon />
@@ -166,6 +168,7 @@ export default {
 			<LevelCompiler id="level-compiler-tool" />
 			<VideoGenerator id="video-generator-tool" />
 			<SVGDrawer id="svg-tool" />
+			<LevelJSON id="level-json-tool" />
 			<div id="custom-colors-tool">
 				<h2>Custom Colors</h2>
 				<p>

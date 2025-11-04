@@ -1,0 +1,51 @@
+<script>
+import encoding from '@/assets/tools/encoding.js';
+
+export default {
+	methods: {
+		async run() {
+			const getByID = (id) => document.getElementById(id);
+			const toolID = 'level-json-tool';
+
+			const files = Array.from(getByID(`${toolID}-file`).files);
+			if (!files.length) return;
+
+			files
+				.filter((file) => file.name.endsWith('.json'))
+				.forEach(async (file) => {
+					const json = JSON.parse(await file.text());
+					const level = await encoding.encodeLevel(json);
+					encoding.downloadLevel(
+						level,
+						file.name.replace(/\.(json|level)/, ''),
+					);
+				});
+			files
+				.filter((file) => file.name.endsWith('.level'))
+				.forEach(async (file) => {
+					const json = await encoding.decodeLevel(file);
+					encoding.downloadJSON(
+						json,
+						file.name.replace(/\.(json|level)/, ''),
+					);
+				});
+		},
+	},
+};
+</script>
+
+<template>
+	<div>
+		<h2>Level to JSON</h2>
+		<p>Convert a levels to readable JSON data and back.</p>
+		<div>
+			<input
+				type="file"
+				id="level-json-tool-file"
+				accept=".level,.json"
+				multiple
+			/>
+			<button class="button" @click="run">Convert</button>
+		</div>
+	</div>
+</template>
