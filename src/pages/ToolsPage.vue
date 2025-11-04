@@ -12,6 +12,7 @@ import PlayIcon from '@/icons/PlayIcon.vue';
 import Bookmarklet from '@/components/Bookmarklet.vue';
 
 import LevelCompiler from '@/tools/LevelCompiler.vue';
+import ImageGenerator from '@/tools/ImageGenerator.vue';
 import VideoGenerator from '@/tools/VideoGenerator.vue';
 import SVGDrawer from '@/tools/SVGDrawer.vue';
 import LevelJSON from '@/tools/LevelJSON.vue';
@@ -20,6 +21,7 @@ export default {
 	components: {
 		Bookmarklet,
 		LevelCompiler,
+		ImageGenerator,
 		VideoGenerator,
 		SVGDrawer,
 		LevelJSON,
@@ -93,8 +95,8 @@ export default {
 			</button>
 			<button
 				class="button"
-				id="pixel-art-tool-button"
-				@click="selectTool('pixel-art')"
+				id="image-generator-tool-button"
+				@click="selectTool('image-generator')"
 			>
 				Pixel Art
 				<BrushIcon />
@@ -169,6 +171,7 @@ export default {
 			<VideoGenerator id="video-generator-tool" />
 			<SVGDrawer id="svg-tool" />
 			<LevelJSON id="level-json-tool" />
+			<ImageGenerator id="image-generator-tool" />
 			<div id="custom-colors-tool">
 				<h2>Custom Colors</h2>
 				<p>
