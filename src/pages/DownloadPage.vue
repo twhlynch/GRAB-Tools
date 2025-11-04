@@ -2,6 +2,9 @@
 import { mapState } from 'pinia';
 import { useUserStore } from '@/stores/user';
 import encoding from '@/assets/tools/encoding';
+import { download_level_request } from '@/requests/DownloadLevelRequest';
+import { level_details_request } from '@/requests/LevelDetailsRequest';
+import { user_info_request } from '@/requests/UserInfoRequest';
 
 export default {
 	computed: {
@@ -16,46 +19,44 @@ export default {
 
 			const user_id = level_id.split(':')[0];
 
-			const user_response = await fetch(
-				`${this.$config.GRAB_SERVER_URL}get_user_info?user_id=${user_id}`,
-			);
-			const user = await user_response.json();
+			const user_info = await user_info_request(user_id);
+			if (user_info === null) return false;
 
-			if (this.user_name !== user.user_name) return false;
+			if (this.user_name !== user_info.user_name) {
+				window.toast(
+					'You can only download your own levels',
+					'warning',
+				);
+				return false;
+			}
 
 			return true;
 		},
 		async download_level(level_id) {
-			const link_id = level_id.replaceAll(':', '/');
-			const map_id = level_id.split(':')[1];
+			let [user_id, map_id, iteration] = level_id.split(':');
 
-			let iteration = 1;
-			const details_response = await fetch(
-				`${this.$config.GRAB_SERVER_URL}details/${link_id}`,
-			);
-			const details = await details_response.json();
+			const details = await level_details_request(level_id);
+			if (details === null) return;
 
-			if (level_id.split(':').length !== 3) {
-				iteration = details.iteration || 1;
-			}
+			iteration = iteration || details.iteration;
+			const download_id = [user_id, map_id, iteration].join(':');
 
-			const download_response = await fetch(
-				`${this.$config.GRAB_SERVER_URL}download/${link_id}/${iteration}`,
-			);
-			const download = await download_response.arrayBuffer();
-			encoding.downloadLevel(download, map_id);
+			const level = await download_level_request(download_id);
+			if (level === null) return;
+
+			encoding.downloadLevel(level, map_id);
 		},
 	},
 	mounted() {
 		const url_params = new URLSearchParams(window.location.search);
 		const level = url_params.get('level');
-		if (level) {
-			level.split(' ').forEach(async (level_id) => {
-				if (await this.can_download_level(level_id)) {
-					await this.download_level(level_id);
-				}
-			});
-		}
+		if (!level) return;
+
+		level.split(' ').forEach(async (level_id) => {
+			if (await this.can_download_level(level_id)) {
+				await this.download_level(level_id);
+			}
+		});
 	},
 	created() {
 		document.title = 'Download | GRAB Tools';
