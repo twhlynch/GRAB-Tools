@@ -16,6 +16,7 @@ import ImageGenerator from '@/tools/ImageGenerator.vue';
 import VideoGenerator from '@/tools/VideoGenerator.vue';
 import SVGDrawer from '@/tools/SVGDrawer.vue';
 import LevelJSON from '@/tools/LevelJSON.vue';
+import PointCloud from '@/tools/PointCloud.vue';
 
 export default {
 	components: {
@@ -25,6 +26,7 @@ export default {
 		VideoGenerator,
 		SVGDrawer,
 		LevelJSON,
+		PointCloud,
 		ShrinkIcon,
 		BrushIcon,
 		DownloadsIcon,
@@ -172,6 +174,7 @@ export default {
 			<SVGDrawer id="svg-tool" />
 			<LevelJSON id="level-json-tool" />
 			<ImageGenerator id="image-generator-tool" />
+			<PointCloud id="point-cloud-tool" />
 			<div id="custom-colors-tool">
 				<h2>Custom Colors</h2>
 				<p>
