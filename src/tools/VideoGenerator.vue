@@ -1,8 +1,17 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import video from '@/assets/tools/video.js';
+import ProgressBar from '@/components/ProgressBar.vue';
 
 export default {
+	components: {
+		ProgressBar,
+	},
+	data() {
+		return {
+			progress: 0,
+		};
+	},
 	methods: {
 		async generate() {
 			const getByID = (id) => document.getElementById(id);
@@ -19,11 +28,21 @@ export default {
 
 			const file = files[0];
 
-			let videoNodes = await video.video(file, width, height);
-			if (videoNodes === null) return;
+			const progress_callback = (progress) => {
+				this.progress = progress;
+				window.toast(`${progress}`);
+			};
+			const video_nodes = await video.video(
+				file,
+				width,
+				height,
+				progress_callback,
+			);
+			this.progress = 100;
+			if (video_nodes === null) return;
 
 			const obj = encoding.createLevel(
-				videoNodes,
+				video_nodes,
 				'Video',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
@@ -33,6 +52,7 @@ export default {
 			if (encoded === null) return;
 
 			encoding.downloadLevel(encoded);
+			this.progress = 0;
 		},
 	},
 };
@@ -57,6 +77,7 @@ export default {
 				placeholder="height (30)"
 			/>
 			<input type="file" id="video-generator-tool-file" />
+			<ProgressBar :progress="progress" />
 			<button
 				class="button"
 				id="video-generator-tool-btn"

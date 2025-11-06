@@ -6,9 +6,10 @@ const VIDEO_SERVER_URL = 'https://dotindex.pythonanywhere.com/process_video';
  * @param {File} file - A video file
  * @param {Number} width - Output width
  * @param {Number} height - Output height
+ * @param {Function} callback - Progress callback
  * @returns {Promise<Array<Object>>} - A list of level nodes
  */
-async function video(file, width, height) {
+async function video(file, width, height, callback = (_) => {}) {
 	if (!window.MediaStreamTrackProcessor) {
 		window.toast(
 			'MediaStreamTrackProcessor not available on firefox, using server fallback',
@@ -17,13 +18,13 @@ async function video(file, width, height) {
 		return fallback_video(file);
 	}
 
-	const video_data = await read_video(file);
-	const level_nodes = await build_video(video_data, width, height);
+	const video_data = await read_video(file, callback);
+	const level_nodes = await build_video(video_data, width, height, callback);
 
 	return level_nodes;
 }
 
-async function read_video(file) {
+async function read_video(file, callback) {
 	const buffer = await new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = async () => {
@@ -58,11 +59,7 @@ async function read_video(file) {
 
 		if (value) {
 			frames.push(await createImageBitmap(value));
-			console.log(
-				`Reading Video: ${Math.round(
-					(video.currentTime / video.duration) * 100,
-				)}%`,
-			);
+			callback((video.currentTime / video.duration) * 90);
 			value.close();
 		}
 	}
@@ -70,7 +67,7 @@ async function read_video(file) {
 	return frames;
 }
 
-async function build_video(frames, width, height) {
+async function build_video(frames, width, height, callback) {
 	const canvas = document.createElement('canvas');
 	canvas.width = width;
 	canvas.height = height;
@@ -116,6 +113,8 @@ async function build_video(frames, width, height) {
 	});
 
 	for (let i in frames) {
+		callback(90 + 10 * (i / frames.length));
+
 		const frame = frames[i];
 		// these may be redundant
 		ctx.drawImage(frame, 0, 0, width, height);
