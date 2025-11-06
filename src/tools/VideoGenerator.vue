@@ -14,15 +14,18 @@ export default {
 				return;
 			}
 
+			const width = parseInt(getByID(`${toolID}-width`).value) || 40;
+			const height = parseInt(getByID(`${toolID}-height`).value) || 30;
+
 			const file = files[0];
 
-			let videoNodes = await video.video(file);
+			let videoNodes = await video.video(file, width, height);
 			if (videoNodes === null) return;
 
 			const obj = encoding.createLevel(
 				videoNodes,
 				'Video',
-				'Generated with Mp42Grab',
+				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
@@ -37,13 +40,22 @@ export default {
 
 <template>
 	<div>
-		<h2>Video Generator (Mp42Grab)</h2>
+		<h2>Video Generator</h2>
 		<p>
-			15 second max length. Output will always be 20x20. This is a demo of
-			the full script which can be found
-			<a href="https://github.com/twhlynch/Mp42Grab">here</a> to download.
+			Convert an MP4 video to grab. Note: if on firefox you will be given
+			the old version with 15 second max length.
 		</p>
 		<div>
+			<input
+				type="number"
+				id="video-generator-tool-width"
+				placeholder="width (40)"
+			/>
+			<input
+				type="number"
+				id="video-generator-tool-height"
+				placeholder="height (30)"
+			/>
 			<input type="file" id="video-generator-tool-file" />
 			<button
 				class="button"
