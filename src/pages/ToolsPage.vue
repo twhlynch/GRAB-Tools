@@ -17,6 +17,7 @@ import SVGDrawer from '@/tools/SVGDrawer.vue';
 import LevelJSON from '@/tools/LevelJSON.vue';
 import PointCloud from '@/tools/PointCloud.vue';
 import LevelDownloader from '@/tools/LevelDownloader.vue';
+import PencilIcon from '@/icons/PencilIcon.vue';
 
 export default {
 	components: {
@@ -36,6 +37,7 @@ export default {
 		ChatIcon,
 		CubeIcon,
 		PlayIcon,
+		PencilIcon,
 	},
 	methods: {
 		setTab(tab) {
@@ -109,7 +111,7 @@ export default {
 				@click="selectTool('svg')"
 			>
 				Draw SVG
-				<BrushIcon />
+				<PencilIcon />
 			</button>
 			<button
 				class="button"
