@@ -1,23 +1,23 @@
-async function shader(filename) {
-	const modules = import.meta.glob('./*.*', {
-		as: 'raw',
-	});
+import skyVS from './sky.vert?raw';
+import skyFS from './sky.frag?raw';
+import levelVS from './level.vert?raw';
+import levelFS from './level.frag?raw';
+import startFinishVS from './start_finish.vert?raw';
+import startFinishFS from './start_finish.frag?raw';
+import signVS from './sign.vert?raw';
+import signFS from './sign.frag?raw';
+import particleVS from './particle.vert?raw';
+import particleFS from './particle.frag?raw';
 
-	const path = `./${filename}`;
-	if (modules[path]) {
-		return await modules[path]();
-	} else {
-		console.error('Shader not found:', path);
-	}
-}
-
-export const skyVS = await shader('sky.vert');
-export const skyFS = await shader('sky.frag');
-export const levelVS = await shader('level.vert');
-export const levelFS = await shader('level.frag');
-export const startFinishVS = await shader('start_finish.vert');
-export const startFinishFS = await shader('start_finish.frag');
-export const signVS = await shader('sign.vert');
-export const signFS = await shader('sign.frag');
-export const particleVS = await shader('particle.vert');
-export const particleFS = await shader('particle.frag');
+export {
+	skyVS,
+	skyFS,
+	levelVS,
+	levelFS,
+	startFinishVS,
+	startFinishFS,
+	signVS,
+	signFS,
+	particleVS,
+	particleFS,
+};
