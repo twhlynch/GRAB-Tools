@@ -30,6 +30,7 @@ export default {
 	},
 	mounted() {
 		this.set_json(this.json);
+		this.$refs.side_panel.size((window.innerHeight / 3) * 2);
 	},
 	methods: {
 		set_json(json, skip = []) {
@@ -64,7 +65,7 @@ export default {
 				<ViewportPanel :ref="'viewport_panel'" />
 			</template>
 			<template #second>
-				<ResizableColPanel class="side-panel">
+				<ResizableColPanel class="side-panel" :ref="'side_panel'">
 					<template #first>
 						<JsonPanel
 							:ref="'json_panel'"
@@ -96,13 +97,9 @@ html:has(#editor) {
 	height: 100vh;
 }
 .main-panel {
-	display: flex;
-	flex-direction: row;
 	height: calc(100% - 3rem);
 }
 .side-panel {
-	display: flex;
-	flex-direction: column;
 	height: 100%;
 }
 </style>
