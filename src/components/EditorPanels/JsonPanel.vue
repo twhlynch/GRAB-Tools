@@ -3,6 +3,7 @@ import build_editor from '@/assets/EditorSetup';
 import { json } from '@codemirror/lang-json';
 import { foldGutter } from '@codemirror/language';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
+import { EditorSelection } from '@codemirror/state';
 
 export default {
 	data() {
@@ -45,13 +46,24 @@ export default {
 			});
 			this.ignore_change = false;
 		},
+		click(e) {
+			if (e.target === this.$refs.editor) {
+				this.view.focus();
+				this.view.dispatch({
+					selection: EditorSelection.cursor(
+						this.view.state.doc.length,
+					),
+					scrollIntoView: true,
+				});
+			}
+		},
 	},
 	emits: ['changed'],
 };
 </script>
 
 <template>
-	<section :ref="'editor'"></section>
+	<section :ref="'editor'" @click="click"></section>
 </template>
 
 <style scoped>
@@ -59,6 +71,6 @@ section {
 	width: 100%;
 	height: 100%;
 	overflow-y: scroll;
-	background-color: #1e1e1e;
+	background-color: #141415;
 }
 </style>

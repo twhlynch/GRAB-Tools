@@ -11,7 +11,6 @@ export default {
 	emits: ['command'],
 	mounted() {
 		this.view = build_editor(this.$refs.terminal, '', javascript());
-		this.$refs.terminal.addEventListener('click', this.click);
 	},
 	methods: {
 		run_command(content) {
@@ -58,7 +57,7 @@ export default {
 </script>
 
 <template>
-	<section :ref="'terminal'" @keydown="keydown"></section>
+	<section :ref="'terminal'" @keydown="keydown" @click="click"></section>
 </template>
 
 <style scoped>
