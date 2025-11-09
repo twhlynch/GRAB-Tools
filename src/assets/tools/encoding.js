@@ -82,8 +82,8 @@ function downloadJSON(json, name = Date.now().toString().slice(0, -3)) {
 function createLevel(
 	nodes = [],
 	title = 'New Level',
-	description = '',
-	creators = ['.index'],
+	description = 'Made with GRAB Tools',
+	creators = ['grabvr.tools'],
 	checkpoints = 10,
 	horizon = {
 		a: 1.0,
@@ -100,25 +100,31 @@ function createLevel(
 	sunAltitude = 45,
 	sunAzimuth = 315,
 	sunSize = 1,
+	fogDensity = 0,
 ) {
 	if (Array.isArray(creators)) {
 		creators = creators.join(', ');
 	}
 	return {
+		formatVersion: 17,
+		title: title,
+		creators: creators,
+		description: description,
+		tags: [],
+		maxCheckpointCount: checkpoints,
+		defaultSpawnPointID: 0,
+		unlisted: false,
+		showReplays: true,
+		complexity: 0,
 		ambienceSettings: {
 			skyHorizonColor: horizon,
 			skyZenithColor: zenith,
 			sunAltitude: sunAltitude,
 			sunAzimuth: sunAzimuth,
 			sunSize: sunSize,
+			fogDensity: fogDensity,
 		},
-		complexity: 0,
-		creators: creators,
-		description: description,
-		formatVersion: 12,
 		levelNodes: nodes,
-		maxCheckpointCount: checkpoints,
-		title: title,
 	};
 }
 
