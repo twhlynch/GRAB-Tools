@@ -9,127 +9,114 @@ import {
 	historyKeymap,
 } from '@codemirror/commands';
 
-// theme from uiw/codemirror-theme-vscode
+const colors = {
+	bg: '#141415',
+	builtin: '#b4d4cf',
+	comment: '#606079',
+	constant: '#aeaed1',
+	delta: '#f3be7c',
+	error: '#d8647e',
+	fg: '#cdcdcd',
+	floatBorder: '#878787',
+	func: '#c48282',
+	hint: '#7e98e8',
+	inactiveBg: '#1c1c24',
+	keyword: '#6e94b2',
+	line: '#252530',
+	number: '#e0a363',
+	operator: '#90a0b5',
+	parameter: '#bb9dbd',
+	plus: '#7fa563',
+	property: '#c3c3d5',
+	search: '#405065',
+	string: '#e8b589',
+	type: '#9bb4bc',
+	visual: '#333738',
+	warning: '#f3be7c',
+};
+
 const themeOptions = {
 	'&': {
-		backgroundColor: '#1e1e1e',
-		color: '#9cdcfe',
+		backgroundColor: colors.bg,
+		color: colors.fg,
 	},
 	'.cm-gutters': {
-		backgroundColor: '#1e1e1e',
-		color: '#838383',
+		backgroundColor: colors.bg,
+		color: colors.floatBorder,
 	},
 	'&.cm-editor .cm-scroller': {
 		fontFamily:
 			'Menlo, Monaco, Consolas, "Andale Mono", "Ubuntu Mono", "Courier New", monospace',
 	},
 	'.cm-content': {
-		caretColor: '#c6c6c6',
+		caretColor: colors.fg,
 	},
 	'.cm-cursor, .cm-dropCursor': {
-		borderLeftColor: '#c6c6c6',
-	},
-	'.cm-activeLine': {
-		backgroundColor: '#ffffff0f',
-	},
-	'.cm-activeLineGutter': {
-		color: '#fff',
-		backgroundColor: '#ffffff0f',
+		borderLeftColor: colors.line,
 	},
 	'&.cm-focused .cm-selectionBackground, & .cm-line::selection, & .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection':
 		{
-			background: '#6199ff2f !important',
+			background: colors.visual + ' !important',
 		},
-	'& .cm-selectionMatch': {
-		backgroundColor: '#72a1ff59',
+	'& .cm-selectionMatch, & .cm-searchMatch': {
+		backgroundColor: colors.search,
+	},
+	'& .cm-searchMatch-selected': {
+		backgroundColor: colors.hint,
 	},
 };
 
-const vscodeDarkStyle = [
+const themeStyle = [
+	// vague
+	// { color: colors.bg, tag: [] },
+	// { color: colors.builtin, tag: [] },
+	{ color: colors.comment, fontStyle: 'italic', tag: [t.comment, t.meta] },
+	{ color: colors.constant, tag: [t.constant(t.name)] },
+	// { color: colors.delta, tag: [] },
+	{ color: colors.error, tag: [t.invalid] },
+	// { color: colors.fg, tag: [] },
+	// { color: colors.floatBorder, tag: [] },
 	{
+		color: colors.func,
 		tag: [
-			t.keyword,
-			t.operatorKeyword,
-			t.modifier,
-			t.color,
-			t.constant(t.name),
-			t.standard(t.name),
-			t.standard(t.tagName),
-			t.special(t.brace),
-			t.atom,
-			t.bool,
-			t.special(t.variableName),
-		],
-		color: '#569cd6',
-	},
-	{ tag: [t.controlKeyword, t.moduleKeyword], color: '#c586c0' },
-	{
-		tag: [
-			t.name,
-			t.deleted,
-			t.character,
-			t.macroName,
-			t.propertyName,
-			t.variableName,
-			t.labelName,
-			t.definition(t.name),
-		],
-		color: '#9cdcfe',
-	},
-	{ tag: t.heading, fontWeight: 'bold', color: '#9cdcfe' },
-	{
-		tag: [
-			t.typeName,
-			t.className,
-			t.tagName,
-			t.number,
-			t.changed,
-			t.annotation,
-			t.self,
-			t.namespace,
-		],
-		color: '#4ec9b0',
-	},
-	{
-		tag: [t.function(t.variableName), t.function(t.propertyName)],
-		color: '#dcdcaa',
-	},
-	{ tag: [t.number], color: '#b5cea8' },
-	{
-		tag: [
-			t.operator,
-			t.punctuation,
-			t.separator,
-			t.url,
-			t.escape,
 			t.regexp,
+			t.function(t.name),
+			t.function(t.variableName),
+			t.function(t.propertyName),
 		],
-		color: '#d4d4d4',
 	},
-	{ tag: [t.regexp], color: '#d16969' },
+	// { color: colors.hint, tag: [] },
+	// { color: colors.inactiveBg, tag: [] },
 	{
+		color: colors.keyword,
 		tag: [
-			t.special(t.string),
-			t.processingInstruction,
-			t.string,
-			t.inserted,
+			t.operatorKeyword,
+			t.keyword,
+			t.controlKeyword,
+			t.moduleKeyword,
+			t.modifier,
 		],
-		color: '#ce9178',
 	},
-	{ tag: [t.angleBracket], color: '#808080' },
-	{ tag: t.strong, fontWeight: 'bold' },
-	{ tag: t.emphasis, fontStyle: 'italic' },
-	{ tag: t.strikethrough, textDecoration: 'line-through' },
-	{ tag: [t.meta, t.comment], color: '#6a9955' },
-	{ tag: t.link, color: '#6a9955', textDecoration: 'underline' },
-	{ tag: t.invalid, color: '#ff0000' },
+	// { color: colors.line, tag: [] },
+	{ color: colors.number, tag: [t.number, t.bool] },
+	{ color: colors.operator, tag: [t.operator] },
+	{ color: colors.parameter, tag: [] },
+	// { color: colors.plus, tag: [] },
+	{ color: colors.property, tag: [t.propertyName] },
+	// { color: colors.search, tag: [] },
+	{ color: colors.string, fontStyle: 'italic', tag: [t.string, t.character] },
+	{ color: colors.type, tag: [t.typeName, t.className, t.self, t.namespace] },
+	// { color: colors.visual, tag: [] },
+	// { color: colors.warning, tag: [] },
+	{ tag: [t.strong], fontWeight: 'bold' },
+	{ tag: [t.emphasis], fontStyle: 'italic' },
+	{ tag: [t.strikethrough], textDecoration: 'line-through' },
 ];
 
 const themeExtension = EditorView.theme(themeOptions, {
 	dark: true,
 });
-
-const highlightStyle = HighlightStyle.define(vscodeDarkStyle);
+const highlightStyle = HighlightStyle.define(themeStyle);
 const theme = [themeExtension, syntaxHighlighting(highlightStyle)];
 
 function build_editor(
