@@ -2,56 +2,49 @@ syntax = "proto3";
 
 package COD.Level;
 
-message Level
-{
+message Level {
   uint32 formatVersion = 1;
-
   string title = 2;
   string creators = 3;
   string description = 4;
-  uint32 complexity = 5;
-  uint32 maxCheckpointCount = 7;
   repeated string tags = 9;
+  uint32 maxCheckpointCount = 7;
+  uint64 defaultSpawnPointID = 10;
+  bool unlisted = 11;
+  bool showReplays = 12;
+  uint32 complexity = 5;
 
   AmbienceSettings ambienceSettings = 8;
 
   repeated LevelNode levelNodes = 6;
-
-  uint64 defaultSpawnPointID = 10;
 }
 
-//types.proto
-message Vector
-{
+message Vector {
   float x = 1;
   float y = 2;
   float z = 3;
 }
 
-message Vector2
-{
+message Vector2 {
   float x = 1;
   float y = 2;
 }
 
-message Quaternion
-{
+message Quaternion {
   float x = 1;
   float y = 2;
   float z = 3;
   float w = 4;
 }
 
-message Color
-{
+message Color {
   float r = 1;
   float g = 2;
   float b = 3;
   float a = 4;
 }
 
-message AmbienceSettings
-{
+message AmbienceSettings {
   Color skyZenithColor = 1;
   Color skyHorizonColor = 2;
 
@@ -62,16 +55,16 @@ message AmbienceSettings
   float fogDensity = 6;
 }
 
-enum LevelNodeShape
-{
+enum LevelNodeShape {
   START = 0;
   FINISH = 1;
   SIGN = 2;
   GRAVITY = 3;
   LOBBYTERMINAL = 4;
   PARTICLE_EMITTER = 5;
+  SOUND = 6;
 
-  __END_OF_SPECIAL_PARTS__ = 6;
+  __END_OF_SPECIAL_PARTS__ = 7;
 
   CUBE = 1000;
   SPHERE = 1001;
@@ -82,8 +75,7 @@ enum LevelNodeShape
   PYRAMIDSQUARE = 1006;
 }
 
-enum LevelNodeMaterial
-{
+enum LevelNodeMaterial {
   DEFAULT = 0;
   GRABBABLE = 1;
   ICE = 2;
@@ -100,31 +92,57 @@ enum LevelNodeMaterial
   TRIGGER = 11;
 }
 
-message LevelNodeGroup
-{
+enum InterpolationType {
+  LINEAR = 0;
+  QUADRATIC_EASE_IN = 1;
+  QUADRATIC_EASE_OUT = 2;
+  QUADRATIC_EASE_IN_OUT = 3;
+  SINUSOIDAL_EASE_IN = 4;
+  SINUSOIDAL_EASE_OUT = 5;
+  SINUSOIDAL_EASE_IN_OUT = 6;
+  EXPONENTIAL_EASE_IN = 7;
+  EXPONENTIAL_EASE_OUT = 8;
+  EXPONENTIAL_EASE_IN_OUT = 9;
+  CIRCULAR_EASE_IN = 10;
+  CIRCULAR_EASE_OUT = 11;
+  CIRCULAR_EASE_IN_OUT = 12;
+  CUBIC_EASE_IN = 13;
+  CUBIC_EASE_OUT = 14;
+  CUBIC_EASE_IN_OUT = 15;
+  QUARTIC_EASE_IN = 16;
+  QUARTIC_EASE_OUT = 17;
+  QUARTIC_EASE_IN_OUT = 18;
+  QUINTIC_EASE_IN = 19;
+  QUINTIC_EASE_OUT = 20;
+  QUINTIC_EASE_IN_OUT = 21;
+}
+
+message LevelNodeGroup {
   Vector position = 1;
   Vector scale = 2;
   Quaternion rotation = 3;
 
   repeated LevelNode childNodes = 4;
+
+  string name = 5;
+  bool physicsObject = 6;
+  bool localPhysicsObject = 7;
+  float mass = 8;
 }
 
-message LevelNodeStart
-{
+message LevelNodeStart {
   Vector position = 1;
   Quaternion rotation = 2;
   float radius = 3;
   string name = 4;
 }
 
-message LevelNodeFinish
-{
+message LevelNodeFinish {
   Vector position = 1;
   float radius = 2;
 }
 
-message LevelNodeStatic
-{
+message LevelNodeStatic {
   LevelNodeShape shape = 1;
   LevelNodeMaterial material = 2;
 
@@ -137,10 +155,13 @@ message LevelNodeStatic
 
   bool isNeon = 7;
   bool isTransparent = 8;
+
+  bool isGrabbable = 10;
+  bool isGrapplable = 11;
+  bool isPassable = 12;
 }
 
-message LevelNodeCrumbling
-{
+message LevelNodeCrumbling {
   LevelNodeShape shape = 1;
   LevelNodeMaterial material = 2;
 
@@ -152,18 +173,27 @@ message LevelNodeCrumbling
   float respawnTime = 7;
 }
 
-message LevelNodeSign
-{
+message LevelNodeSign {
+  enum SignFontWeight {
+    REGULAR = 0;
+    LIGHT = 1;
+    SEMIBOLD = 2;
+    BOLD = 3;
+    ITALIC = 4;
+  }
+
   Vector position = 1;
   Quaternion rotation = 2;
+  float scale = 4;
 
   string text = 3;
+  Color color = 5;
+  SignFontWeight weight = 7;
+  bool hideModel = 6;
 }
 
-message LevelNodeGravity
-{
-  enum Mode
-  {
+message LevelNodeGravity {
+  enum Mode {
     DEFAULT = 0;
     NOLEGS = 1;
   }
@@ -177,14 +207,12 @@ message LevelNodeGravity
   Vector direction = 5;
 }
 
-message LevelNodeLobbyTerminal
-{
+message LevelNodeLobbyTerminal {
   Vector position = 2;
   Quaternion rotation = 4;
 }
 
-message LevelNodeParticleEmitter
-{
+message LevelNodeParticleEmitter {
   Vector position = 1;
   Vector scale = 2;
   Quaternion rotation = 3;
@@ -196,7 +224,7 @@ message LevelNodeParticleEmitter
   Color endColor = 8;
   Vector2 startSize = 9;
   Vector2 endSize = 10;
-  
+
   Vector velocity = 14;
   Vector velocityMin = 15;
   Vector velocityMax = 16;
@@ -204,10 +232,8 @@ message LevelNodeParticleEmitter
   Vector accelerationMax = 18;
 }
 
-message TriggerSourceBasic
-{
-  enum Type
-  {
+message TriggerSourceBasic {
+  enum Type {
     HAND = 0;
     HEAD = 1;
     GRAPPLE = 2;
@@ -218,18 +244,19 @@ message TriggerSourceBasic
   Type type = 1;
 }
 
-message TriggerSource
-{
-  oneof content
-  {
+message TriggerSourceBlockNames {
+  repeated string names = 1;
+}
+
+message TriggerSource {
+  oneof content {
     TriggerSourceBasic triggerSourceBasic = 1;
+    TriggerSourceBlockNames triggerSourceBlockNames = 2;
   }
 }
 
-message TriggerTargetAnimation
-{
-  enum Mode
-  {
+message TriggerTargetAnimation {
+  enum Mode {
     STOP = 0;
     START = 1;
     TOGGLE = 2;
@@ -240,33 +267,15 @@ message TriggerTargetAnimation
 
   uint64 objectID = 1;
   string animationName = 2;
-  
+
   bool loop = 3;
   bool reverse = 4;
 
   Mode mode = 10;
 }
 
-message TriggerTargetSubLevel
-{
-  string levelIdentifier = 1;
-  string spawnPoint = 2;
-}
-
-message TriggerTarget
-{
-  oneof content
-  {
-    TriggerTargetAnimation triggerTargetAnimation = 1;
-    TriggerTargetSubLevel triggerTargetSubLevel = 2;
-    TriggerTargetSound triggerTargetSound = 3;
-  }
-}
-
-message TriggerTargetSound
-{
-  enum Mode
-  {
+message TriggerTargetSound {
+  enum Mode {
     STOP = 0;
     START = 1;
     TOGGLE = 2;
@@ -280,8 +289,44 @@ message TriggerTargetSound
   bool repeat = 3;
 }
 
-message LevelNodeTrigger
-{
+message TriggerTargetSubLevel {
+  string levelIdentifier = 1;
+  string spawnPoint = 2;
+}
+
+message TriggerTargetAmbience {
+  Color skyColor0 = 1;
+  Color skyColor1 = 2;
+
+  float sunAltitude = 3;
+  float sunAzimuth = 4;
+  float sunSize = 5;
+
+  float fogDensity = 6;
+
+  float changeDuration = 7;
+  InterpolationType interpolationType = 8;
+}
+
+message TriggerTarget {
+  enum Mode {
+    ONENTER = 0;
+    ONLEAVE = 1;
+    ONENTERONLEAVE = 2;
+    NONE = 3;
+  }
+
+  Mode mode = 4;
+
+  oneof content {
+    TriggerTargetAnimation triggerTargetAnimation = 1;
+    TriggerTargetSubLevel triggerTargetSubLevel = 2;
+    TriggerTargetSound triggerTargetSound = 3;
+    TriggerTargetAmbience triggerTargetAmbience = 6;
+  }
+}
+
+message LevelNodeTrigger {
   LevelNodeShape shape = 1;
 
   Vector position = 2;
@@ -294,31 +339,8 @@ message LevelNodeTrigger
   repeated TriggerTarget triggerTargets = 7;
 }
 
-message AnimationFrame
-{
-  float time = 1;
-  Vector position = 2;
-  Quaternion rotation = 3;
-}
-
-message Animation
-{
-  enum Direction
-  {
-    RESTART = 0;
-    PINGPONG = 1;
-  }
-
-  string name = 1;
-  repeated AnimationFrame frames = 2;
-  Direction direction = 3;
-  float speed = 4;
-}
-
-message SoundGeneratorParameters
-{
-  enum WaveType
-  {
+message SoundGeneratorParameters {
+  enum WaveType {
     Square = 0;
     Sawtooth = 1;
     Sine = 2;
@@ -355,13 +377,12 @@ message SoundGeneratorParameters
 
   float lowPassFilterFrequency = 20;
   float highPassFilterFrequency = 21;
-  
+
   float reverbDelay = 22;
   float reverbDecayFactor = 23;
 }
 
-message LevelNodeSound
-{
+message LevelNodeSound {
   Vector position = 1;
   Quaternion rotation = 7;
 
@@ -373,12 +394,34 @@ message LevelNodeSound
   float maxRangeFactor = 8;
 }
 
-message LevelNode
-{
+message AnimationFrame {
+  float time = 1;
+  Vector position = 2;
+  Quaternion rotation = 3;
+}
+
+message Animation {
+  enum Direction {
+    RESTART = 0;
+    PINGPONG = 1;
+  }
+
+  enum Interpolation {
+    LINEAR = 0;
+    CATMULL_ROM = 1;
+  }
+
+  string name = 1;
+  repeated AnimationFrame frames = 2;
+  Direction direction = 3;
+  float speed = 4;
+  Interpolation interpolation = 5;
+}
+
+message LevelNode {
   bool isLocked = 6;
 
-  oneof content
-  {
+  oneof content {
     LevelNodeStart levelNodeStart = 1;
     LevelNodeFinish levelNodeFinish = 2;
     LevelNodeStatic levelNodeStatic = 3;
@@ -394,5 +437,5 @@ message LevelNode
 
   repeated Animation animations = 15;
   int32 activeAnimation = 16;
+  bool wantsCreationHistory = 17;
 }
-
