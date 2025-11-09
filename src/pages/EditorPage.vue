@@ -2,30 +2,107 @@
 import { mapState } from 'pinia';
 import { useUserStore } from '@/stores/user';
 
-export default {
-	components: {},
+import encoding from '@/assets/tools/encoding';
 
+import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
+import ViewportPanel from '@/components/EditorPanels/ViewportPanel.vue';
+import ResizableRowPanel from '@/components/EditorPanels/ResizableRowPanel.vue';
+import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
+import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
+import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
+
+export default {
+	components: {
+		MenuPanel,
+		ViewportPanel,
+		ResizableRowPanel,
+		ResizableColPanel,
+		JsonPanel,
+		TerminalPanel,
+	},
 	data() {
 		return {
-			test: undefined,
+			json: encoding.createLevel(),
 		};
 	},
 	computed: {
-		...mapState(useUserStore, ['is_logged_in']),
+		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
-
-	methods: {},
+	mounted() {
+		this.set_json(this.json);
+	},
+	methods: {
+		set_json(json, skip = []) {
+			this.json = json;
+			if (!skip.includes('json_panel'))
+				this.$refs.json_panel.set_json(this.json);
+			if (!skip.includes('viewport_panel'))
+				this.$refs.viewport_panel.set_json(this.json);
+			window.toast('changed');
+		},
+		json_changed(json) {
+			this.set_json(json, ['json_panel']);
+		},
+		run_modifier(func) {
+			this.set_json(func(this.json));
+		},
+		run_function(func) {
+			func(this.json);
+		},
+	},
 	created() {
-		document.title = 'GRAB Tools JSON Editor';
+		document.title = 'JSON Editor | GRAB Tools';
 	},
 };
 </script>
 
 <template>
-	<div id="editor">editor</div>
+	<main id="editor">
+		<MenuPanel @modifier="run_modifier" @function="run_function" />
+		<ResizableRowPanel class="main-panel">
+			<template #first>
+				<ViewportPanel :ref="'viewport_panel'" />
+			</template>
+			<template #second>
+				<ResizableColPanel class="side-panel">
+					<template #first>
+						<JsonPanel
+							:ref="'json_panel'"
+							@changed="json_changed"
+						/>
+					</template>
+					<template #second>
+						<TerminalPanel @command="run_modifier" />
+					</template>
+				</ResizableColPanel>
+			</template>
+		</ResizableRowPanel>
+	</main>
 </template>
 
+<style>
+html:has(#editor) {
+	background-color: #1e1e1e;
+}
+#editor * {
+	/* outline: 0.1px solid #0f05; */
+}
+</style>
 <style scoped>
 #editor {
+	display: flex;
+	flex-direction: column;
+	width: 100vw;
+	height: 100vh;
+}
+.main-panel {
+	display: flex;
+	flex-direction: row;
+	height: calc(100% - 3rem);
+}
+.side-panel {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 </style>
