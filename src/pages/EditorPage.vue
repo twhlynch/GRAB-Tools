@@ -44,6 +44,9 @@ export default {
 		json_changed(json) {
 			this.set_json(json, ['json_panel']);
 		},
+		viewport_changed() {
+			this.set_json(this.json, ['viewport_panel']);
+		},
 		run_modifier(func) {
 			this.set_json(func(this.json));
 		},
@@ -69,7 +72,10 @@ export default {
 		/>
 		<ResizableRowPanel class="main-panel" :ref="'main_panel'">
 			<template #first>
-				<ViewportPanel :ref="'viewport_panel'" />
+				<ViewportPanel
+					:ref="'viewport_panel'"
+					@changed="viewport_changed"
+				/>
 			</template>
 			<template #second>
 				<ResizableColPanel class="side-panel" :ref="'side_panel'">

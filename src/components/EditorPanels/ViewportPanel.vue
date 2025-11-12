@@ -6,17 +6,22 @@ import { FreeControls } from '@/assets/FreeControls.js';
 import encoding from '@/assets/tools/encoding.js';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 export default {
 	data() {
 		return {
 			zoom_to_cursor: true,
+			free_movement: false,
+			editing: null,
+			dragging: false,
 		};
 	},
 	components: {
 		CursorIcon,
 		KeyboardIcon,
 	},
+	emits: ['changed'],
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
 		window._levelLoader.config({
@@ -44,6 +49,7 @@ export default {
 	},
 	methods: {
 		setup_renderer() {
+			// renderer
 			THREE.ColorManagement.enabled = true;
 			this.renderer = new THREE.WebGLRenderer({
 				antialias: true,
@@ -61,7 +67,7 @@ export default {
 			);
 			this.renderer.setAnimationLoop(this.animation);
 			this.$refs.viewport.appendChild(this.renderer.domElement);
-
+			// scene
 			this.clock = new THREE.Clock();
 			this.scene = new THREE.Scene();
 			this.camera = new THREE.PerspectiveCamera(
@@ -72,17 +78,77 @@ export default {
 				10000,
 			);
 			this.camera.position.set(0, 10, 10);
+			// controls
 			this.controls = new OrbitControls(
 				this.camera,
 				this.renderer.domElement,
 			);
 			this.controls.zoomToCursor = this.zoom_to_cursor;
 			this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
+			this.transform_controls = new TransformControls(
+				this.camera,
+				this.renderer.domElement,
+			);
+			// editing
+			this.transform_controls.addEventListener(
+				'change',
+				this.selected_event,
+			);
+			this.transform_controls.addEventListener(
+				'dragging-changed',
+				this.edit_event,
+			);
+			this.renderer.domElement.addEventListener(
+				'click',
+				this.select_event,
+			);
+		},
+		selected_event(e) {
+			this.editing = e.target.object;
+		},
+		edit_event(e) {
+			this.controls.enabled = !e.value;
+			if (!e.value) {
+				this.dragging = true;
+				const entries = Object.entries(this.editing.userData.node);
+				const node = entries.find((e) => e[0].includes('levelNode'))[1];
+				if (node.position) {
+					node.position.x = this.editing.position.x;
+					node.position.y = this.editing.position.y;
+					node.position.z = this.editing.position.z;
+				}
+				this.$emit('changed');
+			}
+		},
+		select_event(e) {
+			if (this.free_movement) return;
+			const canvasSize = this.renderer.domElement.getBoundingClientRect();
+			const mouse = {
+				x: ((e.clientX - canvasSize.left) / canvasSize.width) * 2 - 1,
+				y: -((e.clientY - canvasSize.top) / canvasSize.height) * 2 + 1,
+			};
+			const raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse, this.camera);
+			let individualObjects = this.level.nodes.all.filter(
+				(node) => node.parent.type === 'Scene',
+			);
+			let intersects = raycaster.intersectObjects(
+				individualObjects,
+				true,
+			);
+			if (intersects.length && intersects[0].object !== this.editing) {
+				this.transform_controls.attach(intersects[0].object);
+				this.scene.add(this.transform_controls);
+			} else {
+				if (!this.dragging) {
+					this.transform_controls.detach();
+				}
+			}
+			this.dragging = false;
 		},
 		async set_json(json) {
 			if (!json) return;
-			const buffer = await encoding.encodeLevel(json);
-			const formattedBuffer = new Uint8Array(buffer);
+			this.transform_controls.detach();
 			if (this.level) {
 				this.scene.remove(this.level.scene);
 				this.level.scene.traverse((obj) => {
@@ -96,7 +162,7 @@ export default {
 					if (obj.children) obj.children.length = 0;
 				});
 			}
-			this.level = await window._levelLoader.load(formattedBuffer);
+			this.level = await window._levelLoader.load(json, true);
 			this.scene.add(this.level.scene);
 		},
 		resize(width, height) {
@@ -121,6 +187,7 @@ export default {
 		},
 		toggleControls(e) {
 			this.controls.dispose();
+			this.free_movement = e.target.checked;
 
 			if (e.target.checked) {
 				// FIXME: burh
@@ -133,6 +200,7 @@ export default {
 					this.renderer.domElement,
 				);
 				this.controls.eulerVector.set(pitch, yaw, 0);
+				this.transform_controls.detach();
 			} else {
 				const direction = new THREE.Vector3();
 				this.camera.getWorldDirection(direction);
