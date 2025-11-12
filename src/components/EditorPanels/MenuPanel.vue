@@ -7,6 +7,7 @@ import monochrome from '@/assets/tools/monochrome';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import group from '@/assets/tools/group';
+import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
 
 export default {
@@ -274,6 +275,18 @@ export default {
 
 			const file = files[0];
 			const level_nodes = await video.video(file, 30, 30);
+
+			this.$emit('modifier', (json) => {
+				json.levelNodes = json.levelNodes.concat(level_nodes);
+				return json;
+			});
+		},
+		async insert_model(e) {
+			const files = Array.from(e.target.files);
+			if (!files.length) return;
+
+			const file = files[0];
+			const level_nodes = await obj.obj(file, 'particles');
 
 			this.$emit('modifier', (json) => {
 				json.levelNodes = json.levelNodes.concat(level_nodes);
