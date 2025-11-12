@@ -289,6 +289,15 @@ function triggerSourceBlockNames() {
 	});
 }
 
+function traverse_node(node, func) {
+	if (node.levelNodeGroup?.childNodes?.length) {
+		node.levelNodeGroup.childNodes.forEach((child) =>
+			traverse_node(child, func),
+		);
+	}
+	func(node);
+}
+
 export default {
 	levelNodeStart,
 	levelNodeFinish,
@@ -309,4 +318,5 @@ export default {
 	triggerTargetAmbience,
 	triggerSourceBasic,
 	triggerSourceBlockNames,
+	traverse_node,
 };
