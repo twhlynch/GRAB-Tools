@@ -390,6 +390,32 @@ export default {
 				}
 			});
 		},
+		unlock_all() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					levelNodes.traverse_node(node, (n) => {
+						n.isLocked = false;
+					});
+				});
+				return json;
+			});
+		},
+		lock_all() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					levelNodes.traverse_node(node, (n) => {
+						n.isLocked = true;
+					});
+				});
+				return json;
+			});
+		},
+		duplicate_level() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes = json.levelNodes.concat(json.levelNodes);
+				return json;
+			});
+		},
 		monochrome_level() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes = monochrome.monochrome(json.levelNodes);
