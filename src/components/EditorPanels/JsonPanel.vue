@@ -10,6 +10,7 @@ export default {
 		return {
 			json: {},
 			ignore_change: false,
+			error: null,
 		};
 	},
 	mounted() {
@@ -22,8 +23,16 @@ export default {
 			(update) => {
 				if (update.docChanged && !this.ignore_change) {
 					const new_json = this.view.state.doc.toString();
-					const new_object = JSON.parse(new_json);
+					let new_object = undefined;
+					this.error = null;
+					try {
+						new_object = JSON.parse(new_json);
+					} catch (e) {
+						this.error = e.message;
+					}
 					if (
+						new_object !== undefined &&
+						this.error === null &&
 						JSON.stringify(this.json) !== JSON.stringify(new_object)
 					) {
 						this.$emit('changed', new_object);
@@ -63,7 +72,11 @@ export default {
 </script>
 
 <template>
-	<section :ref="'editor'" @click="click"></section>
+	<section :ref="'editor'" @click="click">
+		<div v-show="error !== null" class="error">
+			<span>{{ error }}</span>
+		</div>
+	</section>
 </template>
 
 <style scoped>
@@ -72,5 +85,30 @@ section {
 	height: 100%;
 	overflow-y: scroll;
 	background-color: #141415;
+	position: relative;
+}
+.error {
+	font-size: 0.6rem;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	width: 100%;
+	height: 1rem;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	overflow-x: scroll;
+	background-color: var(--red);
+	color: white;
+	z-index: 1;
+	font-family: Menlo, Monaco, Consolas, 'Andale Mono', 'Ubuntu Mono',
+		'Courier New', monospace;
+
+	span {
+		width: fit-content;
+		white-space: nowrap;
+	}
 }
 </style>
