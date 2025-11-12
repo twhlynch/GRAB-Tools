@@ -96,6 +96,10 @@ function levelNodeGroup() {
 			position: vec3(),
 			scale: vec3(1, 1, 1),
 			rotation: quat(),
+			name: 'group',
+			physicsObject: false,
+			localPhysicsObject: false,
+			mass: 1,
 			childNodes: [],
 		},
 	});
