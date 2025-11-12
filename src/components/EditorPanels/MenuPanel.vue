@@ -149,7 +149,7 @@ export default {
 		};
 	},
 	components: {},
-	emits: ['modifier', 'function'],
+	emits: ['modifier', 'function', 'viewport'],
 	methods: {
 		load_new_level() {
 			this.$emit('modifier', (_) => {

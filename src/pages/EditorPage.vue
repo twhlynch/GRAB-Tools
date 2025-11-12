@@ -50,6 +50,9 @@ export default {
 		run_function(func) {
 			func(this.json);
 		},
+		run_viewport(func) {
+			func(this.$refs.viewport_panel);
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -59,7 +62,11 @@ export default {
 
 <template>
 	<main id="editor">
-		<MenuPanel @modifier="run_modifier" @function="run_function" />
+		<MenuPanel
+			@modifier="run_modifier"
+			@function="run_function"
+			@viewport="run_viewport"
+		/>
 		<ResizableRowPanel class="main-panel">
 			<template #first>
 				<ViewportPanel :ref="'viewport_panel'" />
