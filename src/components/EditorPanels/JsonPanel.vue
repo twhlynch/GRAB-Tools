@@ -15,7 +15,7 @@ export default {
 	},
 	mounted() {
 		this.view = build_editor(
-			this.$refs.editor,
+			this.$refs.json_container,
 			JSON.stringify(this.json, null, 4),
 			json(),
 			[foldGutter(), highlightSelectionMatches()],
@@ -56,7 +56,7 @@ export default {
 			this.ignore_change = false;
 		},
 		click(e) {
-			if (e.target === this.$refs.editor) {
+			if (e.target === this.$refs.json_container) {
 				this.view.focus();
 				this.view.dispatch({
 					selection: EditorSelection.cursor(
@@ -73,6 +73,7 @@ export default {
 
 <template>
 	<section :ref="'editor'" @click="click">
+		<div :ref="'json_container'" class="json-container"></div>
 		<div v-show="error !== null" class="error">
 			<span>{{ error }}</span>
 		</div>
@@ -83,31 +84,32 @@ export default {
 section {
 	width: 100%;
 	height: 100%;
-	overflow-y: scroll;
 	background-color: #141415;
-	position: relative;
+	display: grid;
+	grid-template-rows: 1fr 0;
+}
+.json-container {
+	overflow-y: scroll;
+	max-height: 100%;
 }
 .error {
-	font-size: 0.6rem;
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	left: 0;
-	width: 100%;
-	height: 1rem;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-	overflow-x: scroll;
-	background-color: var(--red);
-	color: white;
-	z-index: 1;
-	font-family: Menlo, Monaco, Consolas, 'Andale Mono', 'Ubuntu Mono',
-		'Courier New', monospace;
+	position: relative;
 
 	span {
-		width: fit-content;
+		position: absolute;
+		bottom: 0;
+		font-size: 0.6rem;
+		width: 100%;
+		height: 1rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		overflow-x: scroll;
+		background-color: var(--red);
+		color: white;
+		font-family: Menlo, Monaco, Consolas, 'Andale Mono', 'Ubuntu Mono',
+			'Courier New', monospace;
 		white-space: nowrap;
 	}
 }
