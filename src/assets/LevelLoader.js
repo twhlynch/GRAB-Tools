@@ -457,13 +457,12 @@ class LevelLoader {
 		this.skyMaterial.uniforms['sunDirection'] = { value: skySunDirection };
 		this.skyMaterial.uniforms['sunColor'] = { value: sunColor };
 
-		if (this.options.sky) {
-			const sky = new THREE.Mesh(this.shapes[1], this.skyMaterial);
-			sky.frustumCulled = false;
-			sky.renderOrder = 1000; // sky should be rendered after opaque, before transparent
-			sky.isSky = true;
-			scene.add(sky);
-		}
+		const sky = new THREE.Mesh(this.shapes[1], this.skyMaterial);
+		sky.frustumCulled = false;
+		sky.renderOrder = 1000; // sky should be rendered after opaque, before transparent
+		sky.isSky = true;
+		scene.add(sky);
+		sky.visible = this.options.sky;
 
 		const allMaterials = [...materials, ...objectMaterials];
 
