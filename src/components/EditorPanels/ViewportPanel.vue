@@ -8,6 +8,10 @@ import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { useConfigStore } from '@/stores/config.js';
+import TranslateIcon from '@/icons/TranslateIcon.vue';
+import RotateIcon from '@/icons/RotateIcon.vue';
+import ScaleIcon from '@/icons/ScaleIcon.vue';
+import SpaceIcon from '@/icons/SpaceIcon.vue';
 
 export default {
 	data() {
@@ -24,11 +28,17 @@ export default {
 			show_trigger_connections: false, // TODO:
 			show_fog: true,
 			show_sky: true,
+			transform_mode: 'translate',
+			transform_space: 'local',
 		};
 	},
 	components: {
 		CursorIcon,
 		KeyboardIcon,
+		TranslateIcon,
+		RotateIcon,
+		ScaleIcon,
+		SpaceIcon,
 	},
 	emits: ['changed'],
 	async mounted() {
@@ -125,6 +135,17 @@ export default {
 					node.position.x = this.editing.position.x;
 					node.position.y = this.editing.position.y;
 					node.position.z = this.editing.position.z;
+				}
+				if (node.scale) {
+					node.scale.x = this.editing.scale.x;
+					node.scale.y = this.editing.scale.y;
+					node.scale.z = this.editing.scale.z;
+				}
+				if (node.rotation) {
+					node.rotation.x = this.editing.rotation.x;
+					node.rotation.y = this.editing.rotation.y;
+					node.rotation.z = this.editing.rotation.z;
+					node.rotation.w = this.editing.rotation.w;
 				}
 				this.$emit('changed');
 			}
@@ -244,6 +265,18 @@ export default {
 		mouseup(e) {
 			this.controls.isMouseActive = false;
 		},
+		set_transform_mode(e) {
+			const mode = e.target.id.split('-')[1];
+			this.transform_mode = mode;
+			this.transform_controls.setMode(this.transform_mode);
+			e.target.checked = true;
+		},
+		set_transform_space(e) {
+			this.transform_controls.setSpace(
+				this.transform_controls.space === 'local' ? 'world' : 'local',
+			);
+			this.transform_space = this.transform_controls.space;
+		},
 	},
 };
 </script>
@@ -255,6 +288,52 @@ export default {
 		@mousedown="mousedown"
 		@mouseup="mouseup"
 	>
+		<div class="modes">
+			<div>
+				<label for="modes-translate">
+					<TranslateIcon />
+				</label>
+				<input
+					id="modes-translate"
+					type="checkbox"
+					:checked="transform_mode === 'translate'"
+					@click="set_transform_mode"
+				/>
+			</div>
+			<div>
+				<label for="modes-rotate">
+					<RotateIcon />
+				</label>
+				<input
+					id="modes-rotate"
+					type="checkbox"
+					:checked="transform_mode === 'rotate'"
+					@click="set_transform_mode"
+				/>
+			</div>
+			<div>
+				<label for="modes-scale">
+					<ScaleIcon />
+				</label>
+				<input
+					id="modes-scale"
+					type="checkbox"
+					:checked="transform_mode === 'scale'"
+					@click="set_transform_mode"
+				/>
+			</div>
+			<div>
+				<label for="space">
+					<SpaceIcon />
+				</label>
+				<input
+					id="space"
+					type="checkbox"
+					:checked="transform_space === 'global'"
+					@click="set_transform_space"
+				/>
+			</div>
+		</div>
 		<div class="controls">
 			<div>
 				<label
@@ -289,8 +368,11 @@ export default {
 </template>
 
 <style>
-.controls > div:has(input:checked) > label svg {
-	color: var(--text-color-accent);
+.controls,
+.modes {
+	& > div:has(input:checked) > label svg {
+		color: var(--text-color-accent);
+	}
 }
 </style>
 <style scoped>
@@ -302,10 +384,10 @@ canvas {
 .viewport {
 	position: relative;
 }
-.controls {
+.controls,
+.modes {
 	position: absolute;
 	right: 0.5rem;
-	bottom: 0.5rem;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -331,5 +413,11 @@ canvas {
 	input {
 		display: none;
 	}
+}
+.modes {
+	top: 0.5rem;
+}
+.controls {
+	bottom: 0.5rem;
 }
 </style>
