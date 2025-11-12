@@ -4,6 +4,7 @@ import video from '@/assets/tools/video';
 import image from '@/assets/tools/image';
 import levelNodes from '@/assets/tools/nodes';
 import monochrome from '@/assets/tools/monochrome';
+import * as THREE from 'three';
 
 export default {
 	data() {
@@ -369,13 +370,9 @@ export default {
 		},
 		teleport_start() {
 			this.$emit('viewport', (scope) => {
-				if (
-					scope?.level?.nodes?.defaultSpawn?.userData?.node
-						?.levelNodeStart?.position
-				) {
-					const position =
-						scope.level.nodes.defaultSpawn.userData.node
-							.levelNodeStart.position;
+				if (scope?.level?.nodes?.defaultSpawn) {
+					const position = new THREE.Vector3();
+					scope.level.nodes.defaultSpawn.getWorldPosition(position);
 					scope.camera.position.set(
 						position.x,
 						position.y + 1,
@@ -388,6 +385,70 @@ export default {
 					);
 					scope.camera.lookAt(position.x, position.y, position.z);
 				}
+			});
+		},
+		teleport_finish() {
+			this.$emit('viewport', (scope) => {
+				if (scope?.level?.nodes?.levelNodeFinish?.length) {
+					const position = new THREE.Vector3();
+					scope.level.nodes.levelNodeFinish[0].getWorldPosition(
+						position,
+					);
+					scope.camera.position.set(
+						position.x,
+						position.y + 1,
+						position.z + 1,
+					);
+					scope.controls.target?.set(
+						position.x,
+						position.y,
+						position.z,
+					);
+					scope.camera.lookAt(position.x, position.y, position.z);
+				}
+			});
+		},
+		teleport_origin() {
+			this.$emit('viewport', (scope) => {
+				scope.camera.position.set(0, 1, 1);
+				scope.controls.target?.set(0, 0, 0);
+				scope.camera.lookAt(0, 0, 0);
+			});
+		},
+		teleport_full() {
+			this.$emit('viewport', (scope) => {
+				const min = new THREE.Vector3(Infinity, Infinity, Infinity);
+				const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+				scope.level.nodes.all.forEach((node) => {
+					min.min(node.position);
+					max.max(node.position);
+					if (isNaN(node.position.z)) console.log(node);
+				});
+
+				if (min.x === Infinity) {
+					window.toast('No nodes found', 'warning');
+					return;
+				}
+
+				const center = new THREE.Vector3()
+					.addVectors(max, min)
+					.divideScalar(2);
+				const size = new THREE.Vector3().subVectors(max, min);
+
+				const view_position = center.clone();
+
+				if (size.x > size.z) {
+					view_position.z += size.x;
+					view_position.y = size.x;
+				} else {
+					view_position.x += size.z;
+					view_position.y = size.z;
+				}
+
+				scope.camera.position.copy(view_position);
+				scope.controls.target.copy(center);
+				scope.camera.lookAt(center);
 			});
 		},
 		unlock_all() {
