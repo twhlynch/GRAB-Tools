@@ -2,15 +2,21 @@
 import { LevelLoader } from '../../../src/assets/LevelLoader.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FreeControls } from '@/assets/FreeControls.js';
 import encoding from '@/assets/tools/encoding.js';
+import CursorIcon from '@/icons/CursorIcon.vue';
+import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 
 export default {
 	data() {
 		return {
-			json: undefined,
+			zoom_to_cursor: true,
 		};
 	},
-	components: {},
+	components: {
+		CursorIcon,
+		KeyboardIcon,
+	},
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
 		window._levelLoader.config({
@@ -66,11 +72,11 @@ export default {
 				10000,
 			);
 			this.camera.position.set(0, 10, 10);
-
 			this.controls = new OrbitControls(
 				this.camera,
 				this.renderer.domElement,
 			);
+			this.controls.zoomToCursor = this.zoom_to_cursor;
 			this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
 		},
 		async set_json(json) {
@@ -107,21 +113,135 @@ export default {
 			const delta = this.clock.getDelta();
 
 			this.level.update(delta);
-			this.controls.update();
+			this.controls.update(delta);
 			this.renderer.render(this.scene, this.camera);
+		},
+		zoomToCursorChange(e) {
+			this.controls.zoomToCursor = this.zoom_to_cursor = e.target.checked;
+		},
+		toggleControls(e) {
+			this.controls.dispose();
+
+			if (e.target.checked) {
+				// FIXME: burh
+				const direction = new THREE.Vector3();
+				this.camera.getWorldDirection(direction);
+				const yaw = Math.atan2(direction.x, direction.z);
+				const pitch = Math.asin(-direction.y);
+				this.controls = new FreeControls(
+					this.camera,
+					this.renderer.domElement,
+				);
+				this.controls.eulerVector.set(pitch, yaw, 0);
+			} else {
+				const direction = new THREE.Vector3();
+				this.camera.getWorldDirection(direction);
+				const look_at = new THREE.Vector3().addVectors(
+					this.camera.position,
+					direction.multiplyScalar(1),
+				);
+				this.controls = new OrbitControls(
+					this.camera,
+					this.renderer.domElement,
+				);
+				this.controls.zoomToCursor = this.zoom_to_cursor;
+				this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
+				this.controls.target.copy(look_at);
+			}
+		},
+		mousedown(e) {
+			if (e.target === this.renderer.domElement) {
+				this.controls.isMouseActive = true;
+			}
+		},
+		mouseup(e) {
+			this.controls.isMouseActive = false;
 		},
 	},
 };
 </script>
 
 <template>
-	<section :ref="'viewport'"></section>
+	<section
+		:ref="'viewport'"
+		class="viewport"
+		@mousedown="mousedown"
+		@mouseup="mouseup"
+	>
+		<div class="controls">
+			<div>
+				<label
+					for="controls-mouse-zoom"
+					title="toggle zoom to cursor position"
+				>
+					<CursorIcon />
+				</label>
+				<input
+					id="controls-mouse-zoom"
+					type="checkbox"
+					checked
+					@change="zoomToCursorChange"
+				/>
+			</div>
+			<div>
+				<label
+					for="controls-wasd"
+					title="toggle keyboard movement controls"
+				>
+					<KeyboardIcon />
+				</label>
+				<input
+					id="controls-wasd"
+					type="checkbox"
+					@change="toggleControls"
+				/>
+			</div>
+		</div>
+	</section>
 </template>
 
+<style>
+.controls > div:has(input:checked) > label svg {
+	color: var(--text-color-accent);
+}
+</style>
 <style scoped>
 section,
 canvas {
 	width: 100%;
 	height: 100%;
+}
+.viewport {
+	position: relative;
+}
+.controls {
+	position: absolute;
+	right: 0.5rem;
+	bottom: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	* {
+		cursor: pointer;
+	}
+
+	label {
+		padding: 0.3rem;
+		display: flex;
+	}
+
+	> div {
+		background-color: #141415;
+		border-radius: 0.5rem;
+
+		&:hover {
+			background-color: #242425;
+		}
+	}
+
+	input {
+		display: none;
+	}
 }
 </style>
