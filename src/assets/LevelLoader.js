@@ -274,7 +274,7 @@ class LevelLoader {
 		}
 	}
 
-	async load(data) {
+	async load(data, json = false) {
 		const level = {
 			level: undefined,
 			nodes: {
@@ -328,9 +328,15 @@ class LevelLoader {
 		});
 		const LevelMessage = root.lookupType('COD.Level.Level');
 
-		let formattedBuffer = data;
-		let decoded = LevelMessage.decode(formattedBuffer);
-		level.level = decoded;
+		let decoded;
+		if (json) {
+			level.level = data;
+			decoded = data;
+		} else {
+			let formattedBuffer = data;
+			decoded = LevelMessage.decode(formattedBuffer);
+			level.level = decoded;
+		}
 
 		await this.shapePromise;
 		await this.objectPromise;
