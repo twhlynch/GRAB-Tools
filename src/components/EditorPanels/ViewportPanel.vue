@@ -7,6 +7,7 @@ import encoding from '@/assets/tools/encoding.js';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import { useConfigStore } from '@/stores/config.js';
 
 export default {
 	data() {
@@ -32,6 +33,14 @@ export default {
 	emits: ['changed'],
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
+
+		const configStore = useConfigStore();
+		const config = configStore.editor_config;
+		if (config) {
+			Object.entries(config).forEach((entry) => {
+				this[entry[0]] = entry[1];
+			});
+		}
 
 		this.setup_renderer();
 		const observer = new ResizeObserver((entries) => {
@@ -257,7 +266,7 @@ export default {
 				<input
 					id="controls-mouse-zoom"
 					type="checkbox"
-					checked
+					:checked="zoom_to_cursor"
 					@change="zoomToCursorChange"
 				/>
 			</div>
@@ -271,6 +280,7 @@ export default {
 				<input
 					id="controls-wasd"
 					type="checkbox"
+					:checked="free_movement"
 					@change="toggleControls"
 				/>
 			</div>
