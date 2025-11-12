@@ -366,6 +366,29 @@ export default {
 				return json;
 			});
 		},
+		teleport_start() {
+			this.$emit('viewport', (scope) => {
+				if (
+					scope?.level?.nodes?.defaultSpawn?.userData?.node
+						?.levelNodeStart?.position
+				) {
+					const position =
+						scope.level.nodes.defaultSpawn.userData.node
+							.levelNodeStart.position;
+					scope.camera.position.set(
+						position.x,
+						position.y + 1,
+						position.z + 1,
+					);
+					scope.controls.target?.set(
+						position.x,
+						position.y,
+						position.z,
+					);
+					scope.camera.lookAt(position.x, position.y, position.z);
+				}
+			});
+		},
 	},
 	mounted() {
 		const buttons = document.querySelectorAll('.menu-btn');
