@@ -72,6 +72,8 @@ export default {
 	},
 	methods: {
 		update_node_shader(object) {
+			if (!object) return;
+
 			if (object?.material?.uniforms?.worldMatrix) {
 				object.material.uniforms.worldMatrix = {
 					value: new THREE.Matrix4().copy(object.matrixWorld),
@@ -89,7 +91,12 @@ export default {
 
 			let normalMatrix = new THREE.Matrix3();
 			normalMatrix.getNormalMatrix(worldMatrix);
-			object.material.uniforms.worldNormalMatrix.value = normalMatrix;
+
+			if (object?.material?.uniforms?.worldNormalMatrix) {
+				object.material.uniforms.worldNormalMatrix = {
+					value: normalMatrix,
+				};
+			}
 		},
 		setup_renderer() {
 			// renderer
