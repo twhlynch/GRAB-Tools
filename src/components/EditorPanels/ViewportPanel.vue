@@ -175,7 +175,7 @@ export default {
 		reset_node_positions() {
 			this.level.meta.time = 0;
 			this.level.nodes.animated.forEach((node) => {
-				node.animation.currentFrameIndex = 0;
+				node.userData.currentFrameIndex = 0;
 				node.quaternion.copy(node.initialRotation);
 				node.position.copy(node.initialPosition);
 			});

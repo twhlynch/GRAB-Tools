@@ -1431,8 +1431,8 @@ class LevelLoader {
 						node.animations[0].frames.length > 0 &&
 						(node.activeAnimation ?? 0) === 0
 					) {
-						object.animation = node.animations[0];
-						object.animation.currentFrameIndex = 0;
+						object.userData.animation = node.animations[0];
+						object.userData.currentFrameIndex = 0;
 						level.nodes.animated.push(object);
 					}
 				}
@@ -1491,30 +1491,30 @@ async function getGeometryForModel(name) {
 }
 
 function updateObjectAnimation(object, time) {
-	let animation = object.animation;
+	let animation = object.userData.animation;
 	const animationFrames = animation.frames;
 	const relativeTime =
-		(time * (object.animation.speed ?? 0)) %
+		(time * (object.userData.animation.speed ?? 0)) %
 		(animationFrames[animationFrames.length - 1].time ?? 0);
 
 	//Find frames to blend between
-	let oldFrame = animationFrames[animation.currentFrameIndex];
-	let newFrameIndex = animation.currentFrameIndex + 1;
+	let oldFrame = animationFrames[object.userData.currentFrameIndex];
+	let newFrameIndex = object.userData.currentFrameIndex + 1;
 	if (newFrameIndex >= animationFrames.length) newFrameIndex = 0;
 	let newFrame = animationFrames[newFrameIndex];
 
 	let loopCounter = 0; //Used to prevent endless loop with only one frame or all having the same time
 	while (loopCounter <= animationFrames.length) {
-		oldFrame = animationFrames[animation.currentFrameIndex];
-		newFrameIndex = animation.currentFrameIndex + 1;
+		oldFrame = animationFrames[object.userData.currentFrameIndex];
+		newFrameIndex = object.userData.currentFrameIndex + 1;
 		if (newFrameIndex >= animationFrames.length) newFrameIndex = 0;
 		newFrame = animationFrames[newFrameIndex];
 
 		if (oldFrame.time <= relativeTime && newFrame.time > relativeTime)
 			break;
-		animation.currentFrameIndex += 1;
-		if (animation.currentFrameIndex >= animationFrames.length - 1)
-			animation.currentFrameIndex = 0;
+		object.userData.currentFrameIndex += 1;
+		if (object.userData.currentFrameIndex >= animationFrames.length - 1)
+			object.userData.currentFrameIndex = 0;
 
 		loopCounter += 1;
 	}
