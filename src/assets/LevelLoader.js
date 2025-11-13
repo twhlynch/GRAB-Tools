@@ -400,33 +400,37 @@ class LevelLoader {
 		let horizonColor = [0.916, 0.9574, 0.9574];
 		if (decoded.ambienceSettings) {
 			sunAngle = new THREE.Euler(
-				THREE.MathUtils.degToRad(decoded.ambienceSettings.sunAltitude),
-				THREE.MathUtils.degToRad(decoded.ambienceSettings.sunAzimuth),
+				THREE.MathUtils.degToRad(
+					decoded.ambienceSettings.sunAltitude ?? 0,
+				),
+				THREE.MathUtils.degToRad(
+					decoded.ambienceSettings.sunAzimuth ?? 0,
+				),
 				0.0,
 			);
-			sunAltitude = decoded.ambienceSettings.sunAltitude;
+			sunAltitude = decoded.ambienceSettings.sunAltitude ?? 0;
 			horizonColor = [
-				decoded.ambienceSettings.skyHorizonColor.r,
-				decoded.ambienceSettings.skyHorizonColor.g,
-				decoded.ambienceSettings.skyHorizonColor.b,
+				decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
+				decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
+				decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 			];
 
 			this.skyMaterial.uniforms['cameraFogColor0'] = {
 				value: [
-					decoded.ambienceSettings.skyHorizonColor.r,
-					decoded.ambienceSettings.skyHorizonColor.g,
-					decoded.ambienceSettings.skyHorizonColor.b,
+					decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
+					decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
+					decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 				],
 			};
 			this.skyMaterial.uniforms['cameraFogColor1'] = {
 				value: [
-					decoded.ambienceSettings.skyZenithColor.r,
-					decoded.ambienceSettings.skyZenithColor.g,
-					decoded.ambienceSettings.skyZenithColor.b,
+					decoded.ambienceSettings.skyZenithColor?.r ?? 0,
+					decoded.ambienceSettings.skyZenithColor?.g ?? 0,
+					decoded.ambienceSettings.skyZenithColor?.b ?? 0,
 				],
 			};
 			this.skyMaterial.uniforms['sunSize'] = {
-				value: decoded.ambienceSettings.sunSize,
+				value: decoded.ambienceSettings.sunSize ?? 0,
 			};
 		} else {
 			this.skyMaterial.uniforms['cameraFogColor0'] = {
@@ -471,22 +475,22 @@ class LevelLoader {
 			if (decoded.ambienceSettings) {
 				material.uniforms['cameraFogColor0'] = {
 					value: [
-						decoded.ambienceSettings.skyHorizonColor.r,
-						decoded.ambienceSettings.skyHorizonColor.g,
-						decoded.ambienceSettings.skyHorizonColor.b,
+						decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
+						decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
+						decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 					],
 				};
 				material.uniforms['cameraFogColor1'] = {
 					value: [
-						decoded.ambienceSettings.skyZenithColor.r,
-						decoded.ambienceSettings.skyZenithColor.g,
-						decoded.ambienceSettings.skyZenithColor.b,
+						decoded.ambienceSettings.skyZenithColor?.r ?? 0,
+						decoded.ambienceSettings.skyZenithColor?.g ?? 0,
+						decoded.ambienceSettings.skyZenithColor?.b ?? 0,
 					],
 				};
 				material.uniforms['sunSize'] = {
-					value: decoded.ambienceSettings.sunSize,
+					value: decoded.ambienceSettings.sunSize ?? 0,
 				};
-				density = decoded.ambienceSettings.fogDensity;
+				density = decoded.ambienceSettings.fogDensity ?? 0;
 			} else {
 				material.uniforms['cameraFogColor0'] = {
 					value: [0.916, 0.9574, 0.9574],
