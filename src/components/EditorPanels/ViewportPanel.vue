@@ -71,6 +71,26 @@ export default {
 		window.removeEventListener('keydown', this.keydown);
 	},
 	methods: {
+		update_node_shader(object) {
+			if (object?.material?.uniforms?.worldMatrix) {
+				object.material.uniforms.worldMatrix = {
+					value: new THREE.Matrix4().copy(object.matrixWorld),
+				};
+			}
+
+			let targetVector = new THREE.Vector3();
+			let targetQuaternion = new THREE.Quaternion();
+			let worldMatrix = new THREE.Matrix4();
+			worldMatrix.compose(
+				object.getWorldPosition(targetVector),
+				object.getWorldQuaternion(targetQuaternion),
+				object.getWorldScale(targetVector),
+			);
+
+			let normalMatrix = new THREE.Matrix3();
+			normalMatrix.getNormalMatrix(worldMatrix);
+			object.material.uniforms.worldNormalMatrix.value = normalMatrix;
+		},
 		setup_renderer() {
 			// renderer
 			THREE.ColorManagement.enabled = true;
@@ -129,11 +149,7 @@ export default {
 		},
 		selected_event(e) {
 			this.editing = e.target.object;
-
-			if (this.editing?.material?.uniforms?.worldMatrix)
-				this.editing.material.uniforms.worldMatrix = {
-					value: new THREE.Matrix4().copy(this.editing.matrixWorld),
-				};
+			this.update_node_shader(this.editing);
 		},
 		edit_event(e) {
 			this.controls.enabled = !e.value;
@@ -168,13 +184,7 @@ export default {
 					z: this.editing.quaternion.z,
 					w: this.editing.quaternion.w,
 				};
-				if (this.editing?.material?.uniforms?.worldMatrix)
-					this.editing.material.uniforms.worldMatrix = {
-						value: new THREE.Matrix4().copy(
-							this.editing.matrixWorld,
-						),
-					};
-
+				this.update_node_shader(this.editing);
 				this.$emit('changed');
 			}
 		},
