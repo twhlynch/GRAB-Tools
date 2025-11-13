@@ -6,7 +6,7 @@ import levelNodes from '@/assets/tools/nodes';
  */
 function groupNodes(nodes) {
 	const group = levelNodes.levelNodeGroup();
-	group.childNodes = nodes;
+	group.levelNodeGroup.childNodes = nodes;
 	return group;
 }
 
