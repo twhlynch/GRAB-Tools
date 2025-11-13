@@ -57,7 +57,7 @@ class FreeControls extends THREE.EventDispatcher {
 				case 'ShiftLeft':
 				case 'ShiftRight': this.movementSpeedMultiplier = 10.0; break;
 
-				case 'KeyC': this.movementSpeedMultiplier = 100.0; break;
+				// case 'KeyC': this.movementSpeedMultiplier = 100.0; break;
 
 				case 'KeyW': this.moveState.forward = 1; break;
 				case 'KeyS': this.moveState.back = 1; break;
@@ -68,11 +68,11 @@ class FreeControls extends THREE.EventDispatcher {
 				case 'KeyE': this.moveState.up = 1; break;
 				case 'KeyQ': this.moveState.down = 1; break;
 
-				case 'ArrowUp': this.moveState.pitchUp = 1; break;
-				case 'ArrowDown': this.moveState.pitchDown = 1; break;
-
-				case 'ArrowLeft': this.moveState.yawLeft = 1; break;
-				case 'ArrowRight': this.moveState.yawRight = 1; break;
+				// case 'ArrowUp': this.moveState.pitchUp = 1; break;
+				// case 'ArrowDown': this.moveState.pitchDown = 1; break;
+				//
+				// case 'ArrowLeft': this.moveState.yawLeft = 1; break;
+				// case 'ArrowRight': this.moveState.yawRight = 1; break;
 
 			}
 
@@ -88,7 +88,7 @@ class FreeControls extends THREE.EventDispatcher {
 				case 'ShiftLeft':
 				case 'ShiftRight': this.movementSpeedMultiplier = 1; break;
 
-				case 'KeyC': this.movementSpeedMultiplier = 1; break;
+				// case 'KeyC': this.movementSpeedMultiplier = 1; break;
 
 				case 'KeyW': this.moveState.forward = 0; break;
 				case 'KeyS': this.moveState.back = 0; break;
@@ -99,11 +99,11 @@ class FreeControls extends THREE.EventDispatcher {
 				case 'KeyE': this.moveState.up = 0; break;
 				case 'KeyQ': this.moveState.down = 0; break;
 
-				case 'ArrowUp': this.moveState.pitchUp = 0; break;
-				case 'ArrowDown': this.moveState.pitchDown = 0; break;
-
-				case 'ArrowLeft': this.moveState.yawLeft = 0; break;
-				case 'ArrowRight': this.moveState.yawRight = 0; break;
+				// case 'ArrowUp': this.moveState.pitchUp = 0; break;
+				// case 'ArrowDown': this.moveState.pitchDown = 0; break;
+				//
+				// case 'ArrowLeft': this.moveState.yawLeft = 0; break;
+				// case 'ArrowRight': this.moveState.yawRight = 0; break;
 			}
 
 			this.updateMovementVector();

@@ -159,7 +159,6 @@ export default {
 						'WASD: movement': { href: '#' },
 						'EQ: up/down': { href: '#' },
 						'Shift: speed': { href: '#' },
-						'C: speed+': { href: '#' },
 						'Right: orbit': { href: '#' },
 						'Left: pan': { href: '#' },
 						'Scroll: zoom': { href: '#' },
