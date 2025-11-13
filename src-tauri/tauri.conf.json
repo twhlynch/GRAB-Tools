@@ -1,7 +1,6 @@
 {
 	"$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
 	"productName": "grab-tools",
-	"version": "0.1.1",
 	"identifier": "tools.grabvr",
 	"build": {
 		"frontendDist": "../dist",
