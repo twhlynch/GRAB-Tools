@@ -557,6 +557,14 @@ export default {
 						},
 					};
 				}
+				if (!intersect) {
+					this.contextmenu = {
+						'Start View': { func: this.teleport_start },
+						'Finish View': { func: this.teleport_finish },
+						'Full View': { func: this.teleport_full },
+						'Origin View': { func: this.teleport_origin },
+					};
+				}
 				if (this.contextmenu) e.preventDefault();
 			}
 		},
@@ -567,6 +575,71 @@ export default {
 		},
 		close_context_menu() {
 			this.contextmenu = undefined;
+		},
+		teleport_start() {
+			if (this?.level?.nodes?.defaultSpawn) {
+				const position = new THREE.Vector3();
+				this.level.nodes.defaultSpawn.getWorldPosition(position);
+				this.camera.position.set(
+					position.x,
+					position.y + 1,
+					position.z + 1,
+				);
+				this.controls.target?.set(position.x, position.y, position.z);
+				this.camera.lookAt(position.x, position.y, position.z);
+			}
+		},
+		teleport_finish() {
+			if (this?.level?.nodes?.levelNodeFinish?.length) {
+				const position = new THREE.Vector3();
+				this.level.nodes.levelNodeFinish[0].getWorldPosition(position);
+				this.camera.position.set(
+					position.x,
+					position.y + 1,
+					position.z + 1,
+				);
+				this.controls.target?.set(position.x, position.y, position.z);
+				this.camera.lookAt(position.x, position.y, position.z);
+			}
+		},
+		teleport_origin() {
+			this.camera.position.set(0, 1, 1);
+			this.controls.target?.set(0, 0, 0);
+			this.camera.lookAt(0, 0, 0);
+		},
+		teleport_full() {
+			const min = new THREE.Vector3(Infinity, Infinity, Infinity);
+			const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+			this.level.nodes.all.forEach((node) => {
+				min.min(node.position);
+				max.max(node.position);
+				if (isNaN(node.position.z)) console.log(node);
+			});
+
+			if (min.x === Infinity) {
+				window.toast('No nodes found', 'warning');
+				return;
+			}
+
+			const center = new THREE.Vector3()
+				.addVectors(max, min)
+				.divideScalar(2);
+			const size = new THREE.Vector3().subVectors(max, min);
+
+			const view_position = center.clone();
+
+			if (size.x > size.z) {
+				view_position.z += size.x;
+				view_position.y = size.x;
+			} else {
+				view_position.x += size.z;
+				view_position.y = size.z;
+			}
+
+			this.camera.position.copy(view_position);
+			this.controls.target.copy(center);
+			this.camera.lookAt(center);
 		},
 	},
 };
