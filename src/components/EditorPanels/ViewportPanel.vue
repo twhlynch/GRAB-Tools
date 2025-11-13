@@ -205,14 +205,21 @@ export default {
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.camera);
 			let individualObjects = this.level.nodes.all.filter(
-				(node) => node.parent.type === 'Scene' && node.visible,
+				(node) => node.parent === this.level.scene && node.visible,
 			);
 			let intersects = raycaster.intersectObjects(
 				individualObjects,
 				true,
 			);
-			if (intersects.length && intersects[0].object !== this.editing) {
-				this.transform_controls.attach(intersects[0].object);
+			let intersect = undefined;
+			if (intersects.length) {
+				intersect = intersects[0].object;
+				while (intersect.parent !== this.level.scene) {
+					intersect = intersect.parent;
+				}
+			}
+			if (intersect && intersect !== this.editing) {
+				this.transform_controls.attach(intersect);
 				this.scene.add(this.transform_controls);
 			} else {
 				if (!this.dragging) {
