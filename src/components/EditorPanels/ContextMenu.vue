@@ -78,6 +78,10 @@ section {
 	z-index: 2000;
 }
 
+a {
+	text-decoration: none;
+}
+
 input[type='file'] {
 	display: none;
 }

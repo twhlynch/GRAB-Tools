@@ -653,6 +653,10 @@ section {
 	z-index: 900;
 }
 
+a {
+	text-decoration: none;
+}
+
 input[type='file'] {
 	display: none;
 }
