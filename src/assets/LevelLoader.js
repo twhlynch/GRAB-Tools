@@ -1413,6 +1413,7 @@ class LevelLoader {
 				}
 
 				if (object !== undefined) {
+					object.userData.id = level.nodes.all.length;
 					if (!object.isGroup) level.nodes.all.push(object);
 					object.userData.node = node;
 					if (object.material?.uniforms)
