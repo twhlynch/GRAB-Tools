@@ -209,7 +209,7 @@ export default {
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.camera);
 			let individualObjects = this.level.nodes.all.filter(
-				(node) => node.parent === this.level.scene && node.visible,
+				(node) => !node.isGroup && node.visible,
 			);
 			let intersects = raycaster.intersectObjects(
 				individualObjects,
@@ -441,11 +441,13 @@ export default {
 					break;
 			}
 		},
-		add_animation_target() {
+		add_animation_target(node = undefined) {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(levelNodes.triggerTargetAnimation());
+			const target = levelNodes.triggerTargetAnimation();
+			target.triggerTargetAnimation.objectID = node?.userData?.id ?? 0;
+			trigger.triggerTargets.push(target);
 			this.$emit('changed');
 		},
 		add_sublevel_target() {
@@ -476,12 +478,20 @@ export default {
 			trigger.triggerSources.push(levelNodes.triggerSourceBasic());
 			this.$emit('changed');
 		},
+		add_trigger_blocks_source() {
+			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
+			const trigger = this.editing.userData.node.levelNodeTrigger;
+			if (!trigger.triggerSources) trigger.triggerSources = [];
+			trigger.triggerSources.push(levelNodes.triggerSourceBlockNames());
+			this.$emit('changed');
+		},
 		open_context_menu(e) {
 			if (e.target === this.renderer.domElement) {
 				this.contextmenu_position.x = e.clientX;
 				this.contextmenu_position.y = e.clientY;
 				this.contextmenu = undefined;
-				if (this.editing) {
+				const intersect = this.cast_for_node(e.clientX, e.clientY);
+				if (intersect && intersect.uuid === this.editing.uuid) {
 					this.contextmenu = {
 						Delete: {
 							func: this.delete_selection,
@@ -496,7 +506,7 @@ export default {
 							func: this.copy_editing_id,
 						},
 					};
-					if (this.editing.userData.node.levelNodeTrigger) {
+					if (this.editing.userData?.node?.levelNodeTrigger) {
 						this.contextmenu['Add Target'] = {
 							Animation: {
 								func: this.add_animation_target,
@@ -512,9 +522,26 @@ export default {
 							},
 						};
 						this.contextmenu['Add Source'] = {
-							func: this.add_trigger_source,
+							Basic: {
+								func: this.add_trigger_source,
+							},
+							Blocks: {
+								func: this.add_trigger_blocks_source,
+							},
 						};
 					}
+				}
+				if (
+					intersect &&
+					this.editing &&
+					this.editing.userData?.node?.levelNodeTrigger
+				) {
+					this.contextmenu = this.contextmenu ?? {};
+					this.contextmenu['Add as Target'] = {
+						func: () => {
+							this.add_animation_target(intersect);
+						},
+					};
 				}
 				if (this.contextmenu) e.preventDefault();
 			}
