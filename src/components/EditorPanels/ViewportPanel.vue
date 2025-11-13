@@ -565,6 +565,9 @@ export default {
 			if (id === undefined) window.toast('failed to get id', 'error');
 			else navigator.clipboard.writeText(id);
 		},
+		close_context_menu() {
+			this.contextmenu = undefined;
+		},
 	},
 };
 </script>
@@ -582,6 +585,7 @@ export default {
 			:ref="'contextmenu'"
 			:menu="contextmenu"
 			:style="`top: ${contextmenu_position.y}px; left: ${contextmenu_position.x}px;`"
+			@click="close_context_menu"
 		/>
 		<div class="modes">
 			<div>
