@@ -170,9 +170,9 @@ export default {
 					node.position.z = this.editing.position.z;
 				}
 				if (node.scale) {
-					node.scale.x = this.editing.scale.x;
-					node.scale.y = this.editing.scale.y;
-					node.scale.z = this.editing.scale.z;
+					node.scale.x = Math.abs(this.editing.scale.x);
+					node.scale.y = Math.abs(this.editing.scale.y);
+					node.scale.z = Math.abs(this.editing.scale.z);
 				}
 				if (node.rotation) {
 					node.rotation.x = this.editing.quaternion.x;
