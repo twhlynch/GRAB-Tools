@@ -539,6 +539,7 @@ class LevelLoader {
 					object.initialRotation = object.quaternion.clone();
 					object.isGroup = true;
 
+					object.userData.id = level.nodes.all.length;
 					level.nodes.all.push(object); // before children
 					loadLevelNodes(node.levelNodeGroup.childNodes, object);
 
@@ -1413,8 +1414,10 @@ class LevelLoader {
 				}
 
 				if (object !== undefined) {
-					object.userData.id = level.nodes.all.length;
-					if (!object.isGroup) level.nodes.all.push(object);
+					if (!object.isGroup) {
+						object.userData.id = level.nodes.all.length;
+						level.nodes.all.push(object);
+					}
 					object.userData.node = node;
 					if (object.material?.uniforms)
 						object.material.uniforms.worldMatrix = {
