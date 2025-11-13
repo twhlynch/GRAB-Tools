@@ -13,6 +13,7 @@ import RotateIcon from '@/icons/RotateIcon.vue';
 import ScaleIcon from '@/icons/ScaleIcon.vue';
 import SpaceIcon from '@/icons/SpaceIcon.vue';
 import group from '@/assets/tools/group.js';
+import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 
 export default {
 	data() {
@@ -31,6 +32,8 @@ export default {
 			show_sky: true,
 			transform_mode: 'translate',
 			transform_space: 'local',
+			contextmenu: undefined,
+			contextmenu_position: { x: 0, y: 0 },
 		};
 	},
 	components: {
@@ -40,6 +43,7 @@ export default {
 		RotateIcon,
 		ScaleIcon,
 		SpaceIcon,
+		ContextMenu,
 	},
 	emits: ['changed', 'modifier'],
 	async mounted() {
@@ -311,6 +315,12 @@ export default {
 			}
 		},
 		mousedown(e) {
+			if (
+				e.target !== this.$refs.contextmenu &&
+				!this.$refs.contextmenu?.$el?.contains(e.target)
+			) {
+				this.contextmenu = undefined;
+			}
 			if (e.target === this.renderer.domElement) {
 				this.controls.isMouseActive = true;
 			}
@@ -418,9 +428,33 @@ export default {
 					this.group_selection();
 					break;
 
+				case 'Escape':
+					this.contextmenu = undefined;
+					break;
+
 				default:
 					break;
 			}
+		},
+		open_context_menu(e) {
+			if (e.target === this.renderer.domElement) {
+				this.contextmenu_position.x = e.clientX;
+				this.contextmenu_position.y = e.clientY;
+				this.contextmenu = undefined;
+				if (this.editing) {
+					this.contextmenu = {
+						'Copy ID': {
+							func: this.copy_editing_id,
+						},
+					};
+				}
+				if (this.contextmenu) e.preventDefault();
+			}
+		},
+		copy_editing_id() {
+			const id = this.editing?.userData?.id;
+			if (id === undefined) window.toast('failed to get id', 'error');
+			else navigator.clipboard.writeText(id);
 		},
 	},
 };
@@ -432,7 +466,14 @@ export default {
 		class="viewport"
 		@mousedown="mousedown"
 		@mouseup="mouseup"
+		@contextmenu="open_context_menu"
 	>
+		<ContextMenu
+			v-if="contextmenu"
+			:ref="'contextmenu'"
+			:menu="contextmenu"
+			:style="`top: ${contextmenu_position.y}px; left: ${contextmenu_position.x}px;`"
+		/>
 		<div class="modes">
 			<div>
 				<label for="modes-translate">
@@ -521,7 +562,7 @@ export default {
 }
 </style>
 <style scoped>
-section,
+.viewport,
 canvas {
 	width: 100%;
 	height: 100%;
