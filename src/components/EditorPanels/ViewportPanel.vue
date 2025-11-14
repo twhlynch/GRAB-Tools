@@ -381,6 +381,7 @@ export default {
 			if (sky) sky.visible = this.show_sky;
 		},
 		clone_selection() {
+			if (!this.editing) return;
 			this.$emit('modifier', (json) => {
 				// TODO: decent deepclone method
 				json.levelNodes.push(
@@ -390,6 +391,7 @@ export default {
 			});
 		},
 		delete_selection() {
+			if (!this.editing) return;
 			this.$emit('modifier', (json) => {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
@@ -401,6 +403,7 @@ export default {
 			});
 		},
 		group_selection() {
+			if (!this.editing) return;
 			this.$emit('modifier', (json) => {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
