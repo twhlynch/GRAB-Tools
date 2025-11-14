@@ -396,8 +396,8 @@ export default {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
 						n !==
-						this.level.nodes.all[this.editing.userData.id].userData
-							.node,
+						this.level.nodes.all[this.editing.userData.id - 1]
+							.userData.node,
 				);
 				return json;
 			});
@@ -408,8 +408,8 @@ export default {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
 						n !==
-						this.level.nodes.all[this.editing.userData.id].userData
-							.node,
+						this.level.nodes.all[this.editing.userData.id - 1]
+							.userData.node,
 				);
 				json.levelNodes.push(
 					group.groupNodes([this.editing.userData.node]),
