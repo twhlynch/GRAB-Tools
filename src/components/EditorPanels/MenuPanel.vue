@@ -10,6 +10,7 @@ import group from '@/assets/tools/group';
 import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
 import { VERSION } from '@/config';
+import signs from '@/assets/tools/signs';
 
 export default {
 	data() {
@@ -387,6 +388,29 @@ export default {
 					const file = files[0];
 
 					const nodes = await obj.obj(file, mode);
+
+					this.$emit('modifier', (json) => {
+						json.levelNodes = json.levelNodes.concat(nodes);
+						return json;
+					});
+				},
+			);
+		},
+		insert_text() {
+			this.$emit(
+				'popup',
+				[
+					{
+						type: 'textarea',
+						text: 'text',
+					},
+					{
+						type: 'option',
+						options: ['simple', 'animated'],
+					},
+				],
+				async (text, mode) => {
+					const nodes = signs.signs(text, mode === 'animated');
 
 					this.$emit('modifier', (json) => {
 						json.levelNodes = json.levelNodes.concat(nodes);
