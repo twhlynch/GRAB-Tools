@@ -354,12 +354,22 @@ export default {
 					width = parseInt(width) || 40;
 					height = parseInt(height.value) || 30;
 
+					const { remove, message } = window.toast(
+						'Video progress: 0%',
+						'message',
+						true,
+					);
 					const nodes = await video.video(
 						file,
 						width,
 						height,
-						(progress) => {}, // TODO:
+						(progress) => {
+							message.value = `Video progress: ${Math.ceil(
+								progress,
+							)}%`;
+						},
 					);
+					remove();
 
 					this.$emit('modifier', (json) => {
 						json.levelNodes = json.levelNodes.concat(nodes);
