@@ -23,9 +23,9 @@ export default {
 		click(e) {
 			if (
 				this.visible &&
-				this.$refs.container.$el &&
-				e.target !== this.$refs.container.$el &&
-				!this.$refs.container.$el.contains(e.target)
+				this.$refs.container &&
+				e.target !== this.$refs.container &&
+				!this.$refs.container.contains(e.target)
 			) {
 				this.visible = false;
 			}
@@ -37,11 +37,13 @@ export default {
 		},
 	},
 	mounted() {
-		document.addEventListener('click', this.click);
+		document.addEventListener('mousedown', this.click);
+		document.addEventListener('touchstart', this.click);
 		document.addEventListener('keydown', this.keydown);
 	},
 	unmounted() {
-		document.removeEventListener('click', this.click);
+		document.removeEventListener('mousedown', this.click);
+		document.removeEventListener('touchstart', this.click);
 		document.removeEventListener('keydown', this.keydown);
 	},
 	watch: {
@@ -115,6 +117,7 @@ button {
 	line-height: 2rem;
 }
 button {
+	cursor: pointer;
 	background-color: var(--blue);
 }
 </style>
