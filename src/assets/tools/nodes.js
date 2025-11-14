@@ -69,7 +69,7 @@ function levelNodeSign() {
 			rotation: quat(),
 			scale: 1,
 			text: 'Text',
-			color: color(),
+			color: color(1, 1, 1),
 			weight: 0,
 			hideModel: false,
 		},

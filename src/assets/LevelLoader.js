@@ -1326,7 +1326,9 @@ class LevelLoader {
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
-					object = new THREE.Mesh(objects[1], newMaterial);
+					object = node.levelNodeSign.hideModel
+						? new THREE.Mesh()
+						: new THREE.Mesh(objects[1], newMaterial);
 					parentNode.add(object);
 					object.position.x = node.levelNodeSign.position?.x ?? 0;
 					object.position.y = node.levelNodeSign.position?.y ?? 0;
@@ -1368,6 +1370,12 @@ class LevelLoader {
 
 						const processedText = processString(signText);
 
+						const color = new THREE.Color(255, 255, 255);
+						if (node.levelNodeSign.color) {
+							color.r = (node.levelNodeSign.color.r ?? 0) * 255;
+							color.g = (node.levelNodeSign.color.g ?? 0) * 255;
+							color.b = (node.levelNodeSign.color.b ?? 0) * 255;
+						}
 						const lines = processedText.split('\n');
 						lines.forEach((line, index) => {
 							const textGeometry = new TextGeometry(line, {
@@ -1379,7 +1387,7 @@ class LevelLoader {
 							});
 
 							const textMaterial = new THREE.MeshBasicMaterial({
-								color: 0xffffff,
+								color: color,
 							});
 							const textMesh = new THREE.Mesh(
 								textGeometry,
@@ -1400,7 +1408,7 @@ class LevelLoader {
 									textWidth / 2,
 									-verticalSpacing +
 										0.05 * (lines.length + 1),
-									-0.025,
+									-(node.levelNodeSign.hideModel ? 0 : 0.021),
 								),
 							); // Adjust these values to place the text on the block
 
