@@ -1,4 +1,5 @@
 <script>
+import { reactive } from 'vue';
 export default {
 	data() {
 		return {
@@ -9,21 +10,27 @@ export default {
 	created() {
 		console.log('Cooking toast...');
 		if (window.toast === undefined) {
-			window.toast = (msg, severity = 'message') => {
-				const message = {
+			window.toast = (msg, severity = 'message', persistent = false) => {
+				const message = reactive({
 					value: msg,
 					id: Date.now() + Math.random(),
 					severity: severity,
-				};
+				});
 
 				this.messages.push(message);
 				console.log(message.value);
 
-				setTimeout(() => {
+				const remove = () => {
 					this.messages = this.messages.filter(
 						(m) => m.id !== message.id,
 					);
-				}, 5000);
+				};
+
+				if (persistent) {
+					return { remove, message };
+				} else {
+					setTimeout(remove, 5000);
+				}
 			};
 		}
 	},
