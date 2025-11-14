@@ -82,7 +82,6 @@ export default {
 						},
 						'Point Cloud': {
 							func: this.insert_model,
-							file: true,
 						},
 						Text: { func: this.insert_text },
 					},
@@ -366,17 +365,35 @@ export default {
 				},
 			);
 		},
-		async insert_model(e) {
-			const files = Array.from(e.target.files);
-			if (!files.length) return;
+		insert_model() {
+			this.$emit(
+				'popup',
+				[
+					{
+						type: 'option',
+						options: ['particles', 'spheres'],
+					},
+					{
+						type: 'file',
+						accept: '.obj',
+					},
+				],
+				async (mode, files) => {
+					if (!files.length) {
+						window.toast('No file chosen', 'error');
+						return;
+					}
 
-			const file = files[0];
-			const level_nodes = await obj.obj(file, 'particles');
+					const file = files[0];
 
-			this.$emit('modifier', (json) => {
-				json.levelNodes = json.levelNodes.concat(level_nodes);
-				return json;
-			});
+					const nodes = await obj.obj(file, mode);
+
+					this.$emit('modifier', (json) => {
+						json.levelNodes = json.levelNodes.concat(nodes);
+						return json;
+					});
+				},
+			);
 		},
 		insert_node_wrapper(func) {
 			this.$emit('modifier', (json) => {
