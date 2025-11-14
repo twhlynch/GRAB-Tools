@@ -171,6 +171,7 @@ export default {
 			}
 			this.editing = e.target.object;
 			this.update_node_shader(this.editing);
+			this.validate_node(this.editing);
 		},
 		reset_node_positions() {
 			this.level.meta.time = 0;
@@ -180,11 +181,58 @@ export default {
 				node.position.copy(node.initialPosition);
 			});
 		},
+		validate_node(object) {
+			const node = object?.userData?.node;
+			const axis = this.transform_controls.axis;
+			if (!node || !axis) return;
+			const mode = this.transform_mode;
+			const override_axis = axis.charAt(0).toLowerCase();
+
+			if (node.levelNodeStart || node.levelNodeFinish) {
+				if (mode === 'rotate') {
+					object.quaternion.x = 0;
+					object.quaternion.z = 0;
+				} else if (mode === 'scale') {
+					object.scale.z = object.scale[override_axis];
+					object.scale.x = object.scale[override_axis];
+					object.scale.y = 1;
+				}
+			}
+			if (node.levelNodeSign) {
+				if (node.levelNodeSign.hideModel) {
+					if (mode === 'scale') {
+						object.scale.x = object.scale[override_axis];
+						object.scale.y = object.scale[override_axis];
+						object.scale.z = object.scale[override_axis];
+					}
+				} else {
+					if (mode === 'scale') {
+						object.scale.x = 1;
+						object.scale.y = 1;
+						object.scale.z = 1;
+					}
+				}
+			}
+			if (node.levelNodeSound) {
+				if (mode === 'scale') {
+					object.scale.x = 1;
+					object.scale.y = 1;
+					object.scale.z = 1;
+				} else if (mode === 'rotate') {
+					object.quaternion.x = 0;
+					object.quaternion.y = 0;
+					object.quaternion.z = 0;
+					object.quaternion.w = 1;
+				}
+			}
+			object.quaternion.normalize();
+		},
 		edit_event(e) {
 			this.controls.enabled = !e.value;
 			if (e.value) return;
 			if (!this.editing) return;
 			this.dragging = true;
+			this.validate_node(this.editing);
 			const entries = Object.entries(this.editing.userData.node);
 			const node = entries.find((e) => e[0].includes('levelNode'))[1];
 			if (node.position) {
