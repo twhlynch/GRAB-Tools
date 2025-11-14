@@ -11,6 +11,7 @@ import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
 import { VERSION } from '@/config';
 import signs from '@/assets/tools/signs';
+import svg from '@/assets/tools/svg';
 
 export default {
 	data() {
@@ -85,6 +86,7 @@ export default {
 							func: this.insert_model,
 						},
 						Text: { func: this.insert_text },
+						SVG: { func: this.insert_svg },
 					},
 				},
 				Settings: {
@@ -411,6 +413,37 @@ export default {
 				],
 				async (text, mode) => {
 					const nodes = signs.signs(text, mode === 'animated');
+
+					this.$emit('modifier', (json) => {
+						json.levelNodes = json.levelNodes.concat(nodes);
+						return json;
+					});
+				},
+			);
+		},
+		insert_svg() {
+			this.$emit(
+				'popup',
+				[
+					{
+						type: 'number',
+						text: 'detail (600)',
+					},
+					{
+						type: 'file',
+						accept: '.svg',
+					},
+				],
+				async (detail, files) => {
+					if (!files.length) {
+						window.toast('No file chosen', 'error');
+						return;
+					}
+
+					const file = files[0];
+					detail = parseInt(detail) || 600;
+
+					const nodes = await svg.svg(file, detail);
 
 					this.$emit('modifier', (json) => {
 						json.levelNodes = json.levelNodes.concat(nodes);
