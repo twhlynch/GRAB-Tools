@@ -1260,9 +1260,9 @@ class LevelLoader {
 					level.complexity += 8;
 				} else if (node.levelNodeStart) {
 					const isDefaultSpawn =
-						(decoded.defaultSpawnPointID == 0 &&
+						((decoded.defaultSpawnPointID ?? 0) == 0 &&
 							level.nodes.levelNodeStart.length == 0) ||
-						decoded.defaultSpawnPointID - 1 ==
+						(decoded.defaultSpawnPointID ?? 0) - 1 ==
 							level.nodes.all.length;
 					if (isDefaultSpawn) {
 						object = new THREE.Mesh(objects[0], objectMaterials[0]);
