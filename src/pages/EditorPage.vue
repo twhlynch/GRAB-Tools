@@ -11,6 +11,7 @@ import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
 import RefreshedIcon from '@/icons/RefreshedIcon.vue';
+import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
 
 export default {
 	components: {
@@ -21,11 +22,16 @@ export default {
 		JsonPanel,
 		TerminalPanel,
 		RefreshedIcon,
+		PopupPanel,
 	},
 	data() {
 		return {
 			change_counter: 0,
 			just_changed: false,
+			popup_props: {
+				inputs: undefined,
+				func: undefined,
+			},
 		};
 	},
 	computed: {
@@ -70,6 +76,10 @@ export default {
 		run_viewport(func) {
 			func(this.$refs.viewport_panel);
 		},
+		set_popup(inputs, func) {
+			this.popup_props.inputs = inputs;
+			this.popup_props.func = func;
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -83,6 +93,7 @@ export default {
 			@modifier="run_modifier"
 			@function="run_function"
 			@viewport="run_viewport"
+			@popup="set_popup"
 		/>
 		<ResizableRowPanel class="main-panel" :ref="'main_panel'">
 			<template #first>
@@ -109,6 +120,7 @@ export default {
 		<div class="changed" v-show="just_changed">
 			<RefreshedIcon />
 		</div>
+		<PopupPanel :inputs="popup_props.inputs" :func="popup_props.func" />
 	</main>
 </template>
 
