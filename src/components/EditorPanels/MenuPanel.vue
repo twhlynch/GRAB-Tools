@@ -612,6 +612,26 @@ export default {
 				return json;
 			});
 		},
+		pixelate_effect() {
+			this.$emit('modifier', (json) => {
+				const group_node = group.groupNodes(json.levelNodes);
+				group_node.levelNodeGroup.position = {
+					x: 900000,
+					y: 900000,
+					z: 900000,
+				};
+				const animation = levelNodes.animation();
+				animation.frames.push(levelNodes.frame());
+				animation.frames[0].position = {
+					x: -900000,
+					y: -900000,
+					z: -900000,
+				};
+				group_node.animations.push(animation);
+				json.levelNodes = [group_node];
+				return json;
+			});
+		},
 		group_level() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes = [group.groupNodes(json.levelNodes)];
