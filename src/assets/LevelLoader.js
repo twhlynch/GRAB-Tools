@@ -234,6 +234,7 @@ class LevelLoader {
 				1.0,
 				SHADERS.signVS,
 				SHADERS.signFS,
+				[0.3, 0.3, 0.3, 16.0],
 				0.0,
 				0.0,
 				this.options.fog ? 1.0 : 0.0,
