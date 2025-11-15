@@ -337,13 +337,11 @@ export default {
 			console.log(this.level);
 		},
 		resize(width, height) {
-			requestAnimationFrame(() => {
-				this.camera.aspect = width / height;
-				this.camera.updateProjectionMatrix();
+			this.camera.aspect = width / height;
+			this.camera.updateProjectionMatrix();
 
-				this.renderer.setSize(width, height);
-				this.renderer.render(this.scene, this.camera);
-			});
+			this.renderer.setSize(width, height);
+			this.renderer.render(this.scene, this.camera);
 		},
 		animation() {
 			const delta = this.clock.getDelta();
