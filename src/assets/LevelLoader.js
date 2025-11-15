@@ -363,6 +363,7 @@ class LevelLoader {
 		await this.rootPromise;
 
 		let root = this.root;
+		level.root = this.root;
 
 		root.COD.Level.LevelNode.oneofs.content.fieldsArray.forEach((field) => {
 			level.nodes[field.name] = [];
