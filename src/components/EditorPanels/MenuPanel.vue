@@ -650,7 +650,9 @@ export default {
 		},
 		duplicate_level() {
 			this.$emit('modifier', (json) => {
-				json.levelNodes = json.levelNodes.concat(json.levelNodes);
+				json.levelNodes = json.levelNodes.concat(
+					JSON.parse(JSON.stringify(json.levelNodes)),
+				);
 				return json;
 			});
 		},
