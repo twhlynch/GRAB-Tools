@@ -803,75 +803,192 @@ export default {
 				return json;
 			});
 		},
+		set_material(material) {
+			const entries = Object.entries(this.editing.userData.node);
+			const node = entries.find((e) => e[0].includes('levelNode'))[1];
+			node.material = material;
+			this.modifier((json) => json);
+		},
+		set_shape(shape) {
+			const entries = Object.entries(this.editing.userData.node);
+			const node = entries.find((e) => e[0].includes('levelNode'))[1];
+			node.shape = shape;
+			this.modifier((json) => json);
+		},
+		format_type(type) {
+			return type
+				.split('_')
+				.map(
+					(word) =>
+						word.charAt(0).toUpperCase() +
+						word.toLowerCase().slice(1),
+				)
+				.join(' ');
+		},
 		open_context_menu(e) {
 			if (e.target === this.renderer.domElement) {
 				this.contextmenu_position.x = e.clientX;
 				this.contextmenu_position.y = e.clientY;
 				this.contextmenu = undefined;
-				const intersect = this.cast_for_node(e.clientX, e.clientY);
-				if (
-					intersect &&
-					this.editing &&
-					intersect.uuid === this.editing.uuid
-				) {
-					this.contextmenu = {
+
+				const clicked_object = this.cast_for_node(e.clientX, e.clientY);
+				const selected_object = this.editing;
+				if (!clicked_object || !selected_object) return;
+				const clicked_node = clicked_object.userData?.node;
+				const selected_node = selected_object.userData?.node;
+				if (!clicked_node || !selected_node) return;
+
+				const clicked_selected =
+					clicked_object.uuid === selected_object.uuid;
+				const selected_has_shape =
+					selected_node.levelNodeStatic ||
+					selected_node.levelNodeCrumbling ||
+					selected_node.levelNodeTrigger;
+				const selected_is_trigger = selected_node.levelNodeTrigger;
+				const selected_can_animate =
+					!selected_node.levelNodeStart &&
+					!selected_node.levelNodeFinish;
+				const selected_can_group =
+					!selected_node.levelNodeStart &&
+					!selected_node.levelNodeFinish;
+				const selected_can_clone = !selected_node.levelNodeFinish;
+				const selected_has_material = selected_node.levelNodeStatic;
+				const clicked_can_target =
+					!clicked_node.levelNodeStart &&
+					!clicked_node.levelNodeFinish;
+
+				this.contextmenu = {
+					...(clicked_selected && {
 						'Edit JSON': {
 							func: this.edit_object_json,
 						},
 						Delete: {
 							func: this.delete_selection,
 						},
-						Clone: {
-							func: this.clone_selection,
-						},
-						Group: {
-							func: this.group_selection,
-						},
-						'Add Animation': {
-							func: this.add_animation,
-						},
+						...(selected_can_clone && {
+							Clone: {
+								func: this.clone_selection,
+							},
+						}),
+						...(selected_can_group && {
+							Group: {
+								func: this.group_selection,
+							},
+						}),
+						...(selected_has_shape && {
+							Shape: {
+								...Object.fromEntries(
+									Array.from(
+										{
+											length:
+												Object.entries(
+													this.level.root.COD.Level
+														.LevelNodeShape,
+												).length -
+												this.level.root.COD.Level
+													.LevelNodeShape
+													.__END_OF_SPECIAL_PARTS__ -
+												1,
+										},
+										(_, i) => {
+											return [
+												this.format_type(
+													this.level.root.COD.Level
+														.LevelNodeShape[
+														1000 + i
+													],
+												),
+												{
+													func: () => {
+														this.set_shape(
+															1000 + i,
+														);
+													},
+												},
+											];
+										},
+									),
+								),
+							},
+						}),
+						...(selected_has_material && {
+							Material: {
+								...Object.fromEntries(
+									Array.from(
+										{
+											length: Object.entries(
+												this.level.root.COD.Level
+													.LevelNodeMaterial,
+											).length,
+										},
+										(_, i) => {
+											return [
+												this.format_type(
+													this.level.root.COD.Level
+														.LevelNodeMaterial[i],
+												),
+												{
+													func: () => {
+														this.set_material(i);
+													},
+												},
+											];
+										},
+									),
+								),
+							},
+						}),
+						...(selected_can_animate && {
+							'Add Animation': {
+								func: this.add_animation,
+							},
+						}),
+						...(selected_is_trigger && {
+							'Add Target': {
+								Animation: {
+									func: this.add_animation_target,
+								},
+								SubLevel: {
+									func: this.add_sublevel_target,
+								},
+								Ambience: {
+									func: this.add_ambience_target,
+								},
+								Sound: {
+									func: this.add_sound_target,
+								},
+							},
+							'Add Source': {
+								Basic: {
+									func: this.add_trigger_source,
+								},
+								Blocks: {
+									func: this.add_trigger_blocks_source,
+								},
+							},
+						}),
+					}),
+					...(selected_is_trigger &&
+						clicked_can_target && {
+							'Add as Target': {
+								func: () => {
+									this.add_animation_target(clicked_object);
+								},
+							},
+						}),
+					...(clicked_selected && {
 						'Copy ID': {
 							func: this.copy_editing_id,
 						},
-					};
-					if (this.editing.userData?.node?.levelNodeTrigger) {
-						this.contextmenu['Add Target'] = {
-							Animation: {
-								func: this.add_animation_target,
-							},
-							SubLevel: {
-								func: this.add_sublevel_target,
-							},
-							Ambience: {
-								func: this.add_ambience_target,
-							},
-							Sound: {
-								func: this.add_sound_target,
-							},
-						};
-						this.contextmenu['Add Source'] = {
-							Basic: {
-								func: this.add_trigger_source,
-							},
-							Blocks: {
-								func: this.add_trigger_blocks_source,
-							},
-						};
-					}
-				}
+					}),
+				};
+
 				if (
-					intersect &&
-					this.editing &&
-					this.editing.userData?.node?.levelNodeTrigger
+					this.contextmenu &&
+					Object.keys(this.contextmenu).length === 0
 				) {
-					this.contextmenu = this.contextmenu ?? {};
-					this.contextmenu['Add as Target'] = {
-						func: () => {
-							this.add_animation_target(intersect);
-						},
-					};
+					e.preventDefault();
 				}
-				if (this.contextmenu) e.preventDefault();
 			}
 		},
 		copy_editing_id() {
