@@ -699,6 +699,11 @@ export default {
 				scope.toggle_sky();
 			});
 		},
+		toggle_trigger_connections() {
+			this.$emit('viewport', (scope) => {
+				scope.toggle_trigger_connections();
+			});
+		},
 		save_config() {
 			this.$emit('viewport', (scope) => {
 				scope.save_config();

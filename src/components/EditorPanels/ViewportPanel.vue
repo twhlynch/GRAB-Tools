@@ -29,7 +29,7 @@ export default {
 			show_animations: false, // TODO:
 			show_triggers: true,
 			show_sound: true,
-			show_trigger_connections: false, // TODO:
+			show_trigger_connections: false,
 			show_fog: true,
 			show_sky: true,
 			transform_mode: 'translate',
@@ -175,6 +175,7 @@ export default {
 			this.editing = e.target.object;
 			this.update_node_shader(this.editing);
 			this.validate_node(this.editing);
+			this.update_trigger_path_positions();
 		},
 		reset_node_positions() {
 			this.level.meta.time = 0;
@@ -263,6 +264,7 @@ export default {
 			this.editing.initialPosition.copy(this.editing.position);
 			this.editing.initialRotation.copy(this.editing.quaternion);
 			this.update_node_shader(this.editing);
+			this.update_trigger_path_positions();
 			this.$emit('changed');
 		},
 		cast_for_node(x, y) {
@@ -330,6 +332,7 @@ export default {
 				fog: this.show_fog,
 			});
 			this.level = await window._levelLoader.load(json, true);
+			this.add_trigger_connections();
 			this.scene.add(this.level.scene);
 			console.log(this.level);
 		},
@@ -437,6 +440,87 @@ export default {
 			const sky = this.level.scene.children.find((obj) => obj.isSky);
 			if (sky) sky.visible = this.show_sky;
 		},
+		toggle_trigger_connections() {
+			this.show_trigger_connections = !this.show_trigger_connections;
+			this.update_connection_visibility();
+		},
+		update_connection_visibility() {
+			this.level.nodes.levelNodeTrigger.forEach((trigger) => {
+				trigger.userData.trigger_paths.forEach((path) => {
+					path.visible = this.show_trigger_connections;
+				});
+			});
+		},
+		add_trigger_connections() {
+			if (this.level.nodes.levelNodeTrigger?.length) {
+				this.level.nodes.levelNodeTrigger.forEach((object) => {
+					if (!object.userData.trigger_paths)
+						object.userData.trigger_paths = [];
+					const node = object.userData.node.levelNodeTrigger;
+					const targets = node.triggerTargets;
+					if (!targets) return;
+
+					const ids = [];
+					targets.forEach((target) => {
+						const entries = Object.entries(target);
+						const entry = entries.find((e) =>
+							e[0].includes('triggerTarget'),
+						);
+						if (!entry) return;
+						const connection = entry[1];
+						const objectID = connection.objectID;
+						if (objectID) ids.push(objectID);
+					});
+					ids.forEach((id) => {
+						const target = this.level.nodes.all[id - 1];
+						if (!target) return;
+						this.add_trigger_path(object, target);
+					});
+				});
+			}
+		},
+		update_trigger_path_positions() {
+			if (this.level.nodes.levelNodeTrigger?.length) {
+				this.level.nodes.levelNodeTrigger.forEach((object) => {
+					if (!object.userData.trigger_paths) return;
+					object.userData.trigger_paths.forEach((line) => {
+						const trigger_position = new THREE.Vector3();
+						line.userData.trigger.getWorldPosition(
+							trigger_position,
+						);
+						const position = new THREE.Vector3();
+						line.userData.object.getWorldPosition(position);
+
+						const points = [trigger_position, position];
+						line.geometry =
+							new THREE.BufferGeometry().setFromPoints(points);
+					});
+				});
+			}
+		},
+		add_trigger_path(trigger, object) {
+			const path_material = new THREE.LineBasicMaterial({
+				color: 0xff8800,
+			});
+
+			const trigger_position = new THREE.Vector3();
+			trigger.getWorldPosition(trigger_position);
+
+			const position = new THREE.Vector3();
+			object.getWorldPosition(position);
+			const points = [trigger_position, position];
+
+			const line_geometry = new THREE.BufferGeometry().setFromPoints(
+				points,
+			);
+			const line = new THREE.Line(line_geometry, path_material);
+			line.visible = this.show_trigger_connections;
+			line.userData.trigger = trigger;
+			line.userData.object = object;
+			this.level.scene.add(line);
+
+			trigger.userData.trigger_paths.push(line);
+		},
 		clone_selection() {
 			if (!this.editing) return;
 			this.$emit('modifier', (json) => {
@@ -523,9 +607,14 @@ export default {
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			const target = levelNodes.triggerTargetAnimation();
-			target.triggerTargetAnimation.objectID = node?.userData?.id ?? 0;
+			const id = node?.userData?.id ?? 0;
+			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
 			this.$emit('changed');
+			const target_object = this.level.nodes.all[id - 1];
+			if (!target_object) return;
+			this.add_trigger_path(this.editing, target_object);
+			this.update_connection_visibility();
 		},
 		add_sublevel_target() {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
@@ -547,6 +636,7 @@ export default {
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			trigger.triggerTargets.push(levelNodes.triggerTargetSound());
 			this.$emit('changed');
+			this.update_connection_visibility();
 		},
 		add_trigger_source() {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
