@@ -50,7 +50,7 @@ export default {
 		ContextMenu,
 		JsonPanel,
 	},
-	emits: ['changed', 'modifier'],
+	emits: ['changed', 'modifier', 'scope'],
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
 
@@ -338,6 +338,9 @@ export default {
 			this.add_trigger_connections();
 			this.add_animation_paths();
 			this.scene.add(this.level.scene);
+			this.$emit('scope', (scope) => {
+				scope.$refs.statistics.set_level(this.level);
+			});
 			console.log(this.level);
 		},
 		changed() {

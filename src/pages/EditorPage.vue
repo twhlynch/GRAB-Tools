@@ -12,6 +12,7 @@ import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
 import RefreshedIcon from '@/icons/RefreshedIcon.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
+import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
 
 export default {
 	components: {
@@ -23,6 +24,7 @@ export default {
 		TerminalPanel,
 		RefreshedIcon,
 		PopupPanel,
+		StatisticsPanel,
 	},
 	data() {
 		return {
@@ -80,6 +82,9 @@ export default {
 			this.popup_props.inputs = inputs;
 			this.popup_props.func = func;
 		},
+		scope(func) {
+			func(this);
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -101,6 +106,7 @@ export default {
 					:ref="'viewport_panel'"
 					@changed="viewport_changed"
 					@modifier="run_modifier"
+					@scope="scope"
 				/>
 			</template>
 			<template #second>
@@ -117,6 +123,9 @@ export default {
 				</ResizableColPanel>
 			</template>
 		</ResizableRowPanel>
+		<footer>
+			<StatisticsPanel ref="statistics" />
+		</footer>
 		<div class="changed" v-show="just_changed">
 			<RefreshedIcon />
 		</div>
@@ -127,6 +136,7 @@ export default {
 <style>
 html:has(#editor) {
 	background-color: #1e1e1e;
+	overscroll-behavior: none;
 }
 #editor * {
 	/* outline: 0.1px solid #0f05; */
@@ -139,8 +149,12 @@ html:has(#editor) {
 	width: 100vw;
 	height: 100vh;
 }
+footer {
+	height: 1.2rem;
+	font-size: 0.8rem;
+}
 .main-panel {
-	height: calc(100% - 3rem);
+	height: calc(100% - 3rem - 1rem);
 }
 .side-panel {
 	height: 100%;
