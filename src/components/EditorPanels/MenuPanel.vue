@@ -704,6 +704,11 @@ export default {
 				scope.toggle_trigger_connections();
 			});
 		},
+		toggle_animations() {
+			this.$emit('viewport', (scope) => {
+				scope.toggle_animations();
+			});
+		},
 		save_config() {
 			this.$emit('viewport', (scope) => {
 				scope.save_config();

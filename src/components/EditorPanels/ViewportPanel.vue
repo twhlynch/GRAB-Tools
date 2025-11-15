@@ -176,6 +176,7 @@ export default {
 			if (this.editing) {
 				this.update_node_shader(this.editing);
 				this.validate_node(this.editing);
+				this.update_animation_path_position(this.editing);
 				this.update_trigger_path_positions([this.editing]);
 			}
 		},
@@ -335,6 +336,7 @@ export default {
 			});
 			this.level = await window._levelLoader.load(json, true);
 			this.add_trigger_connections();
+			this.add_animation_paths();
 			this.scene.add(this.level.scene);
 			console.log(this.level);
 		},
@@ -446,6 +448,17 @@ export default {
 			this.update_connection_visibility();
 			this.update_trigger_path_positions();
 		},
+		toggle_animations() {
+			this.show_animations = !this.show_animations;
+			this.update_animation_visibility();
+		},
+		update_animation_visibility() {
+			this.level.nodes.animated.forEach((object) => {
+				object.userData.animation_paths.forEach((path) => {
+					path.visible = this.show_animations;
+				});
+			});
+		},
 		update_connection_visibility() {
 			this.level.nodes.levelNodeTrigger.forEach((trigger) => {
 				trigger.userData.trigger_paths.forEach((path) => {
@@ -456,8 +469,6 @@ export default {
 		add_trigger_connections() {
 			if (this.level.nodes.levelNodeTrigger?.length) {
 				this.level.nodes.levelNodeTrigger.forEach((object) => {
-					if (!object.userData.trigger_paths)
-						object.userData.trigger_paths = [];
 					const node = object.userData.node.levelNodeTrigger;
 					const targets = node.triggerTargets;
 					if (!targets) return;
@@ -481,6 +492,57 @@ export default {
 				});
 			}
 		},
+		add_animation_paths() {
+			if (this.level.nodes?.animated?.length) {
+				this.level.nodes.animated.forEach((object) => {
+					this.add_animation_path(object);
+				});
+			}
+		},
+		add_animation_path(object) {
+			const path_material = new THREE.LineBasicMaterial({
+				color: 0x0000ff,
+			});
+			const points_material = new THREE.PointsMaterial({
+				color: 0x0000ff,
+				size: 3,
+				sizeAttenuation: false,
+			});
+
+			const position = new THREE.Vector3();
+			object.getWorldPosition(position);
+
+			const points = object.userData.node.animations[0].frames.map(
+				(frame) =>
+					new THREE.Vector3(
+						frame.position?.x ?? 0,
+						frame.position?.y ?? 0,
+						frame.position?.z ?? 0,
+					),
+			);
+
+			const line_geometry = new THREE.BufferGeometry().setFromPoints(
+				points,
+			);
+			const path_line = new THREE.Line(line_geometry, path_material);
+			const points_line = new THREE.Points(
+				line_geometry,
+				points_material,
+			);
+			const path_group = new THREE.Group();
+			path_group.add(path_line);
+			path_group.add(points_line);
+
+			path_group.visible = this.show_animations;
+			(object.userData.animation_paths ??= []).push(path_group);
+			path_group.userData.object = object;
+
+			(object.userData.relevant_animation_paths ??= []).push(path_group);
+
+			object.parent.add(path_group);
+
+			this.update_animation_path_position(object);
+		},
 		object_contains(object, child) {
 			let current = child.parent;
 			while (current) {
@@ -488,6 +550,12 @@ export default {
 				current = current.parent;
 			}
 			return false;
+		},
+		update_animation_path_position(object) {
+			object?.userData?.relevant_animation_paths?.forEach((path) => {
+				path.position.copy(path.userData.object.position);
+				path.quaternion.copy(path.userData.object.quaternion);
+			});
 		},
 		update_trigger_path_positions(related_objects = undefined) {
 			if (!this.show_trigger_connections) return;
@@ -539,7 +607,7 @@ export default {
 			line.visible = this.show_trigger_connections;
 			line.userData.trigger = trigger;
 			line.userData.object = object;
-			trigger.userData.trigger_paths.push(line);
+			(trigger.userData.trigger_paths ??= []).push(line);
 			if (!trigger.userData.relevant_connections) {
 				trigger.userData.relevant_connections = [];
 			}
