@@ -762,6 +762,12 @@ export default {
 			trigger.triggerSources.push(levelNodes.triggerSourceBlockNames());
 			this.$emit('changed');
 		},
+		add_animation() {
+			if (!this.editing?.userData?.node) return;
+			const node = this.editing.userData.node;
+			(node.animations ??= []).push(levelNodes.animation());
+			this.$emit('changed');
+		},
 		edit_object_json(object = undefined) {
 			if (!object) object = this.editing;
 			if (!object) return;
@@ -798,6 +804,9 @@ export default {
 					intersect.uuid === this.editing.uuid
 				) {
 					this.contextmenu = {
+						'Edit JSON': {
+							func: this.edit_object_json,
+						},
 						Delete: {
 							func: this.delete_selection,
 						},
@@ -807,11 +816,11 @@ export default {
 						Group: {
 							func: this.group_selection,
 						},
+						'Add Animation': {
+							func: this.add_animation,
+						},
 						'Copy ID': {
 							func: this.copy_editing_id,
-						},
-						'Edit JSON': {
-							func: this.edit_object_json,
 						},
 					};
 					if (this.editing.userData?.node?.levelNodeTrigger) {
