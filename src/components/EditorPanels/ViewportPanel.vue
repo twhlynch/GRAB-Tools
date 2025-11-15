@@ -349,6 +349,7 @@ export default {
 
 			if (this.is_animating) {
 				this.level.update(delta);
+				this.update_trigger_path_positions(this.level.nodes.animated);
 			}
 			this.controls.update(delta);
 			this.renderer.render(this.scene, this.camera);
@@ -477,17 +478,40 @@ export default {
 				});
 			}
 		},
-		update_trigger_path_positions() {
+		object_contains(object, child) {
+			let current = child.parent;
+			while (current) {
+				if (current === object) return true;
+				current = current.parent;
+			}
+			return false;
+		},
+		update_trigger_path_positions(related_objects = undefined) {
 			if (this.level.nodes.levelNodeTrigger?.length) {
 				this.level.nodes.levelNodeTrigger.forEach((object) => {
 					if (!object.userData.trigger_paths) return;
 					object.userData.trigger_paths.forEach((line) => {
+						const path_target = line.userData.object;
+						const path_trigger = line.userData.trigger;
+
+						if (
+							related_objects !== undefined &&
+							!related_objects.includes(path_target) &&
+							!related_objects.includes(path_trigger) &&
+							!related_objects.some((obj) =>
+								this.object_contains(obj, path_target),
+							) &&
+							!related_objects.some((obj) =>
+								this.object_contains(obj, path_trigger),
+							)
+						) {
+							return;
+						}
+
 						const trigger_position = new THREE.Vector3();
-						line.userData.trigger.getWorldPosition(
-							trigger_position,
-						);
+						path_trigger.getWorldPosition(trigger_position);
 						const position = new THREE.Vector3();
-						line.userData.object.getWorldPosition(position);
+						path_target.getWorldPosition(position);
 
 						const points = [trigger_position, position];
 						line.geometry =
