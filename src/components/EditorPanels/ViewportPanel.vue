@@ -26,7 +26,7 @@ export default {
 			dragging: false,
 			huge_far: false,
 			show_groups: false, // TODO:
-			show_animations: false, // TODO:
+			show_animations: false,
 			show_triggers: true,
 			show_sound: true,
 			show_trigger_connections: false,
