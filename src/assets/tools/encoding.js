@@ -1,4 +1,5 @@
 import protobuf from 'protobufjs';
+import { FORMAT_VERSION } from '@/config';
 
 /**
  * @returns {Promise<protobuf.Root>} - The level message root
@@ -106,7 +107,7 @@ function createLevel(
 		creators = creators.join(', ');
 	}
 	return {
-		formatVersion: 17,
+		formatVersion: FORMAT_VERSION,
 		title: title,
 		creators: creators,
 		description: description,
