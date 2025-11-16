@@ -826,6 +826,10 @@ export default {
 						</li>
 					</ul>
 				</li>
+				<div class="credits">
+					<span>GRAB Tools</span
+					><span>by <a href="https://twhlynch.me">twhlynch</a></span>
+				</div>
 			</ul>
 		</nav>
 	</section>
@@ -836,6 +840,17 @@ section {
 	width: 100%;
 	height: 3rem;
 	z-index: 900;
+}
+
+.credits {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	font-size: 0.8rem;
+
+	a {
+		color: #5b5f84;
+	}
 }
 
 a {
