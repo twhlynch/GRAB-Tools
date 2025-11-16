@@ -792,7 +792,7 @@ export default {
 									<a
 										class="menu-btn"
 										v-if="sub_data.href"
-										:href="data.href"
+										:href="sub_data.href"
 										>{{ sub_button }}</a
 									>
 									<button
