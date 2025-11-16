@@ -4,6 +4,7 @@ import { json } from '@codemirror/lang-json';
 import { foldGutter } from '@codemirror/language';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
+import { grabCompletion } from '@/assets/grabCompletion';
 
 export default {
 	props: {
@@ -21,7 +22,7 @@ export default {
 			this.$refs.json_container,
 			JSON.stringify(this.json, null, 4),
 			json(),
-			[foldGutter(), highlightSelectionMatches()],
+			[foldGutter(), highlightSelectionMatches(), ...grabCompletion()],
 			[...searchKeymap],
 			(update) => {
 				if (update.docChanged && !this.ignore_change) {

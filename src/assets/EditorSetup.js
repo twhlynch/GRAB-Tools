@@ -65,6 +65,15 @@ const themeOptions = {
 	'& .cm-searchMatch-selected': {
 		backgroundColor: colors.hint,
 	},
+
+	'& .cm-tooltip': {
+		backgroundColor: colors.inactiveBg,
+		color: colors.fg,
+	},
+
+	'& .cm-tooltip-autocomplete ul li[aria-selected]': {
+		background: colors.visual,
+	},
 };
 
 const themeStyle = [
