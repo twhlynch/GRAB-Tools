@@ -10,7 +10,6 @@ import ResizableRowPanel from '@/components/EditorPanels/ResizableRowPanel.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
-import RefreshedIcon from '@/icons/RefreshedIcon.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
 import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
 
@@ -22,14 +21,11 @@ export default {
 		ResizableColPanel,
 		JsonPanel,
 		TerminalPanel,
-		RefreshedIcon,
 		PopupPanel,
 		StatisticsPanel,
 	},
 	data() {
 		return {
-			change_counter: 0,
-			just_changed: false,
 			popup_props: {
 				inputs: undefined,
 				func: undefined,
@@ -52,16 +48,6 @@ export default {
 				this.$refs.json_panel.set_json(this.json);
 			if (!skip.includes('viewport_panel'))
 				this.$refs.viewport_panel.set_json(this.json);
-			// window.toast('changed');
-			this.changed();
-		},
-		changed() {
-			this.change_counter++;
-			const count = this.change_counter;
-			this.just_changed = true;
-			setTimeout(() => {
-				if (this.change_counter === count) this.just_changed = false;
-			}, 500);
 		},
 		json_changed(json) {
 			this.set_json(json, ['json_panel']);
@@ -126,9 +112,6 @@ export default {
 		<footer>
 			<StatisticsPanel ref="statistics" />
 		</footer>
-		<div class="changed" v-show="just_changed">
-			<RefreshedIcon />
-		</div>
 		<PopupPanel :inputs="popup_props.inputs" :func="popup_props.func" />
 	</main>
 </template>
@@ -158,13 +141,6 @@ footer {
 }
 .side-panel {
 	height: 100%;
-}
-.changed {
-	position: absolute;
-	top: 0.8rem;
-	right: 0.8rem;
-	animation: spin 0.5s linear infinite;
-	z-index: 1000;
 }
 
 @keyframes spin {
