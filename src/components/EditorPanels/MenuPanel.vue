@@ -28,6 +28,9 @@ export default {
 							func: this.open_json_file,
 							file: true,
 						},
+						Default: {
+							func: this.load_default_level,
+						},
 						Template: { func: this.load_template },
 						'Cheat Sheet': { func: this.open_cheat_sheet },
 					},
@@ -35,6 +38,9 @@ export default {
 						Level: { func: this.save_level },
 						JSON: { func: this.save_json },
 						glTF: { func: this.save_gltf },
+						'Set Default': {
+							func: this.set_default_level,
+						},
 					},
 				},
 				Insert: {
@@ -221,6 +227,20 @@ export default {
 		save_json() {
 			this.$emit('function', (json) => {
 				encoding.downloadJSON(json);
+			});
+		},
+		set_default_level() {
+			this.$emit('function', (json) => {
+				const configStore = useConfigStore();
+				configStore.default_level = json;
+			});
+		},
+		load_default_level() {
+			this.$emit('modifier', (json) => {
+				const configStore = useConfigStore();
+				return configStore.default_level
+					? JSON.parse(JSON.stringify(configStore.default_level))
+					: encoding.createLevel();
 			});
 		},
 		save_gltf() {

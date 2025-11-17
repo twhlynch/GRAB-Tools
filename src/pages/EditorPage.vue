@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'pinia';
 import { useUserStore } from '@/stores/user';
+import { useConfigStore } from '@/stores/config';
 
 import encoding from '@/assets/tools/encoding';
 
@@ -34,9 +35,12 @@ export default {
 	},
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name']),
+		...mapState(useConfigStore, ['default_level']),
 	},
 	mounted() {
-		this.json = encoding.createLevel();
+		this.json = this.default_level
+			? JSON.parse(JSON.stringify(this.default_level))
+			: encoding.createLevel();
 		this.set_json(this.json);
 		this.$refs.side_panel.size((window.innerHeight / 4) * 3);
 		this.$refs.main_panel.size((window.innerWidth / 3) * 2);
