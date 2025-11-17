@@ -232,7 +232,7 @@ export default {
 		set_default_level() {
 			this.$emit('function', (json) => {
 				const configStore = useConfigStore();
-				configStore.default_level = json;
+				configStore.default_level = JSON.parse(JSON.stringify(json));
 			});
 		},
 		load_default_level() {
