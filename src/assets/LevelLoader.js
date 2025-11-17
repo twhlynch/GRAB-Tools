@@ -1330,6 +1330,16 @@ class LevelLoader {
 					object.position.y = node.levelNodeSign.position?.y ?? 0;
 					object.position.z = node.levelNodeSign.position?.z ?? 0;
 
+					object.scale.x = node.levelNodeSign.hideModel
+						? node.levelNodeSign.scale ?? 0
+						: 1;
+					object.scale.y = node.levelNodeSign.hideModel
+						? node.levelNodeSign.scale ?? 0
+						: 1;
+					object.scale.z = node.levelNodeSign.hideModel
+						? node.levelNodeSign.scale ?? 0
+						: 1;
+
 					object.quaternion.x = node.levelNodeSign.rotation?.x ?? 0;
 					object.quaternion.y = node.levelNodeSign.rotation?.y ?? 0;
 					object.quaternion.z = node.levelNodeSign.rotation?.z ?? 0;
