@@ -343,6 +343,7 @@ export default {
 				fog: this.show_fog,
 			});
 			this.level = await window._levelLoader.load(json, true);
+			this.add_hitboxes();
 			this.add_trigger_connections();
 			this.add_animation_paths();
 			this.scene.add(this.level.scene);
@@ -351,6 +352,20 @@ export default {
 			});
 			this.$refs.animation_panel.set_level(this.level);
 			console.log(this.level);
+		},
+		add_hitboxes() {
+			const geometry = new THREE.BoxGeometry();
+			const material = new THREE.MeshBasicMaterial({
+				color: 0x000000,
+				transparent: true,
+				opacity: 0.1,
+			});
+			this.level.nodes.all
+				.filter((o) => !o.isGroup && !o.isMesh)
+				.forEach((object) => {
+					const hitbox = new THREE.Mesh(geometry, material);
+					object.add(hitbox);
+				});
 		},
 		changed() {
 			this.level.level.complexity = this.level.complexity;
