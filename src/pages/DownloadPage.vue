@@ -69,15 +69,19 @@ export default {
 		<section>
 			<h2>Downloading</h2>
 			<p>Downloading the level...</p>
-			<br />
-			<h2>DON'T STEAL LEVELS!</h2>
-			<p>
-				Uploading other player's levels can result in the map being
-				removed and you receiving a warning or a ban! Don't take other's
-				levels without permission.
-			</p>
 		</section>
 	</main>
 </template>
 
-<style scoped></style>
+<style scoped>
+main {
+	justify-items: center;
+}
+section {
+	max-width: fit-content;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+</style>
