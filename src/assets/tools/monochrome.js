@@ -1,4 +1,4 @@
-import levelNodes from '@/assets/tools/nodes';
+import encoding from '@/assets/tools/encoding';
 
 /**
  * @param {Array<Object>} nodes - A list of level nodes
@@ -6,7 +6,7 @@ import levelNodes from '@/assets/tools/nodes';
  */
 function monochrome(nodes) {
 	nodes.forEach((n) => {
-		levelNodes.traverse_node(n, (node) => {
+		encoding.traverse_node(n, (node) => {
 			let static_node = node.levelNodeStatic;
 			if (static_node?.material !== 8) return;
 			if (static_node.color1) {

@@ -14,7 +14,6 @@ import ScaleIcon from '@/icons/ScaleIcon.vue';
 import SpaceIcon from '@/icons/SpaceIcon.vue';
 import group from '@/assets/tools/group.js';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
-import levelNodes from '@/assets/tools/nodes.js';
 import JsonPanel from './JsonPanel.vue';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
@@ -698,9 +697,8 @@ export default {
 		clone_selection() {
 			if (!this.editing) return;
 			this.modifier((json) => {
-				// TODO: decent deepclone method
 				json.levelNodes.push(
-					JSON.parse(JSON.stringify(this.editing.userData.node)),
+					encoding.deepClone(this.editing.userData.node),
 				);
 				return json;
 			});
@@ -787,7 +785,7 @@ export default {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			const target = levelNodes.triggerTargetAnimation();
+			const target = encoding.triggerTargetAnimation();
 			const id = node?.userData?.id ?? 0;
 			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
@@ -801,21 +799,21 @@ export default {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(levelNodes.triggerTargetSubLevel());
+			trigger.triggerTargets.push(encoding.triggerTargetSubLevel());
 			this.changed();
 		},
 		add_ambience_target() {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(levelNodes.triggerTargetAmbience());
+			trigger.triggerTargets.push(encoding.triggerTargetAmbience());
 			this.changed();
 		},
 		add_sound_target() {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(levelNodes.triggerTargetSound());
+			trigger.triggerTargets.push(encoding.triggerTargetSound());
 			this.changed();
 			this.update_connection_visibility();
 		},
@@ -823,20 +821,20 @@ export default {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(levelNodes.triggerSourceBasic());
+			trigger.triggerSources.push(encoding.triggerSourceBasic());
 			this.changed();
 		},
 		add_trigger_blocks_source() {
 			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
 			const trigger = this.editing.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(levelNodes.triggerSourceBlockNames());
+			trigger.triggerSources.push(encoding.triggerSourceBlockNames());
 			this.changed();
 		},
 		add_animation() {
 			if (!this.editing?.userData?.node) return;
 			const node = this.editing.userData.node;
-			(node.animations ??= []).push(levelNodes.animation());
+			(node.animations ??= []).push(encoding.animation());
 			this.changed();
 		},
 		edit_object_json(object = undefined) {

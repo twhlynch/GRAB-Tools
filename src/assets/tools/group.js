@@ -1,4 +1,4 @@
-import levelNodes from '@/assets/tools/nodes';
+import encoding from '@/assets/tools/encoding';
 import * as THREE from 'three';
 
 /**
@@ -30,7 +30,7 @@ function groupNodes(nodes) {
 		data.position.z = (data.position.z ?? 0) - center.z;
 	});
 
-	const group = levelNodes.levelNodeGroup();
+	const group = encoding.levelNodeGroup();
 	group.levelNodeGroup.position = { x: center.x, y: center.y, z: center.z };
 	group.levelNodeGroup.childNodes = nodes;
 	return group;

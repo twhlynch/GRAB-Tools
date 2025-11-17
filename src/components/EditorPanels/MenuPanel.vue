@@ -2,14 +2,11 @@
 import encoding from '@/assets/tools/encoding';
 import video from '@/assets/tools/video';
 import image from '@/assets/tools/image';
-import levelNodes from '@/assets/tools/nodes';
 import monochrome from '@/assets/tools/monochrome';
-import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import group from '@/assets/tools/group';
 import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
-import { VERSION } from '@/config';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
 
@@ -232,14 +229,14 @@ export default {
 		set_default_level() {
 			this.$emit('function', (json) => {
 				const configStore = useConfigStore();
-				configStore.default_level = JSON.parse(JSON.stringify(json));
+				configStore.default_level = encoding.deepClone(json);
 			});
 		},
 		load_default_level() {
 			this.$emit('modifier', (json) => {
 				const configStore = useConfigStore();
 				return configStore.default_level
-					? JSON.parse(JSON.stringify(configStore.default_level))
+					? encoding.deepClone(configStore.default_level)
 					: encoding.createLevel();
 			});
 		},
@@ -493,7 +490,7 @@ export default {
 			});
 		},
 		insert_static() {
-			const node = levelNodes.levelNodeStatic();
+			const node = encoding.levelNodeStatic();
 			delete node.levelNodeStatic.color1;
 			delete node.levelNodeStatic.color2;
 			this.$emit('modifier', (json) => {
@@ -502,10 +499,10 @@ export default {
 			});
 		},
 		insert_animated() {
-			const node = levelNodes.levelNodeStatic();
-			const animation = levelNodes.animation();
-			animation.frames.push(levelNodes.frame());
-			const frame = levelNodes.frame();
+			const node = encoding.levelNodeStatic();
+			const animation = encoding.animation();
+			animation.frames.push(encoding.frame());
+			const frame = encoding.frame();
 			frame.time = 1;
 			frame.position.y = 1;
 			animation.frames.push(frame);
@@ -516,7 +513,7 @@ export default {
 			});
 		},
 		insert_colored() {
-			const node = levelNodes.levelNodeStatic();
+			const node = encoding.levelNodeStatic();
 			node.levelNodeStatic.material = 8;
 			this.$emit('modifier', (json) => {
 				json.levelNodes.push(node);
@@ -524,28 +521,28 @@ export default {
 			});
 		},
 		insert_sign() {
-			this.insert_node_wrapper(levelNodes.levelNodeSign);
+			this.insert_node_wrapper(encoding.levelNodeSign);
 		},
 		insert_start() {
-			this.insert_node_wrapper(levelNodes.levelNodeStart);
+			this.insert_node_wrapper(encoding.levelNodeStart);
 		},
 		insert_finish() {
-			this.insert_node_wrapper(levelNodes.levelNodeFinish);
+			this.insert_node_wrapper(encoding.levelNodeFinish);
 		},
 		insert_gravity() {
-			this.insert_node_wrapper(levelNodes.levelNodeGravity);
+			this.insert_node_wrapper(encoding.levelNodeGravity);
 		},
 		insert_particle() {
-			this.insert_node_wrapper(levelNodes.levelNodeParticleEmitter);
+			this.insert_node_wrapper(encoding.levelNodeParticleEmitter);
 		},
 		insert_trigger() {
-			this.insert_node_wrapper(levelNodes.levelNodeTrigger);
+			this.insert_node_wrapper(encoding.levelNodeTrigger);
 		},
 		insert_sound() {
-			this.insert_node_wrapper(levelNodes.levelNodeSound);
+			this.insert_node_wrapper(encoding.levelNodeSound);
 		},
 		insert_colored_lava() {
-			const node = levelNodes.levelNodeStatic();
+			const node = encoding.levelNodeStatic();
 			node.levelNodeStatic.material = 3;
 			node.levelNodeStatic.color1.r = 1;
 			node.levelNodeStatic.color2.b = 1;
@@ -555,12 +552,12 @@ export default {
 			});
 		},
 		insert_ambience_trigger() {
-			const trigger = levelNodes.levelNodeTrigger();
+			const trigger = encoding.levelNodeTrigger();
 			trigger.levelNodeTrigger.triggerSources.push(
-				levelNodes.triggerSourceBasic(),
+				encoding.triggerSourceBasic(),
 			);
 			trigger.levelNodeTrigger.triggerTargets.push(
-				levelNodes.triggerTargetAmbience(),
+				encoding.triggerTargetAmbience(),
 			);
 			this.$emit('modifier', (json) => {
 				json.levelNodes.push(trigger);
@@ -568,12 +565,12 @@ export default {
 			});
 		},
 		insert_animation_trigger() {
-			const trigger = levelNodes.levelNodeTrigger();
+			const trigger = encoding.levelNodeTrigger();
 			trigger.levelNodeTrigger.triggerSources.push(
-				levelNodes.triggerSourceBasic(),
+				encoding.triggerSourceBasic(),
 			);
 			trigger.levelNodeTrigger.triggerTargets.push(
-				levelNodes.triggerTargetAnimation(),
+				encoding.triggerTargetAnimation(),
 			);
 			this.$emit('modifier', (json) => {
 				json.levelNodes.push(trigger);
@@ -581,12 +578,12 @@ export default {
 			});
 		},
 		insert_sound_trigger() {
-			const trigger = levelNodes.levelNodeTrigger();
+			const trigger = encoding.levelNodeTrigger();
 			trigger.levelNodeTrigger.triggerSources.push(
-				levelNodes.triggerSourceBasic(),
+				encoding.triggerSourceBasic(),
 			);
 			trigger.levelNodeTrigger.triggerTargets.push(
-				levelNodes.triggerTargetSound(),
+				encoding.triggerTargetSound(),
 			);
 			this.$emit('modifier', (json) => {
 				json.levelNodes.push(trigger);
@@ -594,12 +591,12 @@ export default {
 			});
 		},
 		insert_sublevel_trigger() {
-			const trigger = levelNodes.levelNodeTrigger();
+			const trigger = encoding.levelNodeTrigger();
 			trigger.levelNodeTrigger.triggerSources.push(
-				levelNodes.triggerSourceBasic(),
+				encoding.triggerSourceBasic(),
 			);
 			trigger.levelNodeTrigger.triggerTargets.push(
-				levelNodes.triggerTargetSubLevel(),
+				encoding.triggerTargetSubLevel(),
 			);
 			this.$emit('modifier', (json) => {
 				json.levelNodes.push(trigger);
@@ -629,7 +626,7 @@ export default {
 		unlock_all() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes.forEach((node) => {
-					levelNodes.traverse_node(node, (n) => {
+					encoding.traverse_node(node, (n) => {
 						n.isLocked = false;
 					});
 				});
@@ -639,7 +636,7 @@ export default {
 		lock_all() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes.forEach((node) => {
-					levelNodes.traverse_node(node, (n) => {
+					encoding.traverse_node(node, (n) => {
 						n.isLocked = true;
 					});
 				});
@@ -654,8 +651,8 @@ export default {
 					y: 900000,
 					z: 900000,
 				};
-				const animation = levelNodes.animation();
-				animation.frames.push(levelNodes.frame());
+				const animation = encoding.animation();
+				animation.frames.push(encoding.frame());
 				animation.frames[0].position = {
 					x: -900000,
 					y: -900000,
@@ -675,7 +672,7 @@ export default {
 		duplicate_level() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes = json.levelNodes.concat(
-					JSON.parse(JSON.stringify(json.levelNodes)),
+					encoding.deepClone(json.levelNodes),
 				);
 				return json;
 			});
@@ -710,7 +707,6 @@ export default {
 		},
 		toggle_fog() {
 			this.$emit('viewport', (scope) => {
-				// FIXME: not staying set
 				scope.show_fog = !scope.show_fog;
 				scope.level.nodes.all.forEach((node) => {
 					if (node.material?.uniforms?.fogEnabled) {

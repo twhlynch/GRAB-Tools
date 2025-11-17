@@ -93,7 +93,7 @@ export default {
 				}
 			} else {
 				this.json = this.default_level
-					? JSON.parse(JSON.stringify(this.default_level))
+					? encoding.deepClone(this.default_level)
 					: encoding.createLevel();
 			}
 
