@@ -135,6 +135,7 @@ export default {
 			);
 			this.renderer.setAnimationLoop(this.animation);
 			this.$refs.viewport.appendChild(this.renderer.domElement);
+			this.renderer.domElement.tabIndex = 0;
 			// scene
 			this.clock = new THREE.Clock();
 			this.scene = new THREE.Scene();
@@ -732,35 +733,42 @@ export default {
 			});
 		},
 		keydown(e) {
+			if (e.target === this.renderer.domElement) {
+				switch (e.code) {
+					case 'KeyQ':
+						this.toggle_transform_space();
+						break;
+
+					case 'KeyE':
+						this.set_transform_mode('scale');
+						break;
+
+					case 'KeyR':
+						this.set_transform_mode('rotate');
+						break;
+
+					case 'KeyT':
+						this.set_transform_mode('translate');
+						break;
+
+					case 'KeyC':
+						this.clone_selection();
+						break;
+
+					case 'KeyX':
+						this.delete_selection();
+						break;
+
+					case 'KeyG':
+						this.group_selection();
+						break;
+
+					default:
+						break;
+				}
+			}
+
 			switch (e.code) {
-				case 'KeyQ':
-					this.toggle_transform_space();
-					break;
-
-				case 'KeyE':
-					this.set_transform_mode('scale');
-					break;
-
-				case 'KeyR':
-					this.set_transform_mode('rotate');
-					break;
-
-				case 'KeyT':
-					this.set_transform_mode('translate');
-					break;
-
-				case 'KeyC':
-					this.clone_selection();
-					break;
-
-				case 'KeyX':
-					this.delete_selection();
-					break;
-
-				case 'KeyG':
-					this.group_selection();
-					break;
-
 				case 'Escape':
 					this.contextmenu = undefined;
 					this.close_mini_editor();
@@ -1265,6 +1273,7 @@ export default {
 canvas {
 	width: 100%;
 	height: 100%;
+	outline: none;
 }
 .viewport {
 	position: relative;

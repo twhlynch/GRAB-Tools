@@ -272,8 +272,8 @@ class FreeControls extends THREE.EventDispatcher {
 			this.domElement.removeEventListener("touchcancel", _touchcancel);
 			this.domElement.removeEventListener("touchmove", _touchmove);
 
-			window.removeEventListener( 'keydown', _keydown );
-			window.removeEventListener( 'keyup', _keyup );
+			this.domElement.removeEventListener( 'keydown', _keydown );
+			this.domElement.removeEventListener( 'keyup', _keyup );
 		};
 
 		const _mousemove = this.mousemove.bind( this );
@@ -297,8 +297,8 @@ class FreeControls extends THREE.EventDispatcher {
 		this.domElement.addEventListener("touchcancel", _touchcancel, false);
 		this.domElement.addEventListener("touchmove", _touchmove, false);
 
-		window.addEventListener( 'keydown', _keydown );
-		window.addEventListener( 'keyup', _keyup );
+		this.domElement.addEventListener( 'keydown', _keydown );
+		this.domElement.addEventListener( 'keyup', _keyup );
 
 		this.updateMovementVector();
 		this.updateRotationVector();
