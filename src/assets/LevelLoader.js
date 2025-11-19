@@ -59,6 +59,7 @@ class LevelLoader {
 		this.shapePromise = Promise.all(shapePromises).then((result) => {
 			for (let shape of result) {
 				this.shapes.push(shape);
+				shape.rotateY(Math.PI);
 			}
 		});
 
@@ -70,8 +71,8 @@ class LevelLoader {
 		this.objectPromise = Promise.all(objectPromises).then((result) => {
 			for (let object of result) {
 				this.objects.push(object);
+				object.rotateY(Math.PI);
 			}
-			this.objects[1].rotateY(Math.PI);
 		});
 
 		this.materials = [
