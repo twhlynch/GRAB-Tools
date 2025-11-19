@@ -92,13 +92,6 @@ export default {
 						SVG: { func: this.insert_svg },
 					},
 				},
-				Settings: {
-					Login: {
-						href: `https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=https://grabvr.tools/editor`,
-					},
-					'Save Config': { func: this.save_config },
-					'Edit Protobuf': { func: this.edit_protobuf },
-				},
 				Edit: {
 					Functions: {
 						Duplicate: { func: this.duplicate_level },
@@ -133,6 +126,83 @@ export default {
 						Z: { func: this.mirror_z },
 					},
 				},
+				Select: {
+					All: {
+						func: this.select_all,
+					},
+					Shape: {
+						...Object.fromEntries(
+							Array.from(
+								{
+									length:
+										Object.entries(
+											encoding.load().COD.Level
+												.LevelNodeShape,
+										).length -
+										encoding.load().COD.Level.LevelNodeShape
+											.__END_OF_SPECIAL_PARTS__ -
+										1,
+								},
+								(_, i) => {
+									return [
+										this.format_type(
+											encoding.load().COD.Level
+												.LevelNodeShape[1000 + i],
+										),
+										{
+											func: undefined, // 1000 + i
+										},
+									];
+								},
+							),
+						),
+					},
+					Material: {
+						...Object.fromEntries(
+							Array.from(
+								{
+									length: Object.entries(
+										encoding.load().COD.Level
+											.LevelNodeMaterial,
+									).length,
+								},
+								(_, i) => {
+									return [
+										this.format_type(
+											encoding.load().COD.Level
+												.LevelNodeMaterial[i],
+										),
+										{
+											func: undefined, // i
+										},
+									];
+								},
+							),
+						),
+					},
+					Type: {
+						...Object.fromEntries(
+							Array.from(
+								{
+									length: encoding.load().COD.Level.LevelNode
+										.oneofs.content.oneof.length,
+								},
+								(_, i) => {
+									return [
+										encoding.load().COD.Level.LevelNode
+											.oneofs.content.oneof[i],
+										{
+											func: undefined, // i,
+										},
+									];
+								},
+							),
+						),
+					},
+					Color: {
+						func: this.select_by_color,
+					},
+				},
 				View: {
 					Teleport: {
 						Start: { func: this.teleport_start },
@@ -153,6 +223,13 @@ export default {
 						Skybox: { func: this.toggle_sky },
 					},
 					'Copy Camera': { func: this.copy_camera_state },
+				},
+				Settings: {
+					Login: {
+						href: `https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=https://grabvr.tools/editor`,
+					},
+					'Save Config': { func: this.save_config },
+					'Edit Protobuf': { func: this.edit_protobuf },
 				},
 				Help: {
 					Tutorial: { href: 'https://youtube.com/@dotindex' },
@@ -188,6 +265,17 @@ export default {
 	components: {},
 	emits: ['modifier', 'function', 'viewport', 'popup', 'scope'],
 	methods: {
+		format_type(type) {
+			// FIXME: duplicate
+			return type
+				.split('_')
+				.map(
+					(word) =>
+						word.charAt(0).toUpperCase() +
+						word.toLowerCase().slice(1),
+				)
+				.join(' ');
+		},
 		load_new_level() {
 			this.$emit('modifier', (_) => {
 				return encoding.createLevel();
