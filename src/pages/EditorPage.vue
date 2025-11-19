@@ -16,6 +16,7 @@ import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
 import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
+import TemplatesPanel from '@/components/EditorPanels/TemplatesPanel.vue';
 
 export default {
 	components: {
@@ -27,6 +28,7 @@ export default {
 		TerminalPanel,
 		PopupPanel,
 		StatisticsPanel,
+		TemplatesPanel,
 	},
 	data() {
 		return {
@@ -43,6 +45,7 @@ export default {
 	mounted() {
 		this.$refs.side_panel.size((window.innerHeight / 4) * 3);
 		this.$refs.main_panel.size((window.innerWidth / 3) * 2);
+		this.$refs.left_panel.size(0);
 		this.open_starting_level();
 	},
 	methods: {
@@ -128,6 +131,9 @@ export default {
 		scope(func) {
 			func(this);
 		},
+		resize_left() {
+			this.$refs.left_panel.size();
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -142,16 +148,28 @@ export default {
 			@function="run_function"
 			@viewport="run_viewport"
 			@popup="set_popup"
+			@scope="scope"
 		/>
-		<ResizableRowPanel class="main-panel" :ref="'main_panel'">
+		<ResizableRowPanel
+			class="main-panel"
+			:ref="'main_panel'"
+			@resize="resize_left"
+		>
 			<template #first>
-				<ViewportPanel
-					class="view-panel"
-					:ref="'viewport_panel'"
-					@changed="viewport_changed"
-					@modifier="run_modifier"
-					@scope="scope"
-				/>
+				<ResizableRowPanel class="left-panel" ref="left_panel">
+					<template #first>
+						<TemplatesPanel @modifier="run_modifier" />
+					</template>
+					<template #second>
+						<ViewportPanel
+							class="view-panel"
+							:ref="'viewport_panel'"
+							@changed="viewport_changed"
+							@modifier="run_modifier"
+							@scope="scope"
+						/>
+					</template>
+				</ResizableRowPanel>
 			</template>
 			<template #second>
 				<ResizableColPanel class="side-panel" :ref="'side_panel'">
@@ -202,6 +220,9 @@ footer {
 	height: 100%;
 }
 .view-panel {
+	height: 100%;
+}
+.left-panel {
 	height: 100%;
 }
 

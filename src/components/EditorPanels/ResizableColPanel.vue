@@ -5,6 +5,7 @@ export default {
 			down: false,
 		};
 	},
+	emits: ['resize'],
 	mounted() {
 		document.addEventListener('mouseup', this.mouseup);
 		document.addEventListener('mousemove', this.mousemove);
@@ -30,11 +31,14 @@ export default {
 			}
 		},
 		size(position) {
-			const { container, first, second } = this.$refs;
+			const { container, first, second, thumb } = this.$refs;
+			if (position === undefined)
+				position = thumb.getBoundingClientRect().top;
 			const bounds = container.getBoundingClientRect();
 			first.style.height = position - bounds.top + 'px';
 			second.style.height =
 				bounds.height - (position - bounds.top) - 5 + 'px';
+			this.$emit('resize');
 		},
 		prevent(e) {
 			e.preventDefault();

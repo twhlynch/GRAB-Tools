@@ -28,7 +28,7 @@ export default {
 						Default: {
 							func: this.load_default_level,
 						},
-						Template: { func: this.load_template },
+						Template: { func: this.open_templates },
 						'Cheat Sheet': { func: this.open_cheat_sheet },
 					},
 					Save: {
@@ -186,7 +186,7 @@ export default {
 		};
 	},
 	components: {},
-	emits: ['modifier', 'function', 'viewport', 'popup'],
+	emits: ['modifier', 'function', 'viewport', 'popup', 'scope'],
 	methods: {
 		load_new_level() {
 			this.$emit('modifier', (_) => {
@@ -238,6 +238,17 @@ export default {
 				return configStore.default_level
 					? encoding.deepClone(configStore.default_level)
 					: encoding.createLevel();
+			});
+		},
+		open_templates() {
+			this.$emit('scope', (scope) => {
+				scope.$refs.left_panel.size(
+					Math.min(
+						350,
+						scope.$refs.left_panel.$el.getBoundingClientRect()
+							.width / 2,
+					),
+				);
 			});
 		},
 		save_gltf() {
