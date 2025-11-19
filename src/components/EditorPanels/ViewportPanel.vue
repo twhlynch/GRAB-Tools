@@ -6,7 +6,7 @@ import { FreeControls } from '@/assets/FreeControls.js';
 import encoding from '@/assets/tools/encoding.js';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
-import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import GizmoControls from '@/assets/GizmoControls.js';
 import { useConfigStore } from '@/stores/config.js';
 import TranslateIcon from '@/icons/TranslateIcon.vue';
 import RotateIcon from '@/icons/RotateIcon.vue';
@@ -23,7 +23,7 @@ export default {
 		return {
 			zoom_to_cursor: true,
 			free_movement: false,
-			editing: null,
+			editing_json: undefined,
 			dragging: false,
 			huge_far: false,
 			show_groups: false, // TODO:
@@ -113,6 +113,10 @@ export default {
 					value: normalMatrix,
 				};
 			}
+
+			if (object.children?.length) {
+				object.children.forEach(this.update_node_shader);
+			}
 		},
 		setup_renderer() {
 			// renderer
@@ -153,40 +157,28 @@ export default {
 			);
 			this.controls.zoomToCursor = this.zoom_to_cursor;
 			this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
-			this.transform_controls = new TransformControls(
+			// editing
+			this.gizmo = new GizmoControls(
 				this.camera,
 				this.renderer.domElement,
-			);
-			// editing
-			this.transform_controls.addEventListener(
-				'change',
-				this.selected_event,
-			);
-			this.transform_controls.addEventListener(
-				'dragging-changed',
+				this.scene,
+				this.moving_event,
 				this.edit_event,
 			);
+			this.gizmo.set_mode(this.transform_mode);
+			this.gizmo.set_space(this.transform_space);
 			this.renderer.domElement.addEventListener(
 				'click',
 				this.select_event,
 			);
 		},
-		selected_event(e) {
-			if (e.target.object) {
-				if (this.editing?.uuid !== e.target.object.uuid) {
-					this.is_animating = false;
-					this.reset_node_positions();
-				}
-			} else if (this.editing) {
-				this.is_animating = this.$refs.animation_panel.playing;
-			}
-			this.editing = e.target.object;
-			if (this.editing) {
-				this.update_node_shader(this.editing);
-				this.validate_node(this.editing);
-				this.update_animation_path_position(this.editing);
-				this.update_trigger_path_positions([this.editing]);
-			}
+		moving_event(e) {
+			this.gizmo.selection.forEach((object) => {
+				this.update_node_shader(object);
+				this.validate_node(object);
+				this.update_animation_path_position(object);
+			});
+			this.update_trigger_path_positions(this.gizmo.selection);
 		},
 		reset_node_positions() {
 			this.level.meta.time = 0;
@@ -198,7 +190,7 @@ export default {
 		},
 		validate_node(object) {
 			const node = object?.userData?.node;
-			const axis = this.transform_controls.axis;
+			const axis = this.gizmo.controls.axis;
 			if (!node || !axis) return;
 			const mode = this.transform_mode;
 			const override_axis = axis.charAt(0).toLowerCase();
@@ -245,37 +237,49 @@ export default {
 		edit_event(e) {
 			this.controls.enabled = !e.value;
 			if (e.value) return;
-			if (!this.editing) return;
+			if (this.gizmo.empty()) return;
 			this.dragging = true;
-			this.validate_node(this.editing);
-			const entries = Object.entries(this.editing.userData.node);
-			const node = entries.find((e) => e[0].includes('levelNode'))[1];
-			if (node.position) {
-				node.position.x = this.editing.position.x;
-				node.position.y = this.editing.position.y;
-				node.position.z = this.editing.position.z;
-			}
-			if (node.scale && typeof node.scale === 'object') {
-				node.scale.x = Math.abs(this.editing.scale.x);
-				node.scale.y = Math.abs(this.editing.scale.y);
-				node.scale.z = Math.abs(this.editing.scale.z);
-			}
-			if (node.scale && typeof node.scale === 'number') {
-				node.scale = Math.abs(this.editing.scale.x);
-			}
-			if (node.radius) {
-				node.radius = Math.abs(this.editing.scale.x) / 2;
-			}
-			if (node.rotation) {
-				node.rotation.x = this.editing.quaternion.x;
-				node.rotation.y = this.editing.quaternion.y;
-				node.rotation.z = this.editing.quaternion.z;
-				node.rotation.w = this.editing.quaternion.w;
-			}
-			this.editing.initialPosition.copy(this.editing.position);
-			this.editing.initialRotation.copy(this.editing.quaternion);
-			this.update_node_shader(this.editing);
-			this.update_trigger_path_positions([this.editing]);
+			this.gizmo.selection.forEach((object) => {
+				this.validate_node(object);
+
+				const world_pos = new THREE.Vector3();
+				const world_quat = new THREE.Quaternion();
+				const world_scale = new THREE.Vector3();
+				object.updateMatrixWorld(true);
+				object.getWorldPosition(world_pos);
+				object.getWorldQuaternion(world_quat);
+				object.getWorldScale(world_scale);
+
+				const entries = Object.entries(object.userData.node);
+				const node = entries.find((e) => e[0].includes('levelNode'))[1];
+
+				if (node.position) {
+					node.position.x = world_pos.x;
+					node.position.y = world_pos.y;
+					node.position.z = world_pos.z;
+				}
+				if (node.scale && typeof node.scale === 'object') {
+					node.scale.x = Math.abs(world_scale.x);
+					node.scale.y = Math.abs(world_scale.y);
+					node.scale.z = Math.abs(world_scale.z);
+				}
+				if (node.scale && typeof node.scale === 'number') {
+					node.scale = Math.abs(world_scale.x);
+				}
+				if (node.radius) {
+					node.radius = Math.abs(world_scale.x) / 2;
+				}
+				if (node.rotation) {
+					node.rotation.x = world_quat.x;
+					node.rotation.y = world_quat.y;
+					node.rotation.z = world_quat.z;
+					node.rotation.w = world_quat.w;
+				}
+				object.initialPosition.copy(world_pos);
+				object.initialRotation.copy(world_quat);
+				this.update_node_shader(object);
+			});
+			this.update_trigger_path_positions(this.gizmo.selection);
 			this.changed();
 		},
 		cast_for_node(x, y) {
@@ -297,7 +301,10 @@ export default {
 			let intersect = undefined;
 			if (intersects.length) {
 				intersect = intersects[0].object;
-				while (intersect.parent !== this.level.scene) {
+				while (
+					intersect.parent !== this.level.scene &&
+					intersect.parent !== this.gizmo.group
+				) {
 					intersect = intersect.parent;
 				}
 			}
@@ -306,19 +313,36 @@ export default {
 		select_event(e) {
 			if (this.free_movement) return;
 			const intersect = this.cast_for_node(e.clientX, e.clientY);
-			if (intersect && intersect !== this.editing) {
-				this.transform_controls.attach(intersect);
-				this.scene.add(this.transform_controls);
+			if (intersect) {
+				if (!this.gizmo.includes(intersect)) {
+					if (!e.shiftKey) {
+						this.gizmo.clear(this.level.scene);
+					}
+
+					if (this.is_animating) this.reset_node_positions();
+					this.gizmo.add(intersect);
+					this.is_animating = false;
+				} else {
+					if (e.shiftKey) {
+						this.gizmo.remove(intersect, this.level.scene);
+
+						if (this.gizmo.empty()) {
+							this.is_animating =
+								this.$refs.animation_panel.playing;
+						}
+					}
+				}
 			} else {
 				if (!this.dragging) {
-					this.transform_controls.detach();
+					this.gizmo.clear(this.level.scene);
+					this.is_animating = this.$refs.animation_panel.playing;
 				}
 			}
 			this.dragging = false;
 		},
 		async set_json(json) {
 			if (!json) return;
-			this.transform_controls.detach();
+			this.gizmo.clear();
 			if (this.level) {
 				this.scene.remove(this.level.scene);
 				this.level.scene.traverse((obj) => {
@@ -420,7 +444,7 @@ export default {
 					this.renderer.domElement,
 				);
 				this.controls.eulerVector.set(pitch, yaw, 0);
-				this.transform_controls.detach();
+				this.gizmo.clear(this.level.scene);
 			} else {
 				const direction = new THREE.Vector3();
 				this.camera.getWorldDirection(direction);
@@ -453,7 +477,7 @@ export default {
 		},
 		set_transform_mode(mode) {
 			this.transform_mode = mode;
-			this.transform_controls.setMode(this.transform_mode);
+			this.gizmo.set_mode(this.transform_mode);
 		},
 		transform_mode_event(e) {
 			const mode = e.target.id.split('-')[1];
@@ -461,10 +485,10 @@ export default {
 			e.target.checked = true;
 		},
 		toggle_transform_space(_) {
-			this.transform_controls.setSpace(
-				this.transform_controls.space === 'local' ? 'world' : 'local',
+			this.gizmo.set_space(
+				this.gizmo.get_space() === 'local' ? 'world' : 'local',
 			);
-			this.transform_space = this.transform_controls.space;
+			this.transform_space = this.gizmo.get_space();
 		},
 		save_config() {
 			const config = {
@@ -615,10 +639,18 @@ export default {
 			return false;
 		},
 		update_animation_path_position(object) {
-			object?.userData?.relevant_animation_paths?.forEach((path) => {
+			const paths = object?.userData?.relevant_animation_paths;
+			if (!paths) return;
+			paths.forEach((path) => {
 				path.position.copy(path.userData.object.position);
 				path.quaternion.copy(path.userData.object.quaternion);
 			});
+			if (object.parent === this.gizmo.group) {
+				paths.forEach((path) => {
+					this.gizmo.group.add(path);
+					this.gizmo._attach(path, this.level.scene); // HACK: private method access
+				});
+			}
 		},
 		update_trigger_path_positions(related_objects = undefined) {
 			if (!this.show_trigger_connections) return;
@@ -695,37 +727,47 @@ export default {
 			this.level.scene.add(line);
 		},
 		clone_selection() {
-			if (!this.editing) return;
+			if (this.gizmo.empty()) return;
 			this.modifier((json) => {
 				json.levelNodes.push(
-					encoding.deepClone(this.editing.userData.node),
+					...this.gizmo.selection.map((object) => {
+						return encoding.deepClone(object.userData.node);
+					}),
 				);
 				return json;
 			});
 		},
 		delete_selection() {
-			if (!this.editing) return;
+			if (this.gizmo.empty()) return;
 			this.modifier((json) => {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
-						n !==
-						this.level.nodes.all[this.editing.userData.id - 1]
-							.userData.node,
+						!this.gizmo.selection.find(
+							(o) =>
+								n ===
+								this.level.nodes.all[o.userData.id - 1].userData
+									.node,
+						),
 				);
 				return json;
 			});
 		},
 		group_selection() {
-			if (!this.editing) return;
+			if (this.gizmo.empty()) return;
 			this.modifier((json) => {
 				json.levelNodes = json.levelNodes.filter(
 					(n) =>
-						n !==
-						this.level.nodes.all[this.editing.userData.id - 1]
-							.userData.node,
+						!this.gizmo.selection.find(
+							(o) =>
+								n ===
+								this.level.nodes.all[o.userData.id - 1].userData
+									.node,
+						),
 				);
 				json.levelNodes.push(
-					group.groupNodes([this.editing.userData.node]),
+					group.groupNodes(
+						this.gizmo.selection.map((o) => o.userData.node),
+					),
 				);
 				return json;
 			});
@@ -768,8 +810,11 @@ export default {
 
 			switch (e.code) {
 				case 'Escape':
-					this.contextmenu = undefined;
-					this.close_mini_editor();
+					if (this.show_mini_editor) this.close_mini_editor();
+					else if (this.contextmenu) this.contextmenu = undefined;
+					else if (!this.gizmo.empty())
+						this.gizmo.clear(this.level.scene);
+					this.is_animating = this.$refs.animation_panel.playing;
 					break;
 
 				default:
@@ -781,71 +826,69 @@ export default {
 				this.mini_editor_changed(this.$refs.mini_editor.json);
 			this.show_mini_editor = false;
 		},
-		add_animation_target(node = undefined) {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_animation_target(object, target_object = undefined) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			const target = encoding.triggerTargetAnimation();
-			const id = node?.userData?.id ?? 0;
+			const id = target_object?.userData?.id ?? 0;
 			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
+			this.add_trigger_path(object, target_object);
 			this.changed();
-			const target_object = this.level.nodes.all[id - 1];
-			if (!target_object) return;
-			this.add_trigger_path(this.editing, target_object);
 			this.update_connection_visibility();
 		},
-		add_sublevel_target() {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_sublevel_target(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			trigger.triggerTargets.push(encoding.triggerTargetSubLevel());
 			this.changed();
 		},
-		add_ambience_target() {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_ambience_target(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			trigger.triggerTargets.push(encoding.triggerTargetAmbience());
 			this.changed();
 		},
-		add_sound_target() {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_sound_target(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			trigger.triggerTargets.push(encoding.triggerTargetSound());
 			this.changed();
 			this.update_connection_visibility();
 		},
-		add_trigger_source() {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_trigger_source(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
 			trigger.triggerSources.push(encoding.triggerSourceBasic());
-			this.changed();
+			this.changed(object);
 		},
-		add_trigger_blocks_source() {
-			if (!this.editing?.userData?.node?.levelNodeTrigger) return;
-			const trigger = this.editing.userData.node.levelNodeTrigger;
+		add_trigger_blocks_source(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
 			trigger.triggerSources.push(encoding.triggerSourceBlockNames());
 			this.changed();
 		},
-		add_animation() {
-			if (!this.editing?.userData?.node) return;
-			const node = this.editing.userData.node;
+		add_animation(object) {
+			if (!object?.userData?.node) return;
+			const node = object.userData.node;
 			(node.animations ??= []).push(encoding.animation());
 			this.changed();
 		},
-		edit_object_json(object = undefined) {
-			if (!object) object = this.editing;
+		edit_object_json(object) {
 			if (!object) return;
 
 			this.show_mini_editor = true;
+			this.editing_json = object;
 			this.$refs.mini_editor.set_json(object.userData.node);
 		},
 		mini_editor_changed(new_node) {
-			const id = this.editing?.userData?.id;
+			const id = this.editing_json?.userData?.id;
 			if (!id) {
 				window.toast('Failed to write node', 'error');
 				return;
@@ -862,15 +905,19 @@ export default {
 			});
 		},
 		set_material(material) {
-			const entries = Object.entries(this.editing.userData.node);
-			const node = entries.find((e) => e[0].includes('levelNode'))[1];
-			node.material = material;
+			this.gizmo.selection.forEach((object) => {
+				const entries = Object.entries(object.userData.node);
+				const node = entries.find((e) => e[0].includes('levelNode'))[1]; // TODO: add sub node userData
+				node.material = material;
+			});
 			this.modifier((json) => json);
 		},
 		set_shape(shape) {
-			const entries = Object.entries(this.editing.userData.node);
-			const node = entries.find((e) => e[0].includes('levelNode'))[1];
-			node.shape = shape;
+			this.gizmo.selection.forEach((object) => {
+				const entries = Object.entries(object.userData.node);
+				const node = entries.find((e) => e[0].includes('levelNode'))[1];
+				node.shape = shape;
+			});
 			this.modifier((json) => json);
 		},
 		format_type(type) {
@@ -890,50 +937,61 @@ export default {
 				this.contextmenu = undefined;
 
 				const clicked_object = this.cast_for_node(e.clientX, e.clientY);
-				const selected_object = this.editing;
-				if (!clicked_object || !selected_object) return;
+				if (!clicked_object) return;
 				const clicked_node = clicked_object.userData?.node;
-				const selected_node = selected_object.userData?.node;
-				if (!clicked_node || !selected_node) return;
+				if (!clicked_node) return;
+				const selection = this.gizmo.selection;
+				if (!selection.length) return;
+				if (selection.some((n) => !n.userData?.node)) return;
+				const single_selection = selection.length === 1;
+				const selected_object = selection[0];
+				const selected_node = selected_object.userData.node;
 
-				const clicked_selected =
-					clicked_object.uuid === selected_object.uuid;
-				const selected_has_shape =
-					selected_node.levelNodeStatic ||
-					selected_node.levelNodeCrumbling ||
-					selected_node.levelNodeTrigger;
+				const clicked_is_selected = this.gizmo.includes(clicked_object);
+				const clicked_has_shape =
+					clicked_node.levelNodeStatic ||
+					clicked_node.levelNodeCrumbling ||
+					clicked_node.levelNodeTrigger;
 				const selected_is_trigger = selected_node.levelNodeTrigger;
-				const selected_can_animate =
-					!selected_node.levelNodeStart &&
-					!selected_node.levelNodeFinish;
-				const selected_can_group =
-					!selected_node.levelNodeStart &&
-					!selected_node.levelNodeFinish;
-				const selected_can_clone = !selected_node.levelNodeFinish;
-				const selected_has_material = selected_node.levelNodeStatic;
+				const clicked_is_trigger = clicked_node.levelNodeTrigger;
+				const clicked_can_animate =
+					!clicked_node.levelNodeStart &&
+					!clicked_node.levelNodeFinish;
+				const can_group = !selection.some((object) => {
+					return (
+						object.userData.node.levelNodeStart ||
+						object.userData.node.levelNodeFinish
+					);
+				});
+				const can_clone = !selection.some((object) => {
+					return object.userData.node.levelNodeFinish;
+				});
+				const clicked_has_material = clicked_node.levelNodeStatic;
 				const clicked_can_target =
 					!clicked_node.levelNodeStart &&
 					!clicked_node.levelNodeFinish;
 
 				this.contextmenu = {
-					...(clicked_selected && {
+					...(clicked_is_selected && {
 						'Edit JSON': {
-							func: this.edit_object_json,
+							func: () => {
+								this.edit_object_json(clicked_object);
+							},
 						},
 						Delete: {
 							func: this.delete_selection,
 						},
-						...(selected_can_clone && {
+						...(can_clone && {
 							Clone: {
 								func: this.clone_selection,
 							},
 						}),
-						...(selected_can_group && {
+						...(can_group && {
 							Group: {
 								func: this.group_selection,
 							},
 						}),
-						...(selected_has_shape && {
+						...(clicked_has_shape && {
 							Shape: {
 								...Object.fromEntries(
 									Array.from(
@@ -969,7 +1027,7 @@ export default {
 								),
 							},
 						}),
-						...(selected_has_material && {
+						...(clicked_has_material && {
 							Material: {
 								...Object.fromEntries(
 									Array.from(
@@ -996,47 +1054,75 @@ export default {
 								),
 							},
 						}),
-						...(selected_can_animate && {
+						...(clicked_can_animate && {
 							'Add Animation': {
-								func: this.add_animation,
+								func: () => {
+									this.add_animation(clicked_object);
+								},
 							},
 						}),
-						...(selected_is_trigger && {
+						...(clicked_is_trigger && {
 							'Add Target': {
 								Animation: {
-									func: this.add_animation_target,
+									func: () => {
+										this.add_animation_target(
+											clicked_object,
+										);
+									},
 								},
 								SubLevel: {
-									func: this.add_sublevel_target,
+									func: () => {
+										this.add_sublevel_target(
+											clicked_object,
+										);
+									},
 								},
 								Ambience: {
-									func: this.add_ambience_target,
+									func: () => {
+										this.add_ambience_target(
+											clicked_object,
+										);
+									},
 								},
 								Sound: {
-									func: this.add_sound_target,
+									func: () => {
+										this.add_sound_target(clicked_object);
+									},
 								},
 							},
 							'Add Source': {
 								Basic: {
-									func: this.add_trigger_source,
+									func: () => {
+										this.add_trigger_source(clicked_object);
+									},
 								},
 								Blocks: {
-									func: this.add_trigger_blocks_source,
+									func: () => {
+										this.add_trigger_blocks_source(
+											clicked_object,
+										);
+									},
 								},
 							},
 						}),
 					}),
-					...(selected_is_trigger &&
+					...(single_selection &&
+						selected_is_trigger &&
 						clicked_can_target && {
 							'Add as Target': {
 								func: () => {
-									this.add_animation_target(clicked_object);
+									this.add_animation_target(
+										selected_object,
+										clicked_object,
+									);
 								},
 							},
 						}),
-					...(clicked_selected && {
+					...(clicked_is_selected && {
 						'Copy ID': {
-							func: this.copy_editing_id,
+							func: () => {
+								this.copy_object_id(clicked_object);
+							},
 						},
 					}),
 				};
@@ -1049,8 +1135,8 @@ export default {
 				}
 			}
 		},
-		copy_editing_id() {
-			const id = this.editing?.userData?.id;
+		copy_object_id(object) {
+			const id = object?.userData?.id;
 			if (id === undefined) window.toast('failed to get id', 'error');
 			else navigator.clipboard.writeText(id);
 		},
