@@ -11,6 +11,8 @@ uniform float sunSize;
 uniform vec3 sunColor;
 uniform vec3 sunDirection;
 
+uniform bool isSelected;
+
 void main()
 {
     vec4 color = diffuseColor;
@@ -38,6 +40,10 @@ void main()
 
         float fogAmount = clamp((1.0 - exp(-distanceToCamera * cameraFogDistance.x)) * cameraFogDistance.y, 0.0, 1.0);
         color.rgb = mix(color.rgb, fogColor, fogAmount * fogAmount);
+    }
+
+    if (isSelected) {
+        color.rgb = mix(color.rgb, vec3(0.3, 1.0, 0.3), 0.05);
     }
 
     gl_FragColor = color;

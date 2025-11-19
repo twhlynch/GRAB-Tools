@@ -114,6 +114,14 @@ class GizmoControls {
 
 		this._attach(object, this.group);
 
+		object.traverse((obj) => {
+			if (!obj.material?.uniforms) return;
+			if (!obj.userData?.node) return;
+			obj.material.uniforms.isSelected = {
+				value: true,
+			};
+		});
+
 		this.recenter();
 	}
 
@@ -124,6 +132,14 @@ class GizmoControls {
 
 		if (parent) this._attach(object, parent);
 		else object.removeFromParent();
+
+		object.traverse((obj) => {
+			if (!obj.material?.uniforms) return;
+			if (!obj.userData?.node) return;
+			obj.material.uniforms.isSelected = {
+				value: false,
+			};
+		});
 
 		this.recenter();
 	}

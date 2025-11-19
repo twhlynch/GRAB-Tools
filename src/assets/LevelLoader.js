@@ -196,6 +196,7 @@ class LevelLoader {
 		startMaterial.uniforms = {
 			diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
 			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
 		};
 
 		let finishMaterial = new THREE.ShaderMaterial();
@@ -207,6 +208,7 @@ class LevelLoader {
 		finishMaterial.uniforms = {
 			diffuseColor: { value: [1.0, 0.0, 0.0, 1.0] },
 			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
 		};
 
 		let altStartMaterial = new THREE.ShaderMaterial();
@@ -218,6 +220,7 @@ class LevelLoader {
 		altStartMaterial.uniforms = {
 			diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
 			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
 		};
 
 		let particleMaterial = new THREE.ShaderMaterial();
@@ -226,6 +229,7 @@ class LevelLoader {
 		particleMaterial.flatShading = true;
 		particleMaterial.uniforms = {
 			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
 		};
 
 		this.objectMaterials = [
@@ -1485,6 +1489,7 @@ function getMaterialForTexture(
 		neonEnabled: { value: neonEnabled },
 		transparentEnabled: { value: 0.0 },
 		fogEnabled: { value: fogEnabled },
+		isSelected: { value: false },
 		specularColor: { value: specularColor },
 		isLava: { value: isLava },
 		isColoredLava: { value: 0.0 },

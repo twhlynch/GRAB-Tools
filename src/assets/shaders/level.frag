@@ -19,6 +19,8 @@ uniform vec3 sunColor;
 uniform vec3 sunDirection;
 uniform vec4 specularColor;
 
+uniform bool isSelected;
+
 void main()
 {
     vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -87,6 +89,10 @@ void main()
 
     if (transparentEnabled > 0.5) {
         color.a = 0.5;
+    }
+
+    if (isSelected) {
+        color.rgb = mix(color.rgb, vec3(0.3, 1.0, 0.3), 0.05);
     }
 
     gl_FragColor = color;
