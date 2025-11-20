@@ -7,8 +7,7 @@ import * as THREE from 'three';
  */
 function groupNodes(nodes) {
 	const positions = nodes.map((node) => {
-		const entries = Object.entries(node);
-		const data = entries.find((e) => e[0].includes('levelNode'))[1];
+		const data = encoding.node_data(node);
 
 		return new THREE.Vector3(
 			data.position.x,
@@ -22,8 +21,7 @@ function groupNodes(nodes) {
 	box.getCenter(center);
 
 	nodes.forEach((node) => {
-		const entries = Object.entries(node);
-		const data = entries.find((e) => e[0].includes('levelNode'))[1];
+		const data = encoding.node_data(node);
 
 		data.position.x = (data.position.x ?? 0) - center.x;
 		data.position.y = (data.position.y ?? 0) - center.y;

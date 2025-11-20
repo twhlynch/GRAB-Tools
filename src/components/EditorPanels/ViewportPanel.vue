@@ -946,16 +946,14 @@ export default {
 		},
 		set_material(material) {
 			this.gizmo.selection.forEach((object) => {
-				const entries = Object.entries(object.userData.node);
-				const node = entries.find((e) => e[0].includes('levelNode'))[1]; // TODO: add sub node userData
+				const node = encoding.node_data(object);
 				node.material = material;
 			});
 			this.modifier((json) => json);
 		},
 		set_shape(shape) {
 			this.gizmo.selection.forEach((object) => {
-				const entries = Object.entries(object.userData.node);
-				const node = entries.find((e) => e[0].includes('levelNode'))[1];
+				const node = encoding.node_data(object);
 				node.shape = shape;
 			});
 			this.modifier((json) => json);
