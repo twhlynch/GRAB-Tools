@@ -130,9 +130,17 @@ function createLevel(
 	};
 }
 
+/**
+ * @param object can be a THREE object or node json
+ */
 function node_data(object) {
-	if (!object?.userData?.node) return undefined;
-	const entries = Object.entries(object.userData.node);
+	if (object?.userData?.node) {
+		const entries = Object.entries(object.userData.node);
+		const node = entries.find((e) => e[0].includes('levelNode'))[1];
+		return node;
+	}
+
+	const entries = Object.entries(object);
 	const node = entries.find((e) => e[0].includes('levelNode'))[1];
 	return node;
 }
