@@ -875,6 +875,11 @@ export default {
 				scope.save_config();
 			});
 		},
+		copy_camera_state() {
+			this.$emit('viewport', (scope) => {
+				scope.copy_camera_state();
+			});
+		},
 		clear_storage() {
 			const configStore = useConfigStore();
 			configStore.$reset();

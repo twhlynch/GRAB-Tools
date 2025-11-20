@@ -82,6 +82,8 @@ export default {
 		this.$refs.resize.size(
 			this.$refs.resize.$el.getBoundingClientRect().bottom - 30 - 5,
 		);
+
+		this.load_camera_state();
 	},
 	unmounted() {
 		window.removeEventListener('keydown', this.keydown);
@@ -453,6 +455,41 @@ export default {
 		},
 		select_all() {
 			this.select_nodes(this.level.nodes.all);
+		},
+		copy_camera_state() {
+			let camera_state = `&camera_position=`;
+			camera_state += `${this.camera.position.x},${this.camera.position.y},${this.camera.position.z}`;
+			camera_state += `&camera_rotation=`;
+			camera_state += `${this.camera.rotation.x},${this.camera.rotation.y},${this.camera.rotation.z}`;
+			camera_state += `&control_target=`;
+			camera_state += `${this.controls.target.x},${this.controls.target.y},${this.controls.target.z}`;
+
+			navigator.clipboard.writeText(camera_state);
+		},
+		load_camera_state() {
+			const params = new URLSearchParams(window.location.search);
+			const camera_position = params.get('camera_position');
+			const camera_rotation = params.get('camera_rotation');
+			const control_target = params.get('control_target');
+			if (camera_position) {
+				const position = camera_position
+					.split(',')
+					.map((pos) => parseFloat(pos));
+				this.camera.position.set(position[0], position[1], position[2]);
+			}
+			if (camera_rotation) {
+				const rotation = camera_rotation
+					.split(',')
+					.map((rot) => parseFloat(rot));
+				this.camera.rotation.set(rotation[0], rotation[1], rotation[2]);
+			}
+			if (control_target) {
+				const target = control_target
+					.split(',')
+					.map((pos) => parseFloat(pos));
+				this.controls.target.set(target[0], target[1], target[2]);
+				this.camera.lookAt(target[0], target[1], target[2]);
+			}
 		},
 		save_config() {
 			const config = {
