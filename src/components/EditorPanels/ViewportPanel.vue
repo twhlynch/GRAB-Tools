@@ -490,6 +490,46 @@ export default {
 			);
 			this.transform_space = this.gizmo.get_space();
 		},
+		select_nodes(nodes) {
+			this.gizmo.clear(this.level.scene);
+			nodes
+				.filter((obj) => obj.parent === this.level.scene)
+				.forEach((obj) => this.gizmo.add(obj));
+		},
+		select_by_material(material) {
+			this.select_nodes(this.level.nodes.material[material]);
+		},
+		select_by_shape(shape) {
+			this.select_nodes(this.level.nodes.shape[shape]);
+		},
+		select_by_type(type) {
+			this.select_nodes(this.level.nodes[type]);
+		},
+		select_by_color() {
+			if (this.gizmo.empty()) return;
+			const target = this.gizmo.selection[0];
+			const target_node = target.userData.node.levelNodeStatic;
+			if (!target_node) return;
+			const node_color = target_node.color1 ?? { r: 1, g: 1, b: 1 };
+
+			const selection = this.level.nodes.all.filter((object) => {
+				const node = object.userData.node.levelNodeStatic;
+				if (!node) return false;
+				const color = node.color1 ?? { r: 1, g: 1, b: 1 };
+				if (!color) return false;
+
+				return (
+					node.material === target_node.material &&
+					(color.r ?? 0) === (node_color.r ?? 0) &&
+					(color.g ?? 0) === (node_color.g ?? 0) &&
+					(color.b ?? 0) === (node_color.b ?? 0)
+				);
+			});
+			this.select_nodes(selection);
+		},
+		select_all() {
+			this.select_nodes(this.level.nodes.all);
+		},
 		save_config() {
 			const config = {
 				zoom_to_cursor: this.zoom_to_cursor,

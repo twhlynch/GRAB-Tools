@@ -150,7 +150,9 @@ export default {
 												.LevelNodeShape[1000 + i],
 										),
 										{
-											func: undefined, // 1000 + i
+											func: () => {
+												this.select_by_shape(1000 + i);
+											},
 										},
 									];
 								},
@@ -173,7 +175,9 @@ export default {
 												.LevelNodeMaterial[i],
 										),
 										{
-											func: undefined, // i
+											func: () => {
+												this.select_by_material(i);
+											},
 										},
 									];
 								},
@@ -192,7 +196,13 @@ export default {
 										encoding.load().COD.Level.LevelNode
 											.oneofs.content.oneof[i],
 										{
-											func: undefined, // i,
+											func: () => {
+												this.select_by_type(
+													encoding.load().COD.Level
+														.LevelNode.oneofs
+														.content.oneof[i],
+												);
+											},
 										},
 									];
 								},
@@ -265,6 +275,31 @@ export default {
 	components: {},
 	emits: ['modifier', 'function', 'viewport', 'popup', 'scope'],
 	methods: {
+		select_by_material(material) {
+			this.$emit('viewport', (scope) => {
+				scope.select_by_material(material);
+			});
+		},
+		select_by_shape(shape) {
+			this.$emit('viewport', (scope) => {
+				scope.select_by_shape(shape);
+			});
+		},
+		select_by_type(type) {
+			this.$emit('viewport', (scope) => {
+				scope.select_by_type(type);
+			});
+		},
+		select_by_color() {
+			this.$emit('viewport', (scope) => {
+				scope.select_by_color();
+			});
+		},
+		select_all() {
+			this.$emit('viewport', (scope) => {
+				scope.select_all();
+			});
+		},
 		format_type(type) {
 			// FIXME: duplicate
 			return type
