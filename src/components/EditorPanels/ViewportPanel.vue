@@ -823,6 +823,24 @@ export default {
 				return json;
 			});
 		},
+		ungroup_selection() {
+			if (this.gizmo.selection.length !== 1) return;
+			this.modifier((json) => {
+				json.levelNodes = json.levelNodes.filter(
+					(n) =>
+						!this.gizmo.selection.find(
+							(o) =>
+								n ===
+								this.level.nodes.all[o.userData.id - 1].userData
+									.node,
+						),
+				);
+				json.levelNodes.push(
+					...group.ungroupNode(this.gizmo.selection[0].userData.node),
+				);
+				return json;
+			});
+		},
 		keydown(e) {
 			if (e.target === this.renderer.domElement) {
 				switch (e.code) {
@@ -1012,6 +1030,7 @@ export default {
 						object.userData.node.levelNodeFinish
 					);
 				});
+				const selected_is_group = selected_node.levelNodeGroup;
 				const can_clone = !selection.some((object) => {
 					return object.userData.node.levelNodeFinish;
 				});
@@ -1040,6 +1059,12 @@ export default {
 								func: this.group_selection,
 							},
 						}),
+						...(single_selection &&
+							selected_is_group && {
+								Ungroup: {
+									func: this.ungroup_selection,
+								},
+							}),
 						...(clicked_has_shape && {
 							Shape: {
 								...Object.fromEntries(
