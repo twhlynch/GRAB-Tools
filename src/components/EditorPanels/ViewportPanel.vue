@@ -177,7 +177,6 @@ export default {
 				this.update_animation_path_position(object);
 			});
 			this.update_trigger_path_positions(this.gizmo.selection);
-			this.dragging = true;
 		},
 		edit_event(e) {
 			this.controls.enabled = !e.value;
