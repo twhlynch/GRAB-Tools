@@ -130,6 +130,13 @@ function createLevel(
 	};
 }
 
+function node_data(object) {
+	if (!object?.userData?.node) return undefined;
+	const entries = Object.entries(object.userData.node);
+	const node = entries.find((e) => e[0].includes('levelNode'))[1];
+	return node;
+}
+
 function deepClone(node) {
 	return JSON.parse(JSON.stringify(node));
 }
@@ -446,6 +453,7 @@ export default {
 	downloadLevel,
 	downloadJSON,
 	deepClone,
+	node_data,
 	levelNodeStart,
 	levelNodeFinish,
 	levelNodeStatic,
