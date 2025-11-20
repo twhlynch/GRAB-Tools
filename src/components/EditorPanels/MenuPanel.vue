@@ -851,6 +851,7 @@ export default {
 			this.$emit('viewport', (scope) => {
 				scope.huge_far = !scope.huge_far;
 				scope.camera.far = scope.huge_far ? 4000000 : 10000;
+				scope.camera.updateProjectionMatrix();
 			});
 		},
 		toggle_triggers() {

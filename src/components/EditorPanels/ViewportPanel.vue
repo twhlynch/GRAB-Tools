@@ -148,7 +148,7 @@ export default {
 				this.$refs.viewport.clientWidth /
 					this.$refs.viewport.clientHeight,
 				0.1,
-				10000,
+				this.huge_far ? 4000000 : 10000,
 			);
 			this.camera.position.set(0, 10, 10);
 			// controls
