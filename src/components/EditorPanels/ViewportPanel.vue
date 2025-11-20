@@ -413,6 +413,7 @@ export default {
 			this.transform_space = this.gizmo.get_space();
 		},
 		select_nodes(nodes) {
+			if (this.free_movement) return;
 			this.is_animating = false;
 			this.gizmo.clear(this.level.scene);
 			nodes
