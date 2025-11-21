@@ -230,6 +230,7 @@ export default {
 						},
 						Fog: { func: this.toggle_fog },
 						Skybox: { func: this.toggle_sky },
+						'Key Hints': { func: this.toggle_key_hints },
 					},
 					'Copy Camera': { func: this.copy_camera_state },
 				},
@@ -905,6 +906,11 @@ export default {
 		show_keybinds() {
 			this.$emit('viewport', (scope) => {
 				scope.show_keybinds = true;
+			});
+		},
+		toggle_key_hints() {
+			this.$emit('viewport', (scope) => {
+				scope.show_key_hints = !scope.show_key_hints;
 			});
 		},
 	},

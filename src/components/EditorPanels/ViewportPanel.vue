@@ -41,6 +41,7 @@ export default {
 			is_animating: true,
 			show_mini_editor: false,
 			show_keybinds: true,
+			show_key_hints: true,
 		};
 	},
 	components: {
@@ -507,6 +508,7 @@ export default {
 				show_trigger_connections: this.show_trigger_connections,
 				show_fog: this.show_fog,
 				show_sky: this.show_sky,
+				show_key_hints: this.show_key_hints,
 			};
 			const configStore = useConfigStore();
 			configStore.editor_config = config;
@@ -1396,7 +1398,7 @@ export default {
 					<div>
 						<label for="modes-translate">
 							<TranslateIcon />
-							<KeyHint :bind="'T'" />
+							<KeyHint v-show="show_key_hints" :bind="'T'" />
 						</label>
 						<input
 							id="modes-translate"
@@ -1408,7 +1410,7 @@ export default {
 					<div>
 						<label for="modes-rotate">
 							<RotateIcon />
-							<KeyHint :bind="'R'" />
+							<KeyHint v-show="show_key_hints" :bind="'R'" />
 						</label>
 						<input
 							id="modes-rotate"
@@ -1420,7 +1422,7 @@ export default {
 					<div>
 						<label for="modes-scale">
 							<ScaleIcon />
-							<KeyHint :bind="'E'" />
+							<KeyHint v-show="show_key_hints" :bind="'E'" />
 						</label>
 						<input
 							id="modes-scale"
@@ -1432,7 +1434,7 @@ export default {
 					<div>
 						<label for="space">
 							<SpaceIcon />
-							<KeyHint :bind="'Q'" />
+							<KeyHint v-show="show_key_hints" :bind="'Q'" />
 						</label>
 						<input
 							id="space"
