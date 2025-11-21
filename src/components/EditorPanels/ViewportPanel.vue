@@ -17,6 +17,7 @@ import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import JsonPanel from './JsonPanel.vue';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
+import KeyHint from '@/components/EditorPanels/KeyHint.vue';
 
 export default {
 	data() {
@@ -39,6 +40,7 @@ export default {
 			contextmenu_position: { x: 0, y: 0 },
 			is_animating: true,
 			show_mini_editor: false,
+			show_keybinds: true,
 		};
 	},
 	components: {
@@ -52,6 +54,7 @@ export default {
 		JsonPanel,
 		AnimationPanel,
 		ResizableColPanel,
+		KeyHint,
 	},
 	emits: ['changed', 'modifier', 'scope'],
 	async mounted() {
@@ -394,6 +397,7 @@ export default {
 			}
 			if (e.target === this.renderer.domElement) {
 				this.controls.isMouseActive = true;
+				this.show_keybinds = false;
 			}
 		},
 		mouseup(e) {
@@ -1392,6 +1396,7 @@ export default {
 					<div>
 						<label for="modes-translate">
 							<TranslateIcon />
+							<KeyHint :bind="'T'" />
 						</label>
 						<input
 							id="modes-translate"
@@ -1403,6 +1408,7 @@ export default {
 					<div>
 						<label for="modes-rotate">
 							<RotateIcon />
+							<KeyHint :bind="'R'" />
 						</label>
 						<input
 							id="modes-rotate"
@@ -1414,6 +1420,7 @@ export default {
 					<div>
 						<label for="modes-scale">
 							<ScaleIcon />
+							<KeyHint :bind="'E'" />
 						</label>
 						<input
 							id="modes-scale"
@@ -1425,6 +1432,7 @@ export default {
 					<div>
 						<label for="space">
 							<SpaceIcon />
+							<KeyHint :bind="'Q'" />
 						</label>
 						<input
 							id="space"
@@ -1464,6 +1472,19 @@ export default {
 						/>
 					</div>
 				</div>
+				<transition name="slide-up">
+					<div v-if="show_keybinds" class="hints">
+						<div><KeyHint :bind="'X'" />Delete</div>
+						<div><KeyHint :bind="'G'" />Group</div>
+						<div><KeyHint :bind="'C'" />Clone</div>
+						<div><KeyHint :bind="'Left'" />Pan & Select</div>
+						<div><KeyHint :bind="'Right'" />Orbit</div>
+						<div><KeyHint :bind="'Shift'" />Multi select</div>
+						<div><KeyHint :bind="'Scroll'" />Zoom</div>
+						<div><KeyHint :bind="'WASDEQ'" />Move</div>
+						<div><KeyHint :bind="'Shift'" />Sprint</div>
+					</div>
+				</transition>
 			</section>
 		</template>
 		<template #second>
@@ -1481,6 +1502,23 @@ export default {
 }
 </style>
 <style scoped>
+.slide-up-enter-active,
+.slide-up-leave-active {
+	transition: all 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+	opacity: 0;
+	transform: translateY(20px);
+}
+
+.slide-up-leave-from,
+.slide-up-enter-to {
+	opacity: 1;
+	transform: translateY(0);
+}
+
 .mini-editor {
 	position: absolute;
 	z-index: 1;
@@ -1520,6 +1558,7 @@ canvas {
 	label {
 		padding: 0.3rem;
 		display: flex;
+		position: relative;
 	}
 
 	> div {
@@ -1540,5 +1579,24 @@ canvas {
 }
 .controls {
 	bottom: 0.5rem;
+}
+.hints {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	top: 0.5rem;
+	left: 0.5rem;
+	pointer-events: none;
+
+	div {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	i {
+		position: static;
+	}
 }
 </style>
