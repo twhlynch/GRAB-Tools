@@ -9,6 +9,7 @@ import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
+import * as THREE from 'three';
 
 export default {
 	data() {
@@ -832,6 +833,115 @@ export default {
 		monochrome_level() {
 			this.$emit('modifier', (json) => {
 				json.levelNodes = monochrome.monochrome(json.levelNodes);
+				return json;
+			});
+		},
+		randomize_materials() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						if (child.levelNodeStatic) {
+							child.levelNodeStatic.material =
+								encoding.random_material();
+						}
+					});
+				});
+				return json;
+			});
+		},
+		randomize_shapes() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						const data = encoding.node_data(child);
+						if (data.shape) {
+							data.shape = encoding.random_shape();
+						}
+					});
+				});
+				return json;
+			});
+		},
+		randomize_positions() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						const data = encoding.node_data(child);
+						data.position.x =
+							Math.random() - 0.5 + (data.position?.x ?? 0);
+						data.position.y =
+							Math.random() - 0.5 + (data.position?.y ?? 0);
+						data.position.z =
+							Math.random() - 0.5 + (data.position?.z ?? 0);
+					});
+				});
+				return json;
+			});
+		},
+		randomize_rotations() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						const data = encoding.node_data(child);
+						if (data.rotation) {
+							const quat = new THREE.Quaternion(
+								Math.random(),
+								Math.random(),
+								Math.random(),
+								Math.random(),
+							);
+							quat.normalize();
+							data.rotation.x = quat.x;
+							data.rotation.y = quat.y;
+							data.rotation.z = quat.z;
+							data.rotation.w = quat.w;
+						}
+					});
+				});
+				return json;
+			});
+		},
+		randomize_scales() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						const data = encoding.node_data(child);
+						if (data.scale && typeof data.scale === 'object') {
+							data.scale.x =
+								Math.random() - 0.5 + (data.scale?.x ?? 0);
+							data.scale.y =
+								Math.random() - 0.5 + (data.scale?.y ?? 0);
+							data.scale.z =
+								Math.random() - 0.5 + (data.scale?.z ?? 0);
+						}
+						if (data.scale && typeof data.scale === 'number') {
+							data.scale = Math.random() - 0.5 + data.scale;
+						}
+						if (data.radius) {
+							data.radius = Math.random() - 0.5 + data.radius;
+						}
+					});
+				});
+				return json;
+			});
+		},
+		randomize_colors() {
+			this.$emit('modifier', (json) => {
+				json.levelNodes.forEach((node) => {
+					encoding.traverse_node(node, (child) => {
+						const data = encoding.node_data(child);
+						if (data.color1) {
+							data.color1.r = Math.random();
+							data.color1.g = Math.random();
+							data.color1.b = Math.random();
+						}
+						if (data.color2) {
+							data.color2.r = Math.random();
+							data.color2.g = Math.random();
+							data.color2.b = Math.random();
+						}
+					});
+				});
 				return json;
 			});
 		},

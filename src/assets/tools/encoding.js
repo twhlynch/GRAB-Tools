@@ -453,6 +453,18 @@ function traverse_node(node, func) {
 	func(node);
 }
 
+function random_material() {
+	const length = Object.entries(load().COD.Level.LevelNodeMaterial).length;
+	return Math.floor(Math.random() * length);
+}
+function random_shape() {
+	const length =
+		Object.entries(load().COD.Level.LevelNodeShape).length -
+		load().COD.Level.LevelNodeShape.__END_OF_SPECIAL_PARTS__ -
+		1;
+	return 1000 + Math.floor(Math.random() * length);
+}
+
 export default {
 	decodeLevel,
 	encodeLevel,
@@ -482,4 +494,6 @@ export default {
 	triggerSourceBasic,
 	triggerSourceBlockNames,
 	traverse_node,
+	random_material,
+	random_shape,
 };
