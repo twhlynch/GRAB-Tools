@@ -31,41 +31,31 @@ export default {
 
 <template>
 	<main>
-		<section id="extension-update">
-			<h2>Extension Update!</h2>
-			<p>
-				Your GRAB Tools extension is out of date! Go install the newest
-				version from
-				<a href="https://github.com/twhlynch/grab-tools-extension"
-					>github.com/twhlynch/grab-tools-extension</a
-				>.
-			</p>
-		</section>
 		<section id="info">
 			<h2>GRAB Tools</h2>
 			<p>
-				Welcome to GRAB Tools! A collection of modding tools, resources,
-				statistics and more for the VR game
+				Welcome to GRAB Tools! A collection of tools, statistics and
+				more for the VR game
 				<a href="https://grabvr.quest">GRAB</a>. Brought to you by
 				<a href="https://twhlynch.me">.index</a>.
 			</p>
 			<p>
-				Here you will find the <a href="/editor">JSON Level Editor</a>,
-				a combination of many tools for editing levels in JSON and 3D,
-				running pre-made functions to modify levels, and the cheat sheet
-				developed by me and MiloJenSopha to generate levels with modded
-				objects. There are also a large amount of
-				<a href="/stats">stats and leaderboards</a> such as the unbeaten
-				levels list, and most played levels list. Even a
+				Here you will find many tools for editing, or generating levels,
+				including the <a href="/editor">JSON Editor</a>. <br />There a
+				large amount of <a href="/stats">stats and leaderboards</a> such
+				as the unbeaten levels list, and most played levels list, and a
+				managed list of the top levels and players.<br />
+				We also have a community maintained
 				<a href="https://grabvr.miraheze.org/wiki/.index">wiki page</a>
-				hosted on miraheze.
+				hosted with miraheze, and a chrome extension to add some extra
+				utility to the
+				<a href="https://grabvr.quest/levels">level browser</a>.
 			</p>
 		</section>
 		<section id="tools">
 			<a class="button" href="/editor" target="_blank"
 				>JSON Level Editor</a
 			>
-			<a class="button" href="/search" target="_blank">Advanced Search</a>
 			<a class="button" href="/list">
 				<GHLLogoIcon class="ghl-icon" />
 				Hardest Levels
@@ -80,8 +70,8 @@ export default {
 		<section id="bookmarklets">
 			<h2>Bookmarklets</h2>
 			<p>
-				Drag these onto your bookmarks bar and click to run them while
-				in the level browser.
+				Drag these tools onto your bookmarks bar and click to run them
+				while in the level browser.
 			</p>
 			<p>
 				Also check out the
@@ -119,13 +109,28 @@ export default {
 				:script="'CustomColors.js'"
 			/>
 		</section>
+		<section id="editor">
+			<div>
+				<h2>JSON Editor</h2>
+				<p>
+					The JSON Editor is a combined JSON and 3D level editor that
+					lets you build, import, modify, or explore levels however
+					you like. You can edit things directly in JSON, run scripts
+					on nodes, or just grab objects in the 3D view and move,
+					scale, animate, group, and more. It's built to make messing
+					with levels easy without having to open the game, with tools
+					for adding objects, images, videos, triggers, animations,
+					and more.
+				</p>
+			</div>
+			<img
+				src="/images/thumbnails/json-editor.jpeg"
+				alt="The JSON Editor"
+			/>
+		</section>
 		<section id="state">
 			<h2>Help</h2>
 			<div id="socials">
-				<a href="https://github.com/twhlynch" class="social">
-					<GithubIcon />
-					<span>@twhlynch</span>
-				</a>
 				<a
 					href="https://discordapp.com/users/649165311257608192"
 					class="social"
@@ -133,20 +138,24 @@ export default {
 					<DiscordAltIcon />
 					<span> @.index </span>
 				</a>
+				<a href="https://github.com/twhlynch" class="social">
+					<GithubIcon />
+					<span>@twhlynch</span>
+				</a>
 				<a href="https://youtube.com/@dotindex" class="social">
 					<YoutubeIcon />
 					<span> @dotindex </span>
 				</a>
-				<a href="mailto:twhlynch.index@gmail.com" class="social">
+				<a href="mailto:tom@twhlynch.me" class="social">
 					<MailIcon />
 					<span> Email </span>
 				</a>
 			</div>
 			<p>
 				If you need help with anything, you should join the
-				<a href="/discord">discord server</a>, but feel free to contact
-				me on any of my socials, or if you prefer, you can email me at
-				twhlynch.index@gmail.com.
+				<a href="http://discord.grabvr.quest">discord server</a>, but
+				feel free to contact me on any of my socials, or if you prefer,
+				you can email me at tom@twhlynch.me.
 			</p>
 		</section>
 	</main>
@@ -191,6 +200,23 @@ export default {
 	gap: var(--padding-secondary);
 	padding-block: var(--padding-secondary);
 	flex-wrap: wrap;
+}
+#editor {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 2rem;
+
+	> div {
+		width: 100%;
+	}
+
+	img {
+		width: 100%;
+		border-radius: var(--border-radius);
+		outline: 1px solid #fff4;
+		margin: auto;
+		max-width: 40ch;
+	}
 }
 #state span,
 #currentTime,

@@ -18,7 +18,9 @@ export default {
 		<NavMenu />
 		<router-view />
 		<footer class="footer">
-			<span>twhlynch</span><span>•</span><span>.index</span>
+			<span><a href="https://twhlynch.me">twhlynch</a></span
+			><span>•</span
+			><span><a href="https://github.com/twhlynch">.index</a></span>
 		</footer>
 	</div>
 </template>
@@ -149,6 +151,10 @@ body:has(.main-layout) {
 		place-items: center;
 		grid-template-columns: 1fr 0.1fr 1fr;
 		gap: var(--padding-secondary);
+		a {
+			color: inherit;
+			text-decoration: none;
+		}
 	}
 	.footer span {
 		width: 100%;
