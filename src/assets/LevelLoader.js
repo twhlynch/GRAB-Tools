@@ -1047,7 +1047,15 @@ class LevelLoader {
 					}
 
 					object = new THREE.Mesh(
-						shapes[(node.levelNodeStatic.shape ?? 1000) - 1000],
+						shapes[
+							Math.min(
+								Math.max(
+									(node.levelNodeStatic.shape ?? 1000) - 1000,
+									0,
+								),
+								shapes.length - 1,
+							)
+						],
 						newMaterial,
 					);
 					parentNode.add(object);
@@ -1097,7 +1105,16 @@ class LevelLoader {
 						material.uniforms.colorTexture;
 
 					object = new THREE.Mesh(
-						shapes[(node.levelNodeCrumbling.shape ?? 1000) - 1000],
+						shapes[
+							Math.min(
+								Math.max(
+									(node.levelNodeCrumbling.shape ?? 1000) -
+										1000,
+									0,
+								),
+								shapes.length - 1,
+							)
+						],
 						newMaterial,
 					);
 					parentNode.add(object);
@@ -1176,7 +1193,16 @@ class LevelLoader {
 					newMaterial.transparent = true;
 					newMaterial.uniforms.transparentEnabled.value = 1.0;
 					object = new THREE.Mesh(
-						shapes[(node.levelNodeTrigger.shape ?? 1000) - 1000],
+						shapes[
+							Math.min(
+								Math.max(
+									(node.levelNodeTrigger.shape ?? 1000) -
+										1000,
+									0,
+								),
+								shapes.length - 1,
+							)
+						],
 						newMaterial,
 					);
 
