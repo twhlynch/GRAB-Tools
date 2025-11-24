@@ -11,6 +11,7 @@ import { useConfigStore } from '@/stores/config.js';
 import TranslateIcon from '@/icons/TranslateIcon.vue';
 import RotateIcon from '@/icons/RotateIcon.vue';
 import ScaleIcon from '@/icons/ScaleIcon.vue';
+import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';
 import SpaceIcon from '@/icons/SpaceIcon.vue';
 import group from '@/assets/tools/group.js';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
@@ -51,6 +52,7 @@ export default {
 		RotateIcon,
 		ScaleIcon,
 		SpaceIcon,
+		OneSidedScaleIcon,
 		ContextMenu,
 		JsonPanel,
 		AnimationPanel,
@@ -406,7 +408,13 @@ export default {
 		},
 		set_transform_mode(mode) {
 			this.transform_mode = mode;
-			this.gizmo.set_mode(this.transform_mode);
+			if (mode === 'one_sided') {
+				this.gizmo.set_mode('scale');
+				this.gizmo.set_one_sided(true);
+			} else {
+				this.gizmo.set_mode(mode);
+				this.gizmo.set_one_sided(false);
+			}
 		},
 		transform_mode_event(e) {
 			const mode = e.target.id.split('-')[1];
@@ -857,6 +865,10 @@ export default {
 
 					case 'KeyE':
 						this.set_transform_mode('scale');
+						break;
+
+					case 'KeyF':
+						this.set_transform_mode('one_sided');
 						break;
 
 					case 'KeyR':
@@ -1422,6 +1434,18 @@ export default {
 							id="modes-scale"
 							type="checkbox"
 							:checked="transform_mode === 'scale'"
+							@click="transform_mode_event"
+						/>
+					</div>
+					<div>
+						<label for="modes-one_sided">
+							<OneSidedScaleIcon />
+							<KeyHint v-show="show_key_hints" :bind="'F'" />
+						</label>
+						<input
+							id="modes-one_sided"
+							type="checkbox"
+							:checked="transform_mode === 'one_sided'"
 							@click="transform_mode_event"
 						/>
 					</div>
