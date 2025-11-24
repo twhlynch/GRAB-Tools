@@ -375,6 +375,59 @@ export default {
 				);
 			});
 		},
+		open_cheat_sheet() {
+			this.$emit('modifier', (_) => {
+				const modded_shapes = [
+					null,
+					...Object.values(encoding.shapes()),
+					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 1,
+					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 2,
+					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 3,
+				];
+				const modded_materials = [
+					null,
+					...Object.values(encoding.materials()),
+					...Array.from(
+						{
+							length:
+								Object.values(encoding.materials()).length * 2 -
+								1 -
+								1,
+						},
+						(_, i) =>
+							i -
+							Object.values(encoding.materials()).length +
+							1 +
+							1,
+					),
+				];
+
+				const nodes = [];
+
+				for (let i in modded_shapes) {
+					for (let j in modded_materials) {
+						const node = encoding.levelNodeStatic();
+						const data = node.levelNodeStatic;
+						data.shape = modded_shapes[i];
+						data.material = modded_materials[j];
+						data.position = { x: i, z: j };
+						data.color1 = { r: 1, g: 1, b: 1 };
+						data.color2 = { r: 1, g: 1, b: 1 };
+						data.isNeon = true;
+						data.isTransparent = true;
+						nodes.push(node);
+					}
+				}
+				const level = encoding.createLevel(
+					nodes,
+					'The Cheat Sheet',
+					`All possible types for v${this.$config.FORMAT_VERSION} All objects are neon and transparent`,
+					'.index',
+				);
+
+				return level;
+			});
+		},
 		save_gltf() {
 			this.$emit('viewport', (scope) => {
 				const exporter = new GLTFExporter();
