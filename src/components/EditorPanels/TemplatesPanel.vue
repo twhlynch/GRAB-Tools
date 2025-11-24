@@ -115,6 +115,30 @@ export default {
 					path: 'lobbies/grab-shopping-center.level',
 				},
 				{
+					name: 'Lobby november castle 2025',
+					path: 'lobbies/lobby-november-2025-castle.level',
+				},
+				{
+					name: 'Lobby november 2025',
+					path: 'lobbies/lobby-november-2025.level',
+				},
+				{
+					name: 'Lobby halloween extra 2025',
+					path: 'lobbies/lobby-halloween-2025-extra.level',
+				},
+				{
+					name: 'Lobby halloween 2025',
+					path: 'lobbies/lobby-halloween-2025.level',
+				},
+				{
+					name: 'Lobby movie studio minigames 2025',
+					path: 'lobbies/lobby-movie-studio-minigames-2025.level',
+				},
+				{
+					name: 'Lobby movie studio 2025',
+					path: 'lobbies/lobby-movie-studio-2025.level',
+				},
+				{
 					name: 'Lobby museum atrium 2025',
 					path: 'lobbies/lobby-museum-atrium-2025.level',
 				},
