@@ -32,6 +32,9 @@ import WarningIcon from '@/icons/WarningIcon.vue';
 import CalendarBlankIcon from '@/icons/CalendarBlankIcon.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
 
+import StatsLoader from '@/assets/StatsLoader';
+import LeaderboardCard from '@/components/LeaderboardCard.vue';
+
 export default {
 	components: {
 		UserIcon,
@@ -64,6 +67,7 @@ export default {
 		WarningIcon,
 		CalendarBlankIcon,
 		ProgressBar,
+		LeaderboardCard,
 	},
 	data() {
 		return {
@@ -72,110 +76,110 @@ export default {
 				{
 					icon: PersonIcon, name: 'Personalised',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_personalised_stats },
 					],
 				},
 				{
 					icon: FireIcon, name: 'Trending',
 					lists: [
-						{ icon: MapIcon, name: 'Maps', generator: this.most_liked_levels },
-						{ icon: PeopleIcon, name: 'Creators', generator: this.most_liked_levels },
-						{ icon: CalendarIcon, name: 'Weekly', generator: this.most_liked_levels },
-						{ icon: CalendarIcon, name: 'Monthly', generator: this.most_liked_levels },
-						{ icon: CalendarIcon, name: 'Yearly', generator: this.most_liked_levels },
+						{ icon: MapIcon, name: 'Maps', generator: StatsLoader.get_trending_maps },
+						{ icon: PeopleIcon, name: 'Creators', generator: StatsLoader.get_trending_creators },
+						{ icon: CalendarIcon, name: 'Weekly', generator: StatsLoader.get_weekly_trending_maps },
+						{ icon: CalendarIcon, name: 'Monthly', generator: StatsLoader.get_monthly_trending_maps },
+						{ icon: CalendarIcon, name: 'Yearly', generator: StatsLoader.get_yearly_trending_maps },
 					],
 				},
 				{
 					icon: BlockedIcon, name: 'Unbeaten',
 					lists: [
-						{ icon: CheckmarkIcon, name: 'Verifier', generator: this.most_liked_levels },
-						{ icon: PlusIcon, name: 'Created', generator: this.most_liked_levels },
-						{ icon: RefreshedIcon, name: 'Updated', generator: this.most_liked_levels },
-						{ icon: GradCapIcon, name: 'Sole', generator: this.most_liked_levels },
-						{ icon: WrenchIcon, name: 'Creators', generator: this.most_liked_levels },
+						{ icon: CheckmarkIcon, name: 'Verifier', generator: StatsLoader.get_unbeaten_maps },
+						{ icon: PlusIcon, name: 'Created', generator: StatsLoader.get_unbeaten_maps_by_creation },
+						{ icon: RefreshedIcon, name: 'Updated', generator: StatsLoader.get_unbeaten_maps_by_update },
+						{ icon: GradCapIcon, name: 'Sole', generator: StatsLoader.get_sole_beaten_maps },
+						{ icon: WrenchIcon, name: 'Creators', generator: StatsLoader.get_unbeaten_creators },
 					],
 				},
 				{
 					icon: SearchAltIcon, name: 'Search',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_search_stats },
 					],
 				},
 				{
 					icon: CheckmarkIcon, name: 'Verified Maps',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_most_verified_players },
 					],
 				},
 				{
 					icon: UserIcon, name: 'Plays',
 					lists: [
-						{ icon: PeopleIcon, name: 'Creators', generator: this.most_liked_levels },
-						{ icon: MapIcon, name: 'Maps', generator: this.most_liked_levels },
+						{ icon: PeopleIcon, name: 'Creators', generator: StatsLoader.get_most_plays_creators },
+						{ icon: MapIcon, name: 'Maps', generator: StatsLoader.get_most_played_maps },
 					],
 				},
 				{
 					icon: HeartIcon, name: 'Liked',
 					lists: [
-						{ icon: ThumbsUpIcon, name: 'Liked', generator: this.most_liked_levels },
-						{ icon: ThumbsDownIcon, name: 'Disliked', generator: this.most_liked_levels },
+						{ icon: ThumbsUpIcon, name: 'Liked', generator: StatsLoader.get_most_liked_maps },
+						{ icon: ThumbsDownIcon, name: 'Disliked', generator: StatsLoader.get_most_disliked_maps },
 					],
 				},
 				{
 					icon: ClockIcon, name: 'Longest',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_longest_time_maps },
 					],
 				},
 				{
 					icon: CalendarIcon, name: 'Daily',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_daily_map },
 					],
 				},
 				{
 					icon: StarAltIcon, name: 'Featured',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_most_featured_creators },
 					],
 				},
 				{
 					icon: CheckmarkAltIcon, name: 'Best of GRAB',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_best_of_grab },
 					],
 				},
 				{
 					icon: PieChartIcon, name: 'Difficulties',
 					lists: [
-						{ name: 'All', generator: this.most_liked_levels },
-						{ name: 'Easy', generator: this.most_liked_levels },
-						{ name: 'Medium', generator: this.most_liked_levels },
-						{ name: 'Hard', generator: this.most_liked_levels },
-						{ name: 'Very Hard', generator: this.most_liked_levels },
+						{ name: 'All', generator: StatsLoader.get_all_completions },
+						{ name: 'Easy', generator: StatsLoader.get_easy_completions },
+						{ name: 'Medium', generator: StatsLoader.get_medium_completions },
+						{ name: 'Hard', generator: StatsLoader.get_hard_completions },
+						{ name: 'Very Hard', generator: StatsLoader.get_very_hard_completions },
 					],
 				},
 				{
 					icon: GlobeIcon, name: 'Global',
 					lists: [
-						{ name: 'Default', generator: this.most_liked_levels },
+						{ name: 'Default', generator: StatsLoader.get_global_stats },
 					],
 				},
 				{
 					icon: TrophyIcon, name: 'Records',
 					lists: [
-						{ icon: FlagIcon, name: 'Top 1s', generator: this.most_liked_levels },
-						{ icon: ListIcon, name: 'Top 100s', generator: this.most_liked_levels },
-						{ icon: ClockIcon, name: 'First to beat', generator: this.most_liked_levels },
-						{ icon: ClockIcon, name: 'Playtime', generator: this.most_liked_levels },
-						{ icon: GradCapIcon, name: 'Sole', generator: this.most_liked_levels },
+						{ icon: FlagIcon, name: 'Top 1s', generator: StatsLoader.get_most_records },
+						{ icon: ListIcon, name: 'Top 100s', generator: StatsLoader.get_most_completions },
+						{ icon: ClockIcon, name: 'First to beat', generator: StatsLoader.get_most_first_completions },
+						{ icon: ClockIcon, name: 'Playtime', generator: StatsLoader.get_most_playtime },
+						{ icon: GradCapIcon, name: 'Sole', generator: StatsLoader.get_most_sole_completions },
 					],
 				},
 				{
 					icon: CoinIcon, name: 'Tipping',
 					lists: [
-						{ icon: MapIcon, name: 'Maps', generator: this.most_liked_levels },
-						{ icon: PeopleIcon, name: 'Creators', generator: this.most_liked_levels },
+						{ icon: MapIcon, name: 'Maps', generator: StatsLoader.get_most_tipped_maps },
+						{ icon: PeopleIcon, name: 'Creators', generator: StatsLoader.get_most_tipped_creators },
 					],
 				},
 			],
@@ -183,16 +187,18 @@ export default {
 			current_list: undefined,
 			current_tab: undefined,
 			progress: 0,
+			current_data: [],
 		};
 	},
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
 	methods: {
-		set_tab(tab, filter = null) {
-			if (!tab) return;
+		async set_tab(tab, filter = null) {
+			if (!tab || (tab === this.current_tab && !filter)) return;
 
 			const params = new URLSearchParams(window.location.search);
+			params.delete('filter');
 			params.set('tab', tab);
 			if (filter) params.set('filter', filter);
 			window.history.replaceState(
@@ -210,6 +216,12 @@ export default {
 				);
 			} else {
 				this.current_list = this.current_section.lists[0];
+			}
+
+			this.current_data = [];
+			if (this.current_list?.generator) {
+				this.current_data = await this.current_list.generator();
+				console.log(this.current_data);
 			}
 		},
 	},
@@ -287,19 +299,12 @@ export default {
 		</section>
 		<section id="statistics">
 			<ProgressBar :progress="progress" />
-			<div
-				v-for="[section, list] of sections.flatMap((section) =>
-					section.lists.map((list) => [section, list]),
-				)"
-				:key="list.name"
-				class="leaderboard-output"
-				:id="list.name + '-out'"
-				v-show="
-					current_section?.name === section.name &&
-					current_list?.name === list.name
-				"
-			>
-				{{ list.name }}
+			<div class="leaderboard-output">
+				<LeaderboardCard
+					v-for="(entry, i) of current_data.slice(0, 200)"
+					:key="i"
+					:data="entry"
+				/>
 			</div>
 		</section>
 	</main>

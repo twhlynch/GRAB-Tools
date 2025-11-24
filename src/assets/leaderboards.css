@@ -45,7 +45,9 @@
 	font-weight: 600;
 }
 
-.leaderboard-item img {
+.leaderboard-item img,
+.leaderboard-item svg,
+.leaderboard-item span:has(> svg) {
 	height: 35px;
 	aspect-ratio: 512/288;
 	border-radius: 3px;
