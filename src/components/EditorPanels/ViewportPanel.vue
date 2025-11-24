@@ -1078,21 +1078,16 @@ export default {
 										{
 											length:
 												Object.entries(
-													this.level.root.COD.Level
-														.LevelNodeShape,
+													encoding.shapes(),
 												).length -
-												this.level.root.COD.Level
-													.LevelNodeShape
+												encoding.shapes()
 													.__END_OF_SPECIAL_PARTS__ -
 												1,
 										},
 										(_, i) => {
 											return [
 												this.format_type(
-													this.level.root.COD.Level
-														.LevelNodeShape[
-														1000 + i
-													],
+													encoding.shapes()[1000 + i],
 												),
 												{
 													func: () => {
@@ -1113,15 +1108,13 @@ export default {
 									Array.from(
 										{
 											length: Object.entries(
-												this.level.root.COD.Level
-													.LevelNodeMaterial,
+												encoding.materials(),
 											).length,
 										},
 										(_, i) => {
 											return [
 												this.format_type(
-													this.level.root.COD.Level
-														.LevelNodeMaterial[i],
+													encoding.materials()[i],
 												),
 												{
 													func: () => {

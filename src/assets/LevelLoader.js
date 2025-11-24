@@ -3,7 +3,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
-import * as protobuf from 'protobufjs';
 import encoding from '@/assets/tools/encoding.js';
 
 import * as SHADERS from './shaders/shaders.js';
@@ -369,10 +368,10 @@ class LevelLoader {
 		root.COD.Level.LevelNode.oneofs.content.fieldsArray.forEach((field) => {
 			level.nodes[field.name] = [];
 		});
-		Object.values(root.COD.Level.LevelNodeShape).forEach((value) => {
+		Object.values(encoding.shapes()).forEach((value) => {
 			level.nodes.shape[value] = [];
 		});
-		Object.values(root.COD.Level.LevelNodeMaterial).forEach((value) => {
+		Object.values(encoding.materials()).forEach((value) => {
 			level.nodes.material[value] = [];
 		});
 		const LevelMessage = root.lookupType('COD.Level.Level');

@@ -17,6 +17,7 @@ import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
 import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
 import TemplatesPanel from '@/components/EditorPanels/TemplatesPanel.vue';
+import ProtobufPanel from '@/components/EditorPanels/ProtobufPanel.vue';
 
 export default {
 	components: {
@@ -29,6 +30,7 @@ export default {
 		PopupPanel,
 		StatisticsPanel,
 		TemplatesPanel,
+		ProtobufPanel,
 	},
 	data() {
 		return {
@@ -36,6 +38,7 @@ export default {
 				inputs: undefined,
 				func: undefined,
 			},
+			show_protobuf_panel: false,
 		};
 	},
 	computed: {
@@ -134,6 +137,18 @@ export default {
 		resize_left() {
 			this.$refs.left_panel.size();
 		},
+		set_protobuf(protobuf) {
+			window.toast('protobuf');
+			console.log(protobuf);
+			encoding.set_protobuf(protobuf);
+		},
+		open_protobuf() {
+			this.$refs.protobuf_panel.set(encoding.get_protobuf());
+			this.show_protobuf_panel = true;
+		},
+		close_protobuf() {
+			this.show_protobuf_panel = false;
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -189,6 +204,13 @@ export default {
 			<StatisticsPanel ref="statistics" />
 		</footer>
 		<PopupPanel :inputs="popup_props.inputs" :func="popup_props.func" />
+		<ProtobufPanel
+			class="protobuf-panel"
+			v-show="show_protobuf_panel"
+			@set="set_protobuf"
+			@close="close_protobuf"
+			ref="protobuf_panel"
+		/>
 	</main>
 </template>
 
@@ -202,6 +224,14 @@ html:has(#editor) {
 }
 </style>
 <style scoped>
+.protobuf-panel {
+	width: 80%;
+	height: 80%;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
 #editor {
 	display: flex;
 	flex-direction: column;

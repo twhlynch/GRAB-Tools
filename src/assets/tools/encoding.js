@@ -2,16 +2,70 @@ import protobuf from 'protobufjs';
 import { FORMAT_VERSION } from '@/config';
 import definition from '@/assets/proto/proto.proto?raw';
 
+let protobuf_definition = definition;
+const vanilla_root = protobuf.parse(protobuf_definition).root;
+add_modded_types();
+
 /**
  * @returns {protobuf.Root} - The level message root
  */
 function load() {
 	if (window._root === undefined) {
-		const { root } = protobuf.parse(definition);
+		const { root } = protobuf.parse(protobuf_definition);
 		window._root = root;
 	}
 
 	return window._root;
+}
+
+function set_protobuf(new_definition) {
+	protobuf_definition = new_definition;
+	window._root = undefined;
+}
+
+function get_protobuf() {
+	return protobuf_definition;
+}
+
+function add_modded_types() {
+	const root = load();
+
+	let modded_shapes = '';
+	let modded_materials = '';
+
+	let current_materials = Object.values(root.COD.Level.LevelNodeMaterial);
+	let current_shapes = Object.values(root.COD.Level.LevelNodeShape);
+
+	for (let i = -2000; i < 2000; i++) {
+		if (!current_materials.includes(i)) {
+			modded_materials += `_M${i}=${i};`.replace('-', 'N');
+		}
+		if (!current_shapes.includes(i)) {
+			modded_shapes += `_S${i}=${i};`.replace('-', 'N');
+		}
+	}
+
+	protobuf_definition = protobuf_definition.replace(
+		'// modded materials',
+		`// modded materials\n  ${modded_materials}`,
+	);
+	protobuf_definition = protobuf_definition.replace(
+		'// modded shapes',
+		`// modded shapes\n  ${modded_shapes}`,
+	);
+
+	window._root = undefined;
+}
+
+function unmodded_root() {
+	return vanilla_root;
+}
+
+function materials() {
+	return vanilla_root.COD.Level.LevelNodeMaterial;
+}
+function shapes() {
+	return vanilla_root.COD.Level.LevelNodeShape;
 }
 
 /**
@@ -454,21 +508,24 @@ function traverse_node(node, func) {
 }
 
 function random_material() {
-	const length = Object.entries(load().COD.Level.LevelNodeMaterial).length;
+	const length = Object.entries(materials()).length;
 	return Math.floor(Math.random() * length);
 }
 function random_shape() {
 	const length =
-		Object.entries(load().COD.Level.LevelNodeShape).length -
-		load().COD.Level.LevelNodeShape.__END_OF_SPECIAL_PARTS__ -
-		1;
+		Object.entries(shapes()).length - shapes().__END_OF_SPECIAL_PARTS__ - 1;
 	return 1000 + Math.floor(Math.random() * length);
 }
 
 export default {
+	load,
+	set_protobuf,
+	get_protobuf,
+	unmodded_root,
+	materials,
+	shapes,
 	decodeLevel,
 	encodeLevel,
-	load,
 	createLevel,
 	downloadLevel,
 	downloadJSON,

@@ -135,19 +135,16 @@ export default {
 							Array.from(
 								{
 									length:
-										Object.entries(
-											encoding.load().COD.Level
-												.LevelNodeShape,
-										).length -
-										encoding.load().COD.Level.LevelNodeShape
+										Object.entries(encoding.shapes())
+											.length -
+										encoding.shapes()
 											.__END_OF_SPECIAL_PARTS__ -
 										1,
 								},
 								(_, i) => {
 									return [
 										this.format_type(
-											encoding.load().COD.Level
-												.LevelNodeShape[1000 + i],
+											encoding.shapes()[1000 + i],
 										),
 										{
 											func: () => {
@@ -163,16 +160,13 @@ export default {
 						...Object.fromEntries(
 							Array.from(
 								{
-									length: Object.entries(
-										encoding.load().COD.Level
-											.LevelNodeMaterial,
-									).length,
+									length: Object.entries(encoding.materials())
+										.length,
 								},
 								(_, i) => {
 									return [
 										this.format_type(
-											encoding.load().COD.Level
-												.LevelNodeMaterial[i],
+											encoding.materials()[i],
 										),
 										{
 											func: () => {
@@ -344,6 +338,10 @@ export default {
 		save_level() {
 			this.$emit('function', async (json) => {
 				const level = await encoding.encodeLevel(json);
+				if (!level) {
+					window.toast('Invalid level data', 'error');
+					return;
+				}
 				encoding.downloadLevel(level);
 			});
 		},
@@ -1021,6 +1019,11 @@ export default {
 		toggle_key_hints() {
 			this.$emit('viewport', (scope) => {
 				scope.show_key_hints = !scope.show_key_hints;
+			});
+		},
+		edit_protobuf() {
+			this.$emit('scope', (scope) => {
+				scope.open_protobuf();
 			});
 		},
 	},

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package COD.Level;
 
+// level.proto
+
 message Level {
   uint32 formatVersion = 1;
   string title = 2;
@@ -18,6 +20,8 @@ message Level {
 
   repeated LevelNode levelNodes = 6;
 }
+
+// types.proto
 
 message Vector {
   float x = 1;
@@ -73,6 +77,8 @@ enum LevelNodeShape {
   PRISM = 1004;
   CONE = 1005;
   PYRAMIDSQUARE = 1006;
+
+  // modded shapes
 }
 
 enum LevelNodeMaterial {
@@ -90,6 +96,8 @@ enum LevelNodeMaterial {
   SNOW = 10;
 
   TRIGGER = 11;
+
+  // modded materials
 }
 
 enum InterpolationType {

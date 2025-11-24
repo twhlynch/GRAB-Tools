@@ -95,7 +95,7 @@ function get_completions(completions, doc, pos) {
 }
 
 export function grabCompletion() {
-	const root = encoding.load();
+	const root = encoding.unmodded_root();
 	root.resolveAll();
 	const enums = collect_enums(root);
 	const completions = collect_completions(enums);
