@@ -21,6 +21,8 @@ class GizmoControls {
 		this.controls.setSize(1);
 		this.controls.enabled = true;
 
+		this.one_sided = false;
+
 		this.controls.addEventListener('change', (e) => {
 			this.handle_transform_change();
 			if (typeof changing_event === 'function') {
@@ -38,33 +40,55 @@ class GizmoControls {
 		this.scene.add(this.controls);
 	}
 
+	set_one_sided(one_sided) {
+		this.one_sided = one_sided;
+	}
+
 	handle_dragging_changed(event) {
 		const isDragging = event.value;
 
 		if (isDragging) {
 			this.pivot.updateMatrixWorld(true);
+			const pivot_matrix = this.pivot.matrixWorld.clone();
+			const pivot_inverse = pivot_matrix.clone().invert();
 
-			const pivotMatrix = this.pivot.matrixWorld.clone();
-			const pivotInverse = pivotMatrix.clone().invert();
+			const box = new THREE.Box3();
+			this.selection.forEach(obj => box.expandByObject(obj));
+			const size = new THREE.Vector3();
+			box.getSize(size);
+
+			let scale_dir = 0;
+			const axis = this.controls.axis;
+
+			if (this.controls.mode === 'scale' && this.one_sided && axis.length === 1 && 'XYZ'.includes(axis)) {
+				const ray = this.controls.getRaycaster().ray;
+				const v = ray.origin.clone().applyMatrix4(pivot_inverse);
+				const d = ray.direction.clone().transformDirection(pivot_inverse).normalize();
+
+				scale_dir = Math.sign(v.addScaledVector(d, -v.dot(d))[axis.toLowerCase()]) || 1;
+			}
 
 			this.dragData = {
-				pivotMatrix,
-				pivotInverse,
-				objects: [],
+				pivot_matrix,
+				pivot_inverse,
+				objects: this.selection.map(obj => {
+					obj.updateMatrixWorld(true);
+					return {
+						object: obj,
+						parent: obj.parent,
+						original_matrix: obj.matrixWorld.clone(),
+						original_quaternion: obj.quaternion.clone(),
+					};
+				}),
+				selection_size: size,
+				start_scale: this.pivot.scale.clone(),
+				start_position: this.pivot.position.clone(),
+				scale_dir
 			};
-
-			for (const obj of this.selection) {
-				obj.updateMatrixWorld(true);
-				this.dragData.objects.push({
-					object: obj,
-					parent: obj.parent,
-					originalMatrix: obj.matrixWorld.clone(),
-					originalQuaternion: obj.quaternion.clone(),
-				});
-			}
 		} else {
 			this.dragData = null;
 			this.update_node_data();
+			this.recenter();
 		}
 	}
 
@@ -107,35 +131,37 @@ class GizmoControls {
 		if (!this.dragData || this.selection.length === 0) return;
 
 		this.pivot.updateMatrixWorld(true);
-		const currentPivotMatrix = this.pivot.matrixWorld;
 
-		const deltaMatrix = currentPivotMatrix
-			.clone()
-			.multiply(this.dragData.pivotInverse);
+		if (this.dragData.scale_dir) {
+			const axis = this.controls.axis.toLowerCase();
+			const { selection_size, start_scale, start_position, scale_dir } = this.dragData;
 
-		for (const item of this.dragData.objects) {
-			const obj = item.object;
-			const parent = item.parent;
-			const originalMatrix = item.originalMatrix;
+			const delta = (selection_size[axis] / 2) * ((this.pivot.scale[axis] / start_scale[axis]) - 1) * scale_dir;
 
-			const newWorldMatrix = deltaMatrix.clone().multiply(originalMatrix);
+			const shift = new THREE.Vector3()
+				.setComponent('xyz'.indexOf(axis), delta)
+				.applyQuaternion(this.pivot.quaternion);
 
-			parent.updateMatrixWorld(true);
-			const parentInverse = parent.matrixWorld.clone().invert();
-			const localMatrix = parentInverse.multiply(newWorldMatrix);
+			this.pivot.position.copy(start_position).add(shift);
+			this.pivot.updateMatrixWorld(true);
+		}
 
-			localMatrix.decompose(obj.position, obj.quaternion, obj.scale);
+		const delta_matrix = this.pivot.matrixWorld.clone().multiply(this.dragData.pivot_inverse);
+
+		for (const { object: obj, parent, original_matrix, original_quaternion } of this.dragData.objects) {
+			const new_world_matrix = delta_matrix.clone().multiply(original_matrix);
+			const local_matrix = parent.matrixWorld.clone().invert().multiply(new_world_matrix);
+
+			local_matrix.decompose(obj.position, obj.quaternion, obj.scale);
 
 			if (this.controls.mode === 'scale') {
-				obj.quaternion.copy(item.originalQuaternion);
+				obj.quaternion.copy(original_quaternion);
 			}
 
 			this.applyNodeConstraints(obj);
-
 			obj.updateMatrixWorld(true);
 		}
 	}
-
 	applyNodeConstraints(object) {
 		const node = object?.userData?.node;
 		const axis = this.controls.axis;
