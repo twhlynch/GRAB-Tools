@@ -14,9 +14,6 @@ class GizmoControls {
 		this.pivot = new THREE.Object3D();
 		this.scene.add(this.pivot);
 
-		this.group = new THREE.Group();
-		this.scene.add(this.group);
-
 		this.controls = new TransformControls(this.camera, this.domElement);
 		this.controls.setSize(1);
 		this.controls.enabled = true;
@@ -306,15 +303,6 @@ class GizmoControls {
 				obj.material.uniforms.isSelected.value = isSelected;
 			}
 		});
-	}
-
-	_attach(object, parent) {
-		if (!object || !parent) return;
-		if (object.parent !== parent) {
-			parent.add(object);
-		}
-		parent.updateMatrixWorld(true);
-		object.updateMatrixWorld(true);
 	}
 
 	set_mode(mode) {

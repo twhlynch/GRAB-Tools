@@ -227,10 +227,7 @@ export default {
 			let intersect = undefined;
 			if (intersects.length) {
 				intersect = intersects[0].object;
-				while (
-					intersect.parent !== this.level.scene &&
-					intersect.parent !== this.gizmo.group
-				) {
+				while (intersect.parent !== this.level.scene) {
 					intersect = intersect.parent;
 				}
 			}
@@ -711,12 +708,6 @@ export default {
 				path.position.copy(path.userData.object.position);
 				path.quaternion.copy(path.userData.object.quaternion);
 			});
-			if (object.parent === this.gizmo.group) {
-				paths.forEach((path) => {
-					this.gizmo.group.add(path);
-					this.gizmo._attach(path, this.level.scene); // HACK: private method access
-				});
-			}
 		},
 		update_trigger_path_positions(related_objects = undefined) {
 			if (!this.show_trigger_connections) return;
