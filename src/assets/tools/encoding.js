@@ -172,14 +172,7 @@ function createLevel(
 		unlisted: false,
 		showReplays: true,
 		complexity: 0,
-		ambienceSettings: {
-			skyHorizonColor: horizon,
-			skyZenithColor: zenith,
-			sunAltitude: sunAltitude,
-			sunAzimuth: sunAzimuth,
-			sunSize: sunSize,
-			fogDensity: fogDensity,
-		},
+		ambienceSettings: ambienceSettings(),
 		levelNodes: nodes,
 	};
 }
@@ -226,6 +219,51 @@ function quat(x = 0, y = 0, z = 0, w = 1) {
 
 function color(r = 0, g = 0, b = 0, a = 1) {
 	return { r, g, b, a };
+}
+
+function ambienceSettings(
+	horizon,
+	zenith,
+	sunAltitude,
+	sunAzimuth,
+	sunSize,
+	fogDensity,
+) {
+	if (
+		!(
+			horizon ||
+			zenith ||
+			sunAzimuth ||
+			sunAltitude ||
+			sunSize ||
+			fogDensity
+		)
+	) {
+		horizon = {
+			a: 1.0,
+			b: 0.9574,
+			g: 0.9574,
+			r: 0.916,
+		};
+		zenith = {
+			a: 1.0,
+			b: 0.73,
+			g: 0.476,
+			r: 0.28,
+		};
+		sunAltitude = 45;
+		sunAzimuth = 315;
+		sunSize = 1;
+		fogDensity = 0;
+	}
+	return {
+		skyHorizonColor: horizon ?? { r: 0, g: 0, b: 0 },
+		skyZenithColor: zenith ?? { r: 0, g: 0, b: 0 },
+		sunAltitude: sunAltitude ?? 0,
+		sunAzimuth: sunAzimuth ?? 0,
+		sunSize: sunSize ?? 0,
+		fogDensity: fogDensity ?? 0,
+	};
 }
 
 function levelNodeStart() {
@@ -553,4 +591,5 @@ export default {
 	traverse_node,
 	random_material,
 	random_shape,
+	ambienceSettings,
 };

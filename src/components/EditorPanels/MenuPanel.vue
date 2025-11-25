@@ -111,12 +111,10 @@ export default {
 						Colors: { func: this.randomize_colors },
 					},
 					Ambience: {
-						Sliders: { func: this.ambience_sliders },
 						Min: { func: this.ambience_min },
 						Max: { func: this.ambience_max },
 						Random: { func: this.ambience_random },
 						Default: { func: this.ambience_default },
-						Templates: { func: this.ambience_templates },
 					},
 					Convert: { func: this.open_convert_menu },
 					Group: { func: this.group_level },
@@ -993,6 +991,55 @@ export default {
 						}
 					});
 				});
+				return json;
+			});
+		},
+		ambience_min() {
+			this.$emit('modifier', (json) => {
+				json.ambienceSettings = encoding.ambienceSettings({});
+				return json;
+			});
+		},
+		ambience_max() {
+			this.$emit('modifier', (json) => {
+				json.ambienceSettings = encoding.ambienceSettings(
+					{ r: 1, g: 1, b: 1 },
+					{ r: 1, g: 1, b: 1 },
+					360,
+					360,
+					100,
+					1,
+				);
+				return json;
+			});
+		},
+		ambience_random() {
+			const random_float = () => {
+				return 2000 * Math.random() - 1000;
+			};
+			this.$emit('modifier', (json) => {
+				json.ambienceSettings = encoding.ambienceSettings(
+					{
+						r: random_float(),
+						g: random_float(),
+						b: random_float(),
+					},
+					{
+						r: random_float(),
+						g: random_float(),
+						b: random_float(),
+					},
+					random_float(),
+					random_float(),
+					random_float(),
+					random_float(),
+				);
+				return json;
+			});
+		},
+		ambience_default() {
+			this.$emit('modifier', (json) => {
+				json.ambienceSettings = encoding.ambienceSettings();
 				return json;
 			});
 		},
