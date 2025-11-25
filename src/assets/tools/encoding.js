@@ -548,6 +548,43 @@ function triggerSourceBlockNames() {
 		},
 	});
 }
+function levelNodeGASM() {
+	return levelNode({
+		levelNodeGASM: {
+			position: vec3(),
+			program: {
+				inputRegisters: [
+					{ name: 'IN0' },
+					{ name: 'IN1' },
+					{ name: 'IN2' },
+					{ name: 'IN3' },
+					{ name: 'IN4' },
+				],
+				outputRegisters: [
+					{ name: 'OUT0' },
+					{ name: 'OUT1' },
+					{ name: 'OUT2' },
+					{ name: 'OUT3' },
+					{ name: 'OUT4' },
+				],
+				workingRegisters: [
+					{ name: 'R0' },
+					{ name: 'R1' },
+					{ name: 'R2' },
+					{ name: 'R3' },
+					{ name: 'R4' },
+				],
+				labels: [],
+				instructions: [],
+			},
+			inputProperties: [],
+			inputConnections: [],
+			outputProperties: [],
+			outputConnections: [],
+			startActive: false,
+		},
+	});
+}
 
 function traverse_node(node, func) {
 	if (node.levelNodeGroup?.childNodes?.length) {
@@ -609,6 +646,7 @@ export default {
 	levelNodeTrigger,
 	levelNodeParticleEmitter,
 	levelNodeSound,
+	levelNodeGASM,
 	animation,
 	frame,
 	triggerTargetAnimation,

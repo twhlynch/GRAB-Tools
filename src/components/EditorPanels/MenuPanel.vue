@@ -68,6 +68,7 @@ export default {
 						Particle: { func: this.insert_particle },
 						Trigger: { func: this.insert_trigger },
 						Sound: { func: this.insert_sound },
+						Code: { func: this.insert_gasm },
 						'Colored Lava': { func: this.insert_colored_lava },
 						'Ambience Trigger': {
 							func: this.insert_ambience_trigger,
@@ -747,6 +748,9 @@ export default {
 		},
 		insert_sound() {
 			this.insert_selection_nodes([encoding.levelNodeSound()]);
+		},
+		insert_gasm() {
+			this.insert_node_wrapper(encoding.levelNodeGASM);
 		},
 		insert_colored_lava() {
 			const node = encoding.levelNodeStatic();

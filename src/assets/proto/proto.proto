@@ -67,8 +67,9 @@ enum LevelNodeShape {
   LOBBYTERMINAL = 4;
   PARTICLE_EMITTER = 5;
   SOUND = 6;
+  GASM = 7;
 
-  __END_OF_SPECIAL_PARTS__ = 7;
+  __END_OF_SPECIAL_PARTS__ = 8;
 
   CUBE = 1000;
   SPHERE = 1001;
@@ -297,6 +298,20 @@ message TriggerTargetSound {
   bool repeat = 3;
 }
 
+message TriggerTargetGASM {
+  enum Mode {
+    STOP = 0;
+    START = 1;
+    TOGGLE = 2;
+    RESTART = 3;
+    RESET = 4;
+  }
+
+  uint64 objectID = 1;
+
+  Mode mode = 2;
+}
+
 message TriggerTargetSubLevel {
   string levelIdentifier = 1;
   string spawnPoint = 2;
@@ -331,6 +346,7 @@ message TriggerTarget {
     TriggerTargetSubLevel triggerTargetSubLevel = 2;
     TriggerTargetSound triggerTargetSound = 3;
     TriggerTargetAmbience triggerTargetAmbience = 6;
+    TriggerTargetGASM triggerTargetGASM = 7;
   }
 }
 
@@ -402,6 +418,25 @@ message LevelNodeSound {
   float maxRangeFactor = 8;
 }
 
+message LevelNodeGASM {
+  message Connection {
+    int32 propertyIndex = 1;
+    int32 componentIndex = 2;
+  }
+
+  Vector position = 1;
+
+  ProgramData program = 2;
+
+  repeated ProgrammablePropertyData inputProperties = 3;
+  repeated Connection inputConnections = 4;
+
+  repeated ProgrammablePropertyData outputProperties = 5;
+  repeated Connection outputConnections = 6;
+
+  bool startActive = 7;
+}
+
 message AnimationFrame {
   float time = 1;
   Vector position = 2;
@@ -441,9 +476,85 @@ message LevelNode {
     LevelNodeTrigger levelNodeTrigger = 10;
     LevelNodeParticleEmitter levelNodeParticleEmitter = 11;
     LevelNodeSound levelNodeSound = 12;
+    LevelNodeGASM levelNodeGASM = 13;
   }
 
   repeated Animation animations = 15;
   int32 activeAnimation = 16;
   bool wantsCreationHistory = 17;
+}
+
+// gasm.proto
+
+message OperandData {
+  enum Type {
+    OpInputRegister = 0;
+    OpOutputRegister = 1;
+    OpWorkingRegister = 2;
+    OpSpecialRegister = 3;
+    OpConstant = 4;
+    OpLabel = 5;
+  }
+  Type type = 1;
+  oneof content {
+    uint32 index = 2;
+    float value = 3;
+  }
+}
+
+message InstructionData {
+  enum Type {
+    InNoop = 0;
+    InSet = 1;
+    InSwap = 2;
+    InAdd = 3;
+    InSub = 4;
+    InMul = 5;
+    InDiv = 6;
+    InEqual = 7;
+    InLess = 8;
+    InGreater = 9;
+    InAnd = 10;
+    InOr = 11;
+    InNot = 12;
+    InLabel = 13;
+    InGoto = 14;
+    InIf = 15;
+    InSleep = 16;
+    InEnd = 17;
+    InRand = 18;
+  }
+  Type type = 1;
+  repeated OperandData operands = 2;
+}
+
+message RegisterData {
+  string name = 1;
+}
+
+message LabelData {
+  string name = 1;
+}
+
+message ProgramData {
+  repeated RegisterData inputRegisters = 1;
+  repeated RegisterData outputRegisters = 2;
+  repeated RegisterData workingRegisters = 3;
+
+  repeated LabelData labels = 4;
+
+  repeated InstructionData instructions = 5;
+}
+
+message ProgrammablePositionData {}
+
+message ProgrammableTriggerActive {}
+
+message ProgrammablePropertyData {
+  uint64 objectID = 1;
+
+  oneof content {
+    ProgrammablePositionData position = 2;
+    ProgrammableTriggerActive triggerActive = 3;
+  }
 }

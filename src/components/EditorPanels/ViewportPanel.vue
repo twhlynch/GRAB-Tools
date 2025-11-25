@@ -316,6 +316,7 @@ export default {
 				sublevels: true,
 				static: false,
 				fog: this.show_fog,
+				GASM: true,
 			});
 			this.level = await window._levelLoader.load(json, true);
 			this.add_hitboxes();
