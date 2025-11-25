@@ -1,6 +1,7 @@
 <script>
 import { LevelLoader } from '../../../src/assets/LevelLoader.js';
 import * as THREE from 'three';
+import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FreeControls } from '@/assets/FreeControls.js';
 import encoding from '@/assets/tools/encoding.js';
@@ -44,6 +45,7 @@ export default {
 			show_keybinds: true,
 			show_key_hints: true,
 			show_shadows: false,
+			simulating_physics: false,
 		};
 	},
 	components: {
@@ -181,6 +183,60 @@ export default {
 				'click',
 				this.select_event,
 			);
+		},
+		async simulate_physics() {
+			if (this.simulating_physics) return;
+			this.physics = await RapierPhysics();
+
+			const dynamic_objects = [...this.level.nodes.levelNodeGroup].filter(
+				(object) =>
+					object.parent === this.level.scene &&
+					(object.userData.node.levelNodeGroup.localPhysicsObject ||
+						object.userData.node.levelNodeGroup.physicsObject),
+			);
+
+			const used_objects = this.level.nodes.all.filter((object) =>
+				dynamic_objects.some(
+					(dynobj) =>
+						object === dynobj ||
+						this.object_contains(dynobj, object),
+				),
+			);
+
+			const fixed_objects = [
+				...this.level.nodes.levelNodeStatic,
+				...this.level.nodes.levelNodeCrumbling,
+				...this.level.nodes.levelNodeSign,
+			].filter((object) => !used_objects.includes(object));
+
+			const make_physics_object = (object, mass) => {
+				object.userData.physics = { mass };
+				if (!object.geometry) object.geometry = {};
+				object.geometry.type = 'BoxGeometry';
+				const box = new THREE.Box3();
+				if (object.isMesh) box.expandByObject(object);
+				if (object.userData.group_bounds)
+					box.expandByObject(object.userData.group_bounds);
+				const size = new THREE.Vector3();
+				box.getSize(size);
+				object.geometry.parameters = {
+					width: size.x,
+					height: size.y,
+					depth: size.z,
+				};
+				this.physics.addMesh(object, mass);
+			};
+
+			dynamic_objects.forEach((object) => {
+				make_physics_object(object, 1);
+			});
+
+			fixed_objects.forEach((object) => {
+				make_physics_object(object, 0);
+			});
+
+			this.reset_node_positions();
+			this.simulating_physics = true;
 		},
 		reset_node_positions() {
 			this.level.meta.time = 0;

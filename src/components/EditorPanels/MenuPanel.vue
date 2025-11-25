@@ -237,9 +237,8 @@ export default {
 					'Save Config': { func: this.save_config },
 					'Edit Protobuf': { func: this.edit_protobuf },
 					Experimental: {
-						'Toggle Shadows': {
-							func: this.toggle_shadows,
-						},
+						'Toggle Shadows': { func: this.toggle_shadows },
+						'Simulate Physics': { func: this.simulate_physics },
 					},
 				},
 				Help: {
@@ -1193,6 +1192,11 @@ export default {
 		toggle_shadows() {
 			this.$emit('viewport', (scope) => {
 				scope.toggle_shadows();
+			});
+		},
+		simulate_physics() {
+			this.$emit('viewport', (scope) => {
+				scope.simulate_physics();
 			});
 		},
 		save_config() {
