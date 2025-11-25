@@ -5,6 +5,7 @@ import { foldGutter } from '@codemirror/language';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
 import { grabCompletion } from '@/assets/grabCompletion';
+import { undo, redo } from '@codemirror/commands';
 
 export default {
 	props: {
@@ -69,6 +70,12 @@ export default {
 					scrollIntoView: true,
 				});
 			}
+		},
+		undo() {
+			undo(this.view);
+		},
+		redo() {
+			redo(this.view);
 		},
 	},
 	emits: ['changed'],

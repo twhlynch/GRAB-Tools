@@ -149,6 +149,12 @@ export default {
 		close_protobuf() {
 			this.show_protobuf_panel = false;
 		},
+		undo() {
+			this.$refs.json_panel.undo();
+		},
+		redo() {
+			this.$refs.json_panel.redo();
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -182,6 +188,8 @@ export default {
 							@changed="viewport_changed"
 							@modifier="run_modifier"
 							@scope="scope"
+							@undo="undo"
+							@redo="redo"
 						/>
 					</template>
 				</ResizableRowPanel>

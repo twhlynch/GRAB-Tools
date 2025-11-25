@@ -59,7 +59,7 @@ export default {
 		ResizableColPanel,
 		KeyHint,
 	},
-	emits: ['changed', 'modifier', 'scope'],
+	emits: ['changed', 'modifier', 'scope', 'undo', 'redo'],
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
 
@@ -880,6 +880,17 @@ export default {
 
 					case 'KeyG':
 						this.group_selection();
+						break;
+
+					case 'KeyZ':
+						if (e.ctrlKey || e.metaKey) {
+							e.preventDefault();
+							if (e.shiftKey) {
+								this.$emit('redo');
+							} else {
+								this.$emit('undo');
+							}
+						}
 						break;
 
 					default:
