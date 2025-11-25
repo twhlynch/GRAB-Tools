@@ -1496,15 +1496,16 @@ export default {
 				</div>
 				<transition name="slide-up">
 					<div v-if="show_keybinds" class="hints">
+						<div><KeyHint :bind="'Scroll'" />Zoom</div>
+						<div><KeyHint :bind="'Shift'" />Multi select</div>
+						<div><KeyHint :bind="'Left'" />Pan & Select</div>
+						<div><KeyHint :bind="'Right'" />Orbit</div>
+						<div><KeyHint :bind="'Shift'" />Sprint</div>
+						<div><KeyHint :bind="'WASD'" />Move</div>
+						<div><KeyHint :bind="'EQ'" />Up & Down</div>
 						<div><KeyHint :bind="'X'" />Delete</div>
 						<div><KeyHint :bind="'G'" />Group</div>
 						<div><KeyHint :bind="'C'" />Clone</div>
-						<div><KeyHint :bind="'Left'" />Pan & Select</div>
-						<div><KeyHint :bind="'Right'" />Orbit</div>
-						<div><KeyHint :bind="'Shift'" />Multi select</div>
-						<div><KeyHint :bind="'Scroll'" />Zoom</div>
-						<div><KeyHint :bind="'WASDEQ'" />Move</div>
-						<div><KeyHint :bind="'Shift'" />Sprint</div>
 					</div>
 				</transition>
 			</section>
@@ -1581,6 +1582,10 @@ canvas {
 		padding: 0.3rem;
 		display: flex;
 		position: relative;
+
+		&:hover > i {
+			display: block !important; /* to override v-show */
+		}
 	}
 
 	> div {
