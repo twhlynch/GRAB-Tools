@@ -52,7 +52,7 @@ const themeOptions = {
 		caretColor: colors.fg,
 	},
 	'.cm-cursor, .cm-dropCursor': {
-		borderLeftColor: colors.line,
+		borderLeftColor: colors.fg,
 	},
 	'&.cm-focused .cm-selectionBackground, & .cm-line::selection, & .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection':
 		{
@@ -72,8 +72,20 @@ const themeOptions = {
 		color: colors.fg,
 	},
 
+	'& .cm-activeLine': {
+		backgroundColor: 'transparent',
+	},
+
 	'& .cm-tooltip-autocomplete ul li[aria-selected]': {
 		background: colors.visual,
+	},
+
+	'.cm-vimMode .cm-selectionBackground': {
+		backgroundColor: colors.visual + ' !important',
+	},
+
+	'.cm-vimMode .cm-focused .cm-selectionBackground': {
+		backgroundColor: colors.visual + ' !important',
 	},
 };
 
@@ -152,7 +164,7 @@ function build_editor(
 				indentWithTab,
 				...keymaps,
 			]),
-			lang,
+			...(lang ? [lang] : []),
 		],
 	});
 }

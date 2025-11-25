@@ -16,6 +16,7 @@ import SpaceIcon from '@/icons/SpaceIcon.vue';
 import group from '@/assets/tools/group.js';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import JsonPanel from './JsonPanel.vue';
+import GASMPanel from './GASMPanel.vue';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import KeyHint from '@/components/EditorPanels/KeyHint.vue';
@@ -41,6 +42,7 @@ export default {
 			contextmenu_position: { x: 0, y: 0 },
 			is_animating: true,
 			show_mini_editor: false,
+			show_gasm_editor: false,
 			show_keybinds: true,
 			show_key_hints: true,
 			show_shadows: false,
@@ -57,6 +59,7 @@ export default {
 		OneSidedScaleIcon,
 		ContextMenu,
 		JsonPanel,
+		GASMPanel,
 		AnimationPanel,
 		ResizableColPanel,
 		KeyHint,
@@ -1022,6 +1025,7 @@ export default {
 			switch (e.code) {
 				case 'Escape':
 					if (this.show_mini_editor) this.close_mini_editor();
+					else if (this.show_gasm_editor) this.close_gasm_editor();
 					else if (this.contextmenu) this.contextmenu = undefined;
 					else if (!this.gizmo.empty())
 						this.gizmo.clear(this.editing_parent);
@@ -1059,6 +1063,26 @@ export default {
 				this.group_depth++;
 				parent = parent.parent;
 			}
+		close_gasm_editor() {
+			if (this.show_gasm_editor) this.$refs.gasm_editor.save();
+			this.show_gasm_editor = false;
+		},
+		save_gasm_code(new_json) {
+			const id = this.editing_gasm?.userData?.id;
+			if (!id) {
+				window.toast('Failed to write node', 'error');
+				return;
+			}
+			this.modifier((json) => {
+				console.log(json);
+				const index = json.levelNodes.findIndex(
+					(n) => n === this.level.nodes.all[id - 1].userData.node,
+				);
+				if (index !== -1) {
+					json.levelNodes[index] = new_json;
+				}
+				return json;
+			});
 		},
 		close_mini_editor() {
 			if (this.show_mini_editor)
@@ -1126,6 +1150,13 @@ export default {
 			this.editing_json = object;
 			this.$refs.mini_editor.set_json(object.userData.node);
 		},
+		edit_gasm_code(object) {
+			if (!object) return;
+
+			this.show_gasm_editor = true;
+			this.editing_gasm = object;
+			this.$refs.gasm_editor.set_json(object.userData.node);
+		},
 		mini_editor_changed(new_node) {
 			const id = this.editing_json?.userData?.id;
 			if (!id) {
@@ -1190,6 +1221,7 @@ export default {
 					clicked_node.levelNodeCrumbling ||
 					clicked_node.levelNodeTrigger;
 				const selected_is_trigger = selected_node.levelNodeTrigger;
+				const clicked_has_code = clicked_node.levelNodeGASM;
 				const clicked_is_trigger = clicked_node.levelNodeTrigger;
 				const clicked_can_animate =
 					!clicked_node.levelNodeStart &&
@@ -1216,6 +1248,13 @@ export default {
 								this.edit_object_json(clicked_object);
 							},
 						},
+						...(clicked_has_code && {
+							'Edit Code': {
+								func: () => {
+									this.edit_gasm_code(clicked_object);
+								},
+							},
+						}),
 						Delete: {
 							func: this.delete_selection,
 						},
@@ -1573,6 +1612,19 @@ export default {
 					:style="`top: ${contextmenu_position.y}px; left: ${contextmenu_position.x}px;`"
 					@click="close_context_menu"
 				/>
+				<GASMPanel
+					ref="gasm_editor"
+					v-show="show_gasm_editor"
+					class="gasm-editor"
+					@set="save_gasm_code"
+				/>
+				<button
+					class="close-gasm-editor"
+					@click="close_gasm_editor"
+					v-show="show_gasm_editor"
+				>
+					Save
+				</button>
 				<JsonPanel
 					:mini="true"
 					ref="mini_editor"
@@ -1732,11 +1784,13 @@ export default {
 	transform: translateY(0);
 }
 
-.mini-editor {
+.mini-editor,
+.gasm-editor {
 	position: absolute;
 	z-index: 1;
 }
-.close-mini-editor {
+.close-mini-editor,
+.close-gasm-editor {
 	position: absolute;
 	z-index: 1;
 	top: 0.5rem;
