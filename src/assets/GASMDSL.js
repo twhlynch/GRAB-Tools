@@ -6,6 +6,18 @@ export const gasm = StreamLanguage.define({
 
 		if (stream.match(/;.*/, true)) return 'lineComment';
 
+		// macro
+		if (
+			stream.match(
+				/#(FOR|IF|END|RAND|FLOOR|EQUAL|LESS|GREATER|MIN|MAX)/,
+				true,
+			)
+		)
+			return 'regexp';
+
+		// variable
+		if (stream.match(/#[A-Za-z_][A-Za-z0-9_]*/, true)) return 'regexp';
+
 		// keywords
 		if (
 			stream.match(
@@ -16,9 +28,9 @@ export const gasm = StreamLanguage.define({
 			return 'keyword';
 
 		// registers
-		if (stream.match(/R\d+\b/, true)) return 'variableName';
-		if (stream.match(/IN\d+\b/, true)) return 'variableName';
-		if (stream.match(/OUT\d+\b/, true)) return 'variableName';
+		if (stream.match(/R\d*\b/, true)) return 'variableName';
+		if (stream.match(/IN\d*\b/, true)) return 'variableName';
+		if (stream.match(/OUT\d*\b/, true)) return 'variableName';
 
 		// numbers
 		if (stream.match(/\d+(?:\.\d+)?\b/, true)) return 'number';

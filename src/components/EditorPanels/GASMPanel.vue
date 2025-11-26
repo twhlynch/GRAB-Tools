@@ -36,13 +36,18 @@ export default {
 			});
 		},
 		save() {
-			this.$emit(
-				'set',
-				AssemblyConversion.asm_to_json(
+			let data;
+			try {
+				data = AssemblyConversion.asm_to_json(
 					this.view.state.doc.toString(),
 					this.json,
-				),
-			);
+				);
+			} catch (e) {
+				window.toast(e.message, 'error');
+				return;
+			}
+
+			this.$emit('set', data);
 		},
 		click(e) {
 			if (e.target === this.$refs.code_container) {

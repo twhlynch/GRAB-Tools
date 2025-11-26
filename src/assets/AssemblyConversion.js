@@ -12,7 +12,9 @@ function asm_to_json(asm, old_json) {
 		.map((line) => line.split(';')[0].trim())
 		.filter((line) => line.length);
 
-	const instructions = lines.map((line) =>
+	const code = preprocess_asm(lines);
+
+	const instructions = code.map((line) =>
 		instruction_asm_to_json(line, old_json),
 	);
 
@@ -21,8 +23,143 @@ function asm_to_json(asm, old_json) {
 	return old_json;
 }
 
+function preprocess_asm(lines) {
+	const processed_functions = preprocess_functions(lines);
+	const processed_scopes = preprocess_scopes(processed_functions);
+	return processed_scopes;
+}
+
+function preprocess_functions(lines) {
+	const result = lines.flatMap((line) => {
+		if (line.startsWith('#RAND')) {
+			const [_, reg, from, to] = line.split(/\s+/);
+			const diff = Number(to) - Number(from);
+			return [
+				`ADD ${reg} ${diff} 1`,
+				`RAND ${reg} ${reg}`,
+				`ADD ${reg} ${reg} ${from}`,
+			];
+		} else if (line.startsWith('#FLOOR')) {
+			const [_, out, reg] = line.split(/\s+/);
+			return [`OR ${out} ${reg} 0`];
+		} else if (
+			line.startsWith('#EQUAL') ||
+			line.startsWith('#LESS') ||
+			line.startsWith('#GREATER')
+		) {
+			const [ins, out, reg, cmp, label] = line.split(/\s+/);
+			return [
+				`${ins.slice(1)} ${out} ${reg} ${cmp}`,
+				`IF ${out} ${label}`,
+			];
+		} else if (line.startsWith('#MIN') || line.startsWith('#MAX')) {
+			const [ins, out, first, second, label] = line.split(/\s+/);
+			return [
+				`${
+					ins === '#MIN' ? 'LESS' : 'GREATER'
+				} ${out} ${first} ${second}`,
+				`IF ${out} ${label}_1`,
+				`SET ${out} ${second}`,
+				`GOTO ${label}_2`,
+				`LABEL ${label}_1`,
+				`SET ${out} ${first}`,
+				`LABEL ${label}_2`,
+			];
+		} else {
+			return line;
+		}
+	});
+
+	return result;
+}
+
+function preprocess_scopes(lines, context = {}) {
+	const resolve = (val, ctx) => {
+		if (!isNaN(Number(val))) return Number(val);
+		return ctx[val] ?? val;
+	};
+	const substitute = (line, ctx) => {
+		let result = line;
+
+		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
+
+		for (const key of sorted) {
+			const value = ctx[key];
+			result = result.replaceAll(`#${key}`, value);
+		}
+
+		return result;
+	};
+	const find_end = (lines, start) => {
+		let depth = 1;
+		for (let i = start + 1; i < lines.length; i++) {
+			const parts = lines[i].trim().split(/\s+/);
+			const directive = parts[0];
+
+			if (directive === '#FOR' || directive === '#IF') {
+				depth++;
+			} else if (directive === '#END') {
+				depth--;
+			}
+
+			if (depth === 0) {
+				return i;
+			}
+		}
+		throw new Error(`Missing #END for block at line ${start}`);
+	};
+
+	let output = [];
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const trimmed = line.trim();
+		const parts = trimmed.split(/\s+/);
+		const directive = parts[0];
+
+		if (directive === '#FOR') {
+			const varName = parts[1];
+
+			const start = resolve(parts[2], context);
+			const stop = resolve(parts[3], context);
+			const step = parts[4] ? resolve(parts[4], context) : 1;
+
+			const end = find_end(lines, i);
+			const block = lines.slice(i + 1, end);
+
+			for (let val = start; val <= stop; val += step) {
+				const ctx = { ...context, [varName]: val };
+
+				const block_output = preprocess_scopes(block, ctx);
+				output.push(...block_output);
+			}
+
+			i = end;
+		} else if (directive === '#IF') {
+			const lhs = resolve(parts[1], context);
+			const rhs = resolve(parts[2], context);
+
+			const end = find_end(lines, i);
+
+			if (lhs === rhs) {
+				const block = lines.slice(i + 1, end);
+				const block_output = preprocess_scopes(block, context);
+				output.push(...block_output);
+			}
+
+			i = end;
+		} else if (directive === '#END') {
+			continue;
+		} else {
+			output.push(substitute(line, context));
+		}
+	}
+
+	return output;
+}
+
 function instruction_asm_to_json(instruction, old_json) {
-	const parts = instruction.split(' ');
+	const parts = instruction.split(/\s+/);
 	const operator = parts[0];
 	const operands = parts.slice(1);
 
