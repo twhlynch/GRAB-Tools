@@ -1206,9 +1206,14 @@ export default {
 													func: () => {
 														this.set_material(i);
 													},
+													num: i,
 												},
 											];
 										},
+									).filter(
+										(item) =>
+											item[1].num !==
+											encoding.materials().TRIGGER,
 									),
 								),
 							},

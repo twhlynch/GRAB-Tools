@@ -173,9 +173,14 @@ export default {
 											func: () => {
 												this.select_by_material(i);
 											},
+											num: i,
 										},
 									];
 								},
+							).filter(
+								(item) =>
+									item[1].num !==
+									encoding.materials().TRIGGER,
 							),
 						),
 					},
@@ -858,19 +863,19 @@ export default {
 			});
 		},
 		open_material_convert_menu() {
+			const materials = Object.values(encoding.materials()).filter(
+				(m) => m !== encoding.materials().TRIGGER,
+			);
 			this.$emit(
 				'popup',
 				[
 					{
 						type: 'option',
-						options: [
-							'from',
-							...Object.values(encoding.materials()),
-						],
+						options: ['from', ...materials],
 					},
 					{
 						type: 'option',
-						options: ['to', ...Object.values(encoding.materials())],
+						options: ['to', ...materials],
 					},
 				],
 				async (from, to) => {

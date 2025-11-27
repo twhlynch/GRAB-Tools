@@ -48,7 +48,16 @@ function collect_completions(enums) {
 		const { values, type, parent } = field;
 
 		Object.entries(values).forEach(([name, num]) => {
-			if (type === 'LevelNodeShape' && num < 1000) return;
+			if (
+				type === 'LevelNodeShape' &&
+				num <= encoding.materials().__END_OF_SPECIAL_PARTS__
+			)
+				return;
+			if (
+				type === 'LevelNodeMaterial' &&
+				num === encoding.materials().TRIGGER
+			)
+				return;
 			completions[field.name] ??= [];
 			if (
 				!completions[field.name].find(

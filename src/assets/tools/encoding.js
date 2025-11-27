@@ -546,8 +546,10 @@ function traverse_node(node, func) {
 }
 
 function random_material() {
-	const length = Object.entries(materials()).length;
-	return Math.floor(Math.random() * length);
+	const options = Object.values(materials());
+	options.filter((option) => option !== materials().TRIGGER);
+	const length = options.length;
+	return options[Math.floor(Math.random() * length)];
 }
 function random_shape() {
 	const length =
