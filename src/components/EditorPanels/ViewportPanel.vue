@@ -143,7 +143,8 @@ export default {
 			this.renderer.setPixelRatio(window.devicePixelRatio);
 			this.renderer.setClearColor(
 				// new THREE.Color(143.0 / 255.0, 182.0 / 255.0, 221.0 / 255.0),
-				new THREE.Color(28 / 255.0, 28 / 255.0, 36 / 255.0),
+				// new THREE.Color(28 / 255.0, 28 / 255.0, 36 / 255.0),
+				new THREE.Color(3 / 255.0, 3 / 255.0, 3 / 255.0),
 				1.0,
 			);
 			this.renderer.setAnimationLoop(this.animation);
