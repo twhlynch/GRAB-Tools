@@ -951,7 +951,11 @@ export default {
 						break;
 
 					case 'KeyG':
-						this.group_selection();
+						if (e.shiftKey) {
+							this.ungroup_selection();
+						} else {
+							this.group_selection();
+						}
 						break;
 
 					case 'KeyZ':
@@ -1580,9 +1584,10 @@ export default {
 						<div><KeyHint :bind="'Shift'" />Sprint</div>
 						<div><KeyHint :bind="'WASD'" />Move</div>
 						<div><KeyHint :bind="'EQ'" />Up & Down</div>
-						<div><KeyHint :bind="'X'" />Delete</div>
+						<div><KeyHint :bind="'↑ G'" />Ungroup</div>
 						<div><KeyHint :bind="'G'" />Group</div>
 						<div><KeyHint :bind="'C'" />Clone</div>
+						<div><KeyHint :bind="'X'" />Delete</div>
 					</div>
 				</transition>
 			</section>
