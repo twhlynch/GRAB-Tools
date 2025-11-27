@@ -241,6 +241,11 @@ export default {
 					},
 					'Save Config': { func: this.save_config },
 					'Edit Protobuf': { func: this.edit_protobuf },
+					Controls: {
+						'Fly Speed': {
+							func: this.set_fly_speed,
+						},
+					},
 					Experimental: {
 						'Toggle Shadows': {
 							func: this.toggle_shadows,
@@ -946,6 +951,30 @@ export default {
 					});
 				},
 			);
+		},
+		set_fly_speed() {
+			this.$emit('viewport', (scope) => {
+				if (!scope.controls.movementSpeed) {
+					window.toast('Must be using free move controls', 'warning');
+					return;
+				}
+				this.$emit(
+					'popup',
+					[
+						{
+							type: 'range',
+							min: 1,
+							value: scope.controls.movementSpeed,
+							max: 100,
+						},
+					],
+					async (value) => {
+						this.$emit('viewport', (scope) => {
+							scope.controls.movementSpeed = value;
+						});
+					},
+				);
+			});
 		},
 		group_level() {
 			this.$emit('modifier', (json) => {
