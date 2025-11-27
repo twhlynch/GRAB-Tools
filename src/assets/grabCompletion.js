@@ -121,6 +121,7 @@ export function grabCompletion() {
 				return {
 					from,
 					options,
+					filter: false,
 				};
 			},
 		],
