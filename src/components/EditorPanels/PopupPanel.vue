@@ -79,6 +79,19 @@ export default {
 				:placeholder="input.text"
 			></textarea>
 			<input
+				v-else-if="input.type === 'range'"
+				:type="input.type"
+				:ref="`input-${i}`"
+				:min="input.min"
+				:value="input.value"
+				:max="input.max"
+				@input="
+					(e) => {
+						input.value = e.target.value;
+					}
+				"
+			/>
+			<input
 				v-else
 				:type="input.type"
 				:ref="`input-${i}`"
@@ -119,5 +132,44 @@ button {
 button {
 	cursor: pointer;
 	background-color: var(--blue);
+}
+
+input[type='range'] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 10px;
+	background: none;
+	border-radius: 5px;
+	outline: none;
+	cursor: pointer;
+	margin-block: 1em;
+	margin-inline: 1em;
+	position: relative;
+}
+input[type='range']::-webkit-slider-runnable-track {
+	width: 100%;
+	height: 10px;
+	border-radius: 5px;
+	background: var(--border-color);
+}
+input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	transform: translateY(-25%);
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--blue);
+	cursor: pointer;
+}
+input[type='range']::after {
+	content: attr(value);
+	position: absolute;
+	top: 50%;
+	left: -1em;
+	transform: translateY(-50%);
+	font-size: 1em;
+	font-weight: 700;
+	color: var(--blue);
 }
 </style>
