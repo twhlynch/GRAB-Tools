@@ -48,10 +48,13 @@ export default {
 	mounted() {
 		this.$refs.side_panel.size((window.innerHeight / 4) * 3);
 		this.$refs.main_panel.size((window.innerWidth / 3) * 2);
-		this.$refs.left_panel.size(0);
+		this.close_templates();
 		this.open_starting_level();
 	},
 	methods: {
+		close_templates() {
+			this.$refs.left_panel.size(0);
+		},
 		async can_download_level(level_id) {
 			if (!this.is_logged_in) {
 				window.toast('Login to download your levels', 'warning');
@@ -179,7 +182,10 @@ export default {
 			<template #first>
 				<ResizableRowPanel class="left-panel" ref="left_panel">
 					<template #first>
-						<TemplatesPanel @modifier="run_modifier" />
+						<TemplatesPanel
+							@modifier="run_modifier"
+							@close="close_templates"
+						/>
 					</template>
 					<template #second>
 						<ViewportPanel
