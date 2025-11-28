@@ -1063,6 +1063,7 @@ export default {
 				this.group_depth++;
 				parent = parent.parent;
 			}
+		},
 		close_gasm_editor() {
 			if (this.show_gasm_editor) this.$refs.gasm_editor.save();
 			this.show_gasm_editor = false;
