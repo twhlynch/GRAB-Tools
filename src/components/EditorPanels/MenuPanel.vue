@@ -1286,6 +1286,7 @@ export default {
 						<li
 							v-for="[button, data] of Object.entries(buttons)"
 							:key="category + button"
+							:id="'menu-' + category + button"
 						>
 							<a
 								class="menu-btn"
@@ -1326,6 +1327,9 @@ export default {
 										sub_data,
 									] of Object.entries(data)"
 									:key="category + button + sub_button"
+									:id="
+										'menu-' + category + button + sub_button
+									"
 								>
 									<a
 										class="menu-btn"
