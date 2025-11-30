@@ -1303,7 +1303,7 @@ export default {
 								v-else
 								@click="
 									() => {
-										!data.file && data.func();
+										!data.file && data.func && data.func();
 									}
 								"
 							>
@@ -1344,6 +1344,7 @@ export default {
 										@click="
 											() => {
 												!sub_data.file &&
+													sub_data.func &&
 													sub_data.func();
 											}
 										"
