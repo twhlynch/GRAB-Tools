@@ -91,8 +91,7 @@
 				if (
 					data.version !== /*chrome.runtime.getManifest().*/ version
 				) {
-					document.getElementById('extension-update').style.display =
-						'block';
+					window.toast('Extension update available');
 				}
 			});
 	}
