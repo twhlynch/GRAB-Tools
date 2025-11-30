@@ -126,6 +126,34 @@ export default {
 		redo() {
 			this.$refs.json_panel.redo();
 		},
+		async drop(e) {
+			e.stopPropagation();
+			const dt = e.dataTransfer;
+			const files = dt.files;
+			if (files.length) {
+				e.preventDefault();
+				const file = files[0];
+				if (file.name.endsWith('.level')) {
+					this.set_json(await encoding.decodeLevel(file));
+				} else if (file.name.endsWith('.json')) {
+					this.set_json(JSON.parse(await file.text()));
+				}
+			}
+
+			const text = dt.getData('text/plain');
+			if (text && text.includes('level=')) {
+				e.preventDefault();
+				const params = new URLSearchParams(text.split('?')[1]);
+				const level_id = params.get('level');
+				const level = await downloads.try_download_level(level_id);
+				if (level === null) return;
+				const blob = new Blob([level], {
+					type: 'application/octet-stream',
+				});
+				const json = await encoding.decodeLevel(blob);
+				this.set_json(json);
+			}
+		},
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -134,7 +162,7 @@ export default {
 </script>
 
 <template>
-	<main id="editor">
+	<main id="editor" @drop="drop">
 		<MenuPanel
 			@modifier="run_modifier"
 			@function="run_function"
