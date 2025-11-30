@@ -15,14 +15,6 @@ export default {
 		YoutubeIcon,
 		DiscordAltIcon,
 	},
-
-	data() {
-		return {
-			test: undefined,
-		};
-	},
-
-	methods: {},
 	created() {
 		document.title = 'GRAB Tools';
 	},
