@@ -33,6 +33,10 @@ const routes = [
 		component: PlainLayout,
 		children: [{ path: '', component: EditorPage }],
 	},
+	{
+		path: '/levels/viewer',
+		redirect: '/editor',
+	},
 ];
 
 const router = createRouter({
