@@ -45,7 +45,7 @@ export default {
 			this.playing = !this.playing;
 			this.scope((scope) => {
 				if (!this.is_animating && this.playing) {
-					scope.transform_controls.detach();
+					scope.gizmo.clear(scope.editing_parent);
 				}
 				scope.is_animating = this.playing;
 			});
