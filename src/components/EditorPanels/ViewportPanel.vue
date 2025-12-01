@@ -607,6 +607,8 @@ export default {
 			}
 		},
 		add_group_bound(object) {
+			if (object.children.length === 0) return;
+
 			const geometry = new THREE.BoxGeometry();
 			const edges = new THREE.EdgesGeometry(geometry);
 			const material = new THREE.LineBasicMaterial({
