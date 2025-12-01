@@ -346,11 +346,15 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = JSON.parse(await file.text());
+			try {
+				const json = JSON.parse(await file.text());
 
-			this.$emit('modifier', (_) => {
-				return json;
-			});
+				this.$emit('modifier', (_) => {
+					return json;
+				});
+			} catch (e) {
+				window.toast('Invalid JSON: ' + e, 'error');
+			}
 		},
 		save_level() {
 			this.$emit('function', async (json) => {
@@ -485,12 +489,18 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const new_json = JSON.parse(await file.text());
+			try {
+				const new_json = JSON.parse(await file.text());
 
-			this.$emit('modifier', (json) => {
-				json.levelNodes = json.levelNodes.concat(new_json.levelNodes);
-				return json;
-			});
+				this.$emit('modifier', (json) => {
+					json.levelNodes = json.levelNodes.concat(
+						new_json.levelNodes,
+					);
+					return json;
+				});
+			} catch (e) {
+				window.toast('Invalid JSON: ' + e, 'error');
+			}
 		},
 		async insert_nodes(e) {
 			const files = Array.from(e.target.files);
