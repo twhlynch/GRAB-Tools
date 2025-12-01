@@ -1429,7 +1429,7 @@ export default {
 				const node = object.userData.node;
 				const data = encoding.node_data(node);
 
-				const x = -object.initialPosition.x;
+				const x = -object.initialPosition?.x ?? 0;
 				object.position.x = x;
 				object.initialPosition.x = x;
 				data.position.x = x;
@@ -1452,7 +1452,7 @@ export default {
 				const node = object.userData.node;
 				const data = encoding.node_data(node);
 
-				const y = -object.initialPosition.y;
+				const y = -object.initialPosition?.y ?? 0;
 				object.position.y = y;
 				object.initialPosition.y = y;
 				data.position.y = y;
@@ -1475,7 +1475,7 @@ export default {
 				const node = object.userData.node;
 				const data = encoding.node_data(node);
 
-				const z = -object.initialPosition.z;
+				const z = -object.initialPosition?.z ?? 0;
 				object.position.z = z;
 				object.initialPosition.z = z;
 				data.position.z = z;
