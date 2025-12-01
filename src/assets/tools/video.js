@@ -191,7 +191,7 @@ async function fallback_video(file) {
 		return null;
 	}
 
-	const result = await response.arrayBuffer();
+	const result = await response.blob();
 	const level = await encoding.decodeLevel(result);
 	if (!level) {
 		window.toast('Invalid level', 'error');
