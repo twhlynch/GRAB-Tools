@@ -9,6 +9,7 @@ import obj from '@/assets/tools/obj';
 import { useConfigStore } from '@/stores/config';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
+import audio from '@/assets/tools/audio';
 import * as THREE from 'three';
 
 export default {
@@ -91,6 +92,8 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
+						// took a while to find this but i got it eventually
+						'Audio (SFX2GL	)': { func: this.insert_audio },
 					},
 				},
 				Edit: {
@@ -503,6 +506,36 @@ export default {
 			const file = files[0];
 			const json = encoding.json_parse(await file.text());
 			this.insert_selection_nodes(json);
+		},
+		insert_audio() {
+			this.$emit(
+				'popup',
+				[ // If I even put a fraction of the original settings I reckon its too intimidating for normal people
+					{
+						type: 'number',
+						text: 'Pitch samples (40)',
+					},
+					{
+						type: 'file',
+						accept: 'audio/*',
+					},
+				],
+				async (samples, files) => {
+					if (!files.length) {
+						window.toast('No audio file chosen', 'error');
+						return;
+					}
+
+					const file = files[0];
+
+					const node = await audio.audio(
+						file,
+						samples
+					);
+
+					this.insert_selection_nodes([node]);
+				},
+			);
 		},
 		insert_image() {
 			this.$emit(
