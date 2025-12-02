@@ -9,6 +9,8 @@ export const DEV_PAGE_URL = 'https://localhost:5173/';
 export const SERVER_URL = 'https://api.grabvr.tools/';
 export const LOGGING_URL = 'https://gt-logs.twhlynch.workers.dev';
 
+export const GOOGLE_TAG_ID = 'G-BDS57RBQ3Q';
+
 export const FORMAT_VERSION = 17;
 
 import pkg from '../package.json';

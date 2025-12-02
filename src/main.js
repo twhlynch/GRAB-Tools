@@ -2,6 +2,8 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import * as Sentry from '@sentry/vue';
+import { useCookiesStore } from '@/stores/cookies';
+import { useUserStore } from '@/stores/user';
 
 import * as config from './config';
 import router from './router';
@@ -22,6 +24,16 @@ Sentry.init({
 	sendDefaultPii: true,
 	enableLogs: true,
 	release: config.VERSION,
+	beforeSend(event) {
+		const cookies = useCookiesStore();
+		const user = useUserStore();
+
+		if (cookies.allow_cookies && user.user_name) {
+			(event.user ??= {}).username = user.user_name;
+		}
+
+		return event;
+	},
 	enabled: !(
 		window.location.hostname === 'localhost' ||
 		window.location.hostname === '127.0.0.1'
