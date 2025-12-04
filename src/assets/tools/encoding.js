@@ -87,7 +87,8 @@ async function decodeLevel(buffer) {
 
 		return message.toObject(decoded);
 	} catch (e) {
-		window.toast('Invalid level data: ' + e, 'error');
+		e.message = 'Invalid level data: ' + e.message;
+		window.toast(e, 'error');
 		return null;
 	}
 }
@@ -570,7 +571,8 @@ function json_parse(text) {
 	try {
 		return JSON.parse(text);
 	} catch (e) {
-		window.toast('Invalid JSON: ' + e, 'error');
+		e.message = 'Invalid JSON: ' + e.message;
+		window.toast(e, 'error');
 		return null;
 	}
 }

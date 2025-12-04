@@ -181,7 +181,8 @@ async function fallback_video(file) {
 			body: formData,
 		});
 	} catch (e) {
-		window.toast('Error making request: ' + e.message, 'error');
+		e.message = 'Error making request: ' + e.message;
+		window.toast(e, 'error');
 		return null;
 	}
 

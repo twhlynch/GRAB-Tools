@@ -1,5 +1,7 @@
 <script>
 import { reactive } from 'vue';
+import * as Sentry from '@sentry/vue';
+
 export default {
 	data() {
 		return {
@@ -11,14 +13,17 @@ export default {
 		console.log('Cooking toast...');
 		if (window.toast === undefined) {
 			window.toast = (msg, severity = 'message', persistent = false) => {
+				const is_error = msg instanceof Error;
 				const message = reactive({
-					value: msg,
+					value: is_error ? msg.message : msg,
+					error: is_error ? msg : null,
 					id: Date.now() + Math.random(),
 					severity: severity,
 				});
 
 				this.messages.push(message);
 				console.log(message.value);
+				console.error(message.error);
 
 				const remove = () => {
 					this.messages = this.messages.filter(
@@ -38,6 +43,14 @@ export default {
 	methods: {
 		async copyMessage(message) {
 			await navigator.clipboard.writeText(message.value);
+
+			if (message.severity.startsWith('err')) {
+				if (message.error) {
+					Sentry.captureException(message.error);
+				} else {
+					Sentry.captureMessage(new Error(message.value));
+				}
+			}
 		},
 	},
 };
@@ -51,7 +64,11 @@ export default {
 			:class="`toast toast-${message.severity}`"
 			@click="copyMessage(message)"
 		>
-			{{ message.value }}
+			<span>{{ message.value }}</span>
+			<span v-if="message.severity.startsWith('err')" class="extra">
+				Click to copy and report this error to the discord server if you
+				believe it is not your fault.
+			</span>
 		</div>
 	</transition-group>
 </template>
@@ -101,5 +118,13 @@ export default {
 .toast-leave-to {
 	opacity: 0;
 	transform: translateY(-10px);
+}
+
+span {
+	display: block;
+}
+.extra {
+	opacity: 0.3;
+	font-size: 0.9rem;
 }
 </style>

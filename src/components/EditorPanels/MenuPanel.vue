@@ -465,6 +465,7 @@ export default {
 						link.click();
 					},
 					(err) => {
+						err.message = 'Failed glTF export: ' + err.message;
 						window.toast(err, 'error');
 					},
 					{},
