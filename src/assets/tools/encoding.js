@@ -498,7 +498,7 @@ function triggerTargetSound() {
 	return triggerTarget({
 		triggerTargetSound: {
 			objectID: 1,
-			repear: false,
+			repeat: false,
 			mode: 1,
 		},
 	});
