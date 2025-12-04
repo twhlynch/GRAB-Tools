@@ -23,7 +23,7 @@ export default {
 
 				this.messages.push(message);
 				console.log(message.value);
-				console.error(message.error);
+				console.log(message.error);
 
 				const remove = () => {
 					this.messages = this.messages.filter(
