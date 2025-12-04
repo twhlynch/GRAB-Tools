@@ -264,6 +264,7 @@ export default {
 					Credit: {
 						Slin: { href: 'https://slin.dev' },
 						EBSpark: { href: 'https://ebspark.github.io/' },
+						TheTrueFax: { href: 'https://thetruefax.github.io/' },
 					},
 					[`v${this.$config.VERSION}`]: {
 						href: 'https://github.com/twhlynch/GRAB-Tools',
