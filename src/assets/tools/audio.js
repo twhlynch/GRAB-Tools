@@ -276,12 +276,15 @@ function getSoundTriggerBlock(x, y, isStop, targetID) {
 	const node = encoding.levelNodeTrigger();
 	node.levelNodeTrigger.position.x = x;
 	node.levelNodeTrigger.scale.x = 0.03;
+
 	const source = encoding.triggerSourceBasic();
-	source.type = sourceBasicTypes.BLOCK;
+	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	node.levelNodeTrigger.triggerSources.push(source);
+
 	const target = encoding.triggerTargetSound();
 	target.triggerTargetSound.objectID = targetID;
 	node.levelNodeTrigger.triggerTargets.push(target);
+
 	const animation = encoding.animation();
 	animation.frames.push(encoding.frame());
 	node.animations = [animation];
