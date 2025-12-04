@@ -270,11 +270,14 @@ function getSoundBlock(pitch, amplitude) {
 	return node;
 }
 function getSoundTriggerBlock(x, y, isStop, targetID) {
+	const targetSoundModes = encoding.load().COD.Level.TriggerTargetSound.Mode;
+	const sourceBasicTypes = encoding.load().COD.Level.TriggerSourceBasic.Type;
+
 	const node = encoding.levelNodeTrigger();
 	node.levelNodeTrigger.position.x = x;
 	node.levelNodeTrigger.scale.x = 0.03;
 	const source = encoding.triggerSourceBasic();
-	source.mode = 4;
+	source.type = sourceBasicTypes.BLOCK;
 	node.levelNodeTrigger.triggerSources.push(source);
 	const target = encoding.triggerTargetSound();
 	target.triggerTargetSound.objectID = targetID;
@@ -282,11 +285,12 @@ function getSoundTriggerBlock(x, y, isStop, targetID) {
 	const animation = encoding.animation();
 	animation.frames.push(encoding.frame());
 	node.animations = [animation];
+
 	if (isStop) {
 		node.levelNodeTrigger.position.y = -y - 1;
-		target.triggerTargetSound.mode = 0;
+		target.triggerTargetSound.mode = targetSoundModes.STOP;
 	} else {
-		target.triggerTargetSound.mode = 1;
+		target.triggerTargetSound.mode = targetSoundModes.START;
 		node.levelNodeTrigger.position.y = y;
 	}
 	return node;
@@ -337,19 +341,28 @@ async function generate(pitchSamps, volumeSamps, file) {
 		return trigger;
 	};
 
+	const sourceBasicTypes = encoding.load().COD.Level.TriggerSourceBasic.Type;
 	const trig1 = encoding.levelNodeTrigger();
 	trig1.levelNodeTrigger.position.x = -5;
 	const source = encoding.triggerSourceBasic();
-	source.triggerSourceBasic.type = 4;
+	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	trig1.levelNodeTrigger.triggerSources.push(source);
 
 	let trig2 = encoding.deepClone(trig1);
 	let trig3 = encoding.deepClone(trig1);
 
+	const targetSoundModes = encoding.load().COD.Level.TriggerTargetSound.Mode;
+
 	for (let i = soundBlocks.length + 2; i < soundBlocks.length * 2 + 2; i++) {
-		trig1.levelNodeTrigger.triggerTargets.push(soundTarget(1, i));
-		trig2.levelNodeTrigger.triggerTargets.push(soundTarget(0, i));
-		trig3.levelNodeTrigger.triggerTargets.push(soundTarget(4, i));
+		trig1.levelNodeTrigger.triggerTargets.push(
+			soundTarget(targetSoundModes.START, i),
+		);
+		trig2.levelNodeTrigger.triggerTargets.push(
+			soundTarget(targetSoundModes.STOP, i),
+		);
+		trig3.levelNodeTrigger.triggerTargets.push(
+			soundTarget(targetSoundModes.RESET, i),
+		);
 	}
 
 	volumes.forEach((v, x) =>
