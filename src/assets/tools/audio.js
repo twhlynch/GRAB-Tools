@@ -444,7 +444,19 @@ async function generate(pitchSamps, volumeSamps, file) {
 		trigs[i].animations[0].frames.push(frame);
 	}
 
-	const nodes = [...soundBlocks, triggerGroup, trig1, trig2, trig3];
+	const max = Math.max(
+		...triggerGroup.levelNodeGroup.childNodes.map(
+			(node) => node.levelNodeTrigger.position.y,
+		),
+	);
+
+	const wall = encoding.levelNodeStatic();
+	wall.levelNodeStatic.position.x = -1;
+	wall.levelNodeStatic.position.y = -0.5;
+	wall.levelNodeStatic.scale.y = max * 2 + 2;
+	wall.levelNodeStatic.scale.x = 0.03;
+
+	const nodes = [...soundBlocks, triggerGroup, trig1, trig2, trig3, wall];
 
 	return nodes;
 }
