@@ -506,7 +506,7 @@ export default {
 
 			const file = files[0];
 			const json = encoding.json_parse(await file.text());
-			this.insert_selection_nodes(json);
+			this.insert_selection_nodes(json?.levelNodes ?? json);
 		},
 		insert_audio() {
 			this.$emit(
