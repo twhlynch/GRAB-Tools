@@ -61,7 +61,7 @@ async function read_video(file, callback) {
 		const { done, value } = await video_reader.read();
 		finished = done;
 
-		if (!value) return;
+		if (!value) continue;
 
 		canvas.width = value.displayWidth;
 		canvas.height = value.displayHeight;
