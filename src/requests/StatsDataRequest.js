@@ -18,12 +18,17 @@ export async function stats_data_request(key) {
 
 	const url = `${STATS_SERVER_URL}${key}.json?cache=${cache_value}`;
 
-	const response = await fetch(url);
+	try {
+		const response = await fetch(url);
 
-	if (response.status !== 200) {
+		if (response.status !== 200) {
+			window.toast(`Error: Failed to load stats`, 'error');
+			return null;
+		}
+
+		return await response.json();
+	} catch {
 		window.toast(`Error: Failed to load stats`, 'error');
 		return null;
 	}
-
-	return await response.json();
 }
