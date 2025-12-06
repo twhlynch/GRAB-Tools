@@ -19,6 +19,8 @@ async function video(file, width, height, callback = (_) => {}) {
 	}
 
 	const video_data = await read_video(file, callback);
+	if (video_data === null) return null;
+
 	const level_nodes = await build_video(video_data, width, height, callback);
 
 	return level_nodes;
@@ -26,15 +28,27 @@ async function video(file, width, height, callback = (_) => {}) {
 
 async function read_video(file, callback) {
 	console.log(file);
-	const buffer = await new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = async () => {
-			const buffer = new Uint8Array(reader.result);
-			resolve(buffer);
-		};
-		reader.onerror = reject;
-		reader.readAsArrayBuffer(file);
-	});
+	if (file.size === 0) {
+		window.toast('Invalid Video: Size is 0', 'error');
+		return null;
+	}
+
+	let buffer;
+	try {
+		buffer = await new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = async () => {
+				const buffer = new Uint8Array(reader.result);
+				resolve(buffer);
+			};
+			reader.onerror = reject;
+			reader.readAsArrayBuffer(file);
+		});
+	} catch (e) {
+		e.message = 'Invalid Video: ' + e.message;
+		window.toast(e, 'error');
+		return null;
+	}
 
 	const blob = new Blob([buffer], {
 		type: 'video/mp4',
@@ -43,7 +57,12 @@ async function read_video(file, callback) {
 	video.src = window.URL.createObjectURL(blob);
 	video.muted = true;
 
-	await video.play();
+	try {
+		await video.play();
+	} catch (e) {
+		window.toast(e, 'error');
+		return null;
+	}
 	const [track] = video.captureStream().getVideoTracks();
 	video.onended = () => track.stop();
 

@@ -38,7 +38,10 @@ export default {
 				progress_callback,
 			);
 			this.progress = 100;
-			if (video_nodes === null) return;
+			if (!video_nodes) {
+				this.progress = 0;
+				return;
+			}
 
 			const obj = encoding.createLevel(
 				video_nodes,
