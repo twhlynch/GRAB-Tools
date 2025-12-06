@@ -669,7 +669,7 @@ export default {
 		},
 		update_connection_visibility() {
 			this.level.nodes.levelNodeTrigger.forEach((trigger) => {
-				trigger.userData.trigger_paths.forEach((path) => {
+				(trigger.userData.trigger_paths ?? []).forEach((path) => {
 					path.visible = this.show_trigger_connections;
 				});
 			});
