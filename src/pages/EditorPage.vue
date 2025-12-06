@@ -104,7 +104,7 @@ export default {
 			this.popup_props.func = func;
 		},
 		scope(func) {
-			func(this);
+			if (this) func(this);
 		},
 		resize_left() {
 			this.$refs.left_panel.size();

@@ -44,7 +44,7 @@ export default {
 		toggle() {
 			this.playing = !this.playing;
 			this.scope((scope) => {
-				if (!this.is_animating && this.playing) {
+				if (!this.is_animating && this.playing && scope.gizmo) {
 					scope.gizmo.clear(scope.editing_parent);
 				}
 				scope.is_animating = this.playing;

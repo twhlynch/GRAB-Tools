@@ -411,7 +411,8 @@ export default {
 					this.update_node_shader(object, false, true);
 				});
 			}
-			this.$refs.animation_panel.set_time(this.level.meta.time);
+			if (this.$refs.animation_panel)
+				this.$refs.animation_panel.set_time(this.level.meta.time);
 			this.controls.update(delta);
 			this.renderer.render(this.scene, this.camera);
 		},
