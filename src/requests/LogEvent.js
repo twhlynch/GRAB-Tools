@@ -14,16 +14,20 @@ export async function LogEvent(
 	if (!user_id) user_id = user.meta_id; // fallback
 
 	// dearest data miner, please don't abuse this.
-	fetch(LOGGING_URL, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			...(action && { action }),
-			...(user_id && { user_id }),
-			...(user_name && { user_name }),
-			...(level_id && { level_id }),
-		}),
-	});
+	try {
+		fetch(LOGGING_URL, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				...(action && { action }),
+				...(user_id && { user_id }),
+				...(user_name && { user_name }),
+				...(level_id && { level_id }),
+			}),
+		});
+	} catch {
+		// idc
+	}
 }
