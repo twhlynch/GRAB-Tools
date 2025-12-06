@@ -30,7 +30,6 @@ export default {
 
 			const progress_callback = (progress) => {
 				this.progress = progress;
-				window.toast(`${progress}`);
 			};
 			const video_nodes = await video.video(
 				file,
