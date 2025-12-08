@@ -232,6 +232,9 @@ export default {
 						'Trigger connections': {
 							func: this.toggle_trigger_connections,
 						},
+						'Code connections': {
+							func: this.toggle_gasm_connections,
+						},
 						Fog: { func: this.toggle_fog },
 						Skybox: { func: this.toggle_sky },
 						'Key Hints': { func: this.toggle_key_hints },
@@ -1161,6 +1164,11 @@ export default {
 		toggle_trigger_connections() {
 			this.$emit('viewport', (scope) => {
 				scope.toggle_trigger_connections();
+			});
+		},
+		toggle_gasm_connections() {
+			this.$emit('viewport', (scope) => {
+				scope.toggle_gasm_connections();
 			});
 		},
 		toggle_groups() {

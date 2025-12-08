@@ -564,7 +564,7 @@ function levelNodeGASM() {
 			scale: vec3(1, 1, 1),
 			rotation: quat(),
 			program: {
-				inoutRegisters: [{ name: 'Obj.Pos.X' }],
+				inoutRegisters: [],
 				workingRegisters: [
 					{ name: 'R0' },
 					{ name: 'R1' },
@@ -578,28 +578,33 @@ function levelNodeGASM() {
 				labels: [],
 				instructions: [],
 			},
-			connections: [
-				{
-					objectID: 0,
-					name: 'Obj',
-					properties: [
-						{
-							objectID: 0,
-							components: [
-								{
-									inputRegisterIndex: -1,
-									outputRegisterIndex: -1,
-									inoutRegisterIndex: 0,
-								},
-							],
-							position: {},
-						},
-					],
-				},
-			],
+			connections: [],
 			startActive: false,
 		},
 	});
+}
+function registerData() {
+	return { name: '' };
+}
+function gasmConnection() {
+	return {
+		objectID: 0,
+		name: 'Obj',
+		properties: [],
+	};
+}
+function programmablePropertyData() {
+	return {
+		objectID: 0,
+		components: [],
+	};
+}
+function programmablePropertyDataComponent() {
+	return {
+		inputRegisterIndex: -1,
+		outputRegisterIndex: -1,
+		inoutRegisterIndex: -1,
+	};
 }
 
 function traverse_node(node, func) {
@@ -663,6 +668,10 @@ export default {
 	levelNodeParticleEmitter,
 	levelNodeSound,
 	levelNodeGASM,
+	registerData,
+	gasmConnection,
+	programmablePropertyData,
+	programmablePropertyDataComponent,
 	animation,
 	frame,
 	triggerTargetAnimation,

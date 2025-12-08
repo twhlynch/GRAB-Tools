@@ -34,6 +34,7 @@ export default {
 			show_triggers: true,
 			show_sound: true,
 			show_trigger_connections: true,
+			show_gasm_connections: true,
 			show_fog: true,
 			show_sky: true,
 			transform_mode: 'translate',
@@ -224,7 +225,7 @@ export default {
 				this.update_animation_path_position(object);
 				this.update_group_bounds(object);
 			});
-			this.update_trigger_path_positions(this.gizmo.selection);
+			this.update_connection_positions(this.gizmo.selection);
 		},
 		edit_event(e) {
 			this.controls.enabled = !e.value;
@@ -236,7 +237,7 @@ export default {
 				this.update_group_bounds(object);
 			});
 
-			this.update_trigger_path_positions(this.gizmo.selection);
+			this.update_connection_positions(this.gizmo.selection);
 			this.changed();
 		},
 		cast_for_node(x, y) {
@@ -324,6 +325,7 @@ export default {
 			this.level = await window._levelLoader.load(json, true);
 			this.add_hitboxes();
 			this.add_trigger_connections();
+			this.add_gasm_connections();
 			this.add_animation_paths();
 			this.add_group_bounds();
 			if (this.show_shadows) this.update_shadows();
@@ -431,7 +433,7 @@ export default {
 
 			if (this.is_animating) {
 				this.level.update(delta);
-				this.update_trigger_path_positions(this.level.nodes.animated);
+				this.update_connection_positions(this.level.nodes.animated);
 				this.level.nodes.animated.forEach((object) => {
 					this.update_node_shader(object, false, true);
 				});
@@ -601,6 +603,7 @@ export default {
 				show_triggers: this.show_triggers,
 				show_sound: this.show_sound,
 				show_trigger_connections: this.show_trigger_connections,
+				show_gasm_connections: this.show_gasm_connections,
 				show_fog: this.show_fog,
 				show_sky: this.show_sky,
 				show_key_hints: this.show_key_hints,
@@ -615,8 +618,13 @@ export default {
 		},
 		toggle_trigger_connections() {
 			this.show_trigger_connections = !this.show_trigger_connections;
-			this.update_connection_visibility();
-			this.update_trigger_path_positions();
+			this.update_trigger_connection_visibility();
+			this.update_connection_positions();
+		},
+		toggle_gasm_connections() {
+			this.show_gasm_connections = !this.show_gasm_connections;
+			this.update_gasm_connection_visibility();
+			this.update_connection_positions();
 		},
 		toggle_groups() {
 			this.show_groups = !this.show_groups;
@@ -692,10 +700,17 @@ export default {
 				});
 			});
 		},
-		update_connection_visibility() {
-			this.level.nodes.levelNodeTrigger.forEach((trigger) => {
-				(trigger.userData.trigger_paths ?? []).forEach((path) => {
+		update_trigger_connection_visibility() {
+			this.level.nodes.levelNodeTrigger.forEach((object) => {
+				(object.userData.trigger_connections ?? []).forEach((path) => {
 					path.visible = this.show_trigger_connections;
+				});
+			});
+		},
+		update_gasm_connection_visibility() {
+			this.level.nodes.levelNodeGASM.forEach((object) => {
+				(object.userData.gasm_connections ?? []).forEach((path) => {
+					path.visible = this.show_gasm_connections;
 				});
 			});
 		},
@@ -721,6 +736,26 @@ export default {
 						const target = this.level.nodes.all[id - 1];
 						if (!target) return;
 						this.add_trigger_path(object, target);
+					});
+				});
+			}
+		},
+		add_gasm_connections() {
+			if (this.level.nodes.levelNodeGASM?.length) {
+				this.level.nodes.levelNodeGASM.forEach((object) => {
+					const node = object.userData.node.levelNodeGASM;
+					const connections = node.connections;
+					if (!connections) return;
+
+					const ids = [];
+					connections.forEach((connection) => {
+						const objectID = connection.objectID;
+						if (objectID) ids.push(objectID);
+					});
+					ids.forEach((id) => {
+						const target = this.level.nodes.all[id - 1];
+						if (!target) return;
+						this.add_gasm_path(object, target);
 					});
 				});
 			}
@@ -812,11 +847,19 @@ export default {
 				path.quaternion.copy(path.userData.object.quaternion);
 			});
 		},
-		update_trigger_path_positions(related_objects = undefined) {
-			if (!this.show_trigger_connections) return;
+		update_connection_positions(related_objects = undefined) {
+			if (related_objects === undefined) {
+				related_objects = [
+					...(this.show_trigger_connections
+						? this.level.nodes?.levelNodeTrigger ?? []
+						: []),
+					...(this.show_gasm_connections
+						? this.level.nodes?.levelNodeGASM ?? []
+						: []),
+				];
+			}
 
-			if (related_objects === undefined)
-				related_objects = this.level.nodes?.levelNodeTrigger ?? [];
+			if (!related_objects.length) return;
 
 			const lines = [];
 			related_objects.forEach((obj) => {
@@ -829,61 +872,81 @@ export default {
 
 			const unique_lines = [...new Set(lines)];
 			unique_lines.forEach((line) => {
-				const path_target = line.userData.object;
-				const path_trigger = line.userData.trigger;
+				const path_target = line.userData.target;
+				const path_object = line.userData.object;
 
-				const trigger_position = new THREE.Vector3();
-				path_trigger.getWorldPosition(trigger_position);
+				const object_position = new THREE.Vector3();
+				path_object.getWorldPosition(object_position);
 				const position = new THREE.Vector3();
 				path_target.getWorldPosition(position);
 
-				const points = [trigger_position, position];
+				const points = [object_position, position];
 				line.geometry.dispose();
 				line.geometry = new THREE.BufferGeometry().setFromPoints(
 					points,
 				);
 			});
 		},
-		add_trigger_path(trigger, object) {
-			const path_material = new THREE.LineBasicMaterial({
-				color: 0xff8800,
-			});
-
+		add_relevant_connection(object, connection) {
+			let current = object;
+			while (current?.userData?.node) {
+				(current.userData.relevant_connections ??= []).push(connection);
+				current = current.parent;
+			}
+		},
+		make_connection(object, target, material) {
 			const trigger_position = new THREE.Vector3();
-			trigger.getWorldPosition(trigger_position);
+			object.getWorldPosition(trigger_position);
 
-			const position = new THREE.Vector3();
-			object.getWorldPosition(position);
-			const points = [trigger_position, position];
+			const target_position = new THREE.Vector3();
+			target.getWorldPosition(target_position);
 
+			const points = [trigger_position, target_position];
 			const line_geometry = new THREE.BufferGeometry().setFromPoints(
 				points,
 			);
-			const line = new THREE.Line(line_geometry, path_material);
-			line.visible = this.show_trigger_connections;
-			line.userData.trigger = trigger;
+
+			const line = new THREE.Line(line_geometry, material);
 			line.userData.object = object;
-			(trigger.userData.trigger_paths ??= []).push(line);
-			if (!trigger.userData.relevant_connections) {
-				trigger.userData.relevant_connections = [];
-			}
-			trigger.userData.relevant_connections.push(line);
-			let current = object;
-			while (current?.userData?.node) {
-				if (!current.userData.relevant_connections) {
-					current.userData.relevant_connections = [];
-				}
-				current.userData.relevant_connections.push(line);
-				current = current.parent;
-			}
-			current = trigger;
-			while (current?.userData?.node) {
-				if (!current.userData.relevant_connections) {
-					current.userData.relevant_connections = [];
-				}
-				current.userData.relevant_connections.push(line);
-				current = current.parent;
-			}
+			line.userData.target = target;
+
+			return line;
+		},
+		add_gasm_path(object, target) {
+			this.gasm_connection_material =
+				this.gasm_connection_material ??
+				new THREE.LineBasicMaterial({
+					color: 0x006600,
+				});
+
+			const line = this.make_connection(
+				object,
+				target,
+				this.gasm_connection_material,
+			);
+			line.visible = this.show_gasm_connections;
+			(object.userData.gasm_connections ??= []).push(line);
+			this.add_relevant_connection(target, line);
+			this.add_relevant_connection(object, line);
+
+			this.level.scene.add(line);
+		},
+		add_trigger_path(object, target) {
+			this.trigger_connection_material =
+				this.trigger_connection_material ??
+				new THREE.LineBasicMaterial({
+					color: 0xff8800,
+				});
+
+			const line = this.make_connection(
+				object,
+				target,
+				this.trigger_connection_material,
+			);
+			line.visible = this.show_trigger_connections;
+			(object.userData.trigger_connections ??= []).push(line);
+			this.add_relevant_connection(target, line);
+			this.add_relevant_connection(object, line);
 
 			this.level.scene.add(line);
 		},
@@ -1090,6 +1153,83 @@ export default {
 				this.mini_editor_changed(this.$refs.mini_editor.json);
 			this.show_mini_editor = false;
 		},
+		get_new_connection_name(object, target) {
+			const names = object.levelNodeGASM.connections.map(
+				(conn) => conn.name,
+			);
+			let name =
+				target.levelNodeGroup?.name ?? target.levelNodeStart?.name;
+			if (name?.length) {
+				if (!names.includes(name)) {
+					return name;
+				}
+				let index = 0;
+				while (names.includes(`${name}${index}`)) {
+					index++;
+				}
+				name = `${name}${index}`;
+				return name;
+			}
+
+			let index = 0;
+			while (names.includes(`Obj${index}`)) {
+				index++;
+			}
+			name = `Obj${index}`;
+			return name;
+		},
+		add_code_connection(object, target, type) {
+			const node = object?.userData?.node?.levelNodeGASM;
+			if (!node) return;
+			(node.program ??= {}).inoutRegisters ??= [];
+			node.connections ??= [];
+
+			const objectID = target?.userData?.id ?? 0;
+			const existing_connection = node.connections.find(
+				(conn) => conn.objectID === objectID,
+			);
+
+			let connection = existing_connection;
+			if (!connection) {
+				connection = encoding.gasmConnection();
+				connection.objectID = objectID;
+				connection.name = this.get_new_connection_name(
+					object.userData.node,
+					target.userData.node,
+				);
+			}
+
+			const prop = encoding.programmablePropertyData();
+			prop.objectID = objectID; // redundant??
+			prop[type] = {};
+
+			const x_comp = encoding.programmablePropertyDataComponent();
+			const y_comp = encoding.programmablePropertyDataComponent();
+			const z_comp = encoding.programmablePropertyDataComponent();
+			x_comp.inoutRegisterIndex = node.program.inoutRegisters.length;
+			y_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 1;
+			z_comp.inoutRegisterIndex = y_comp.inoutRegisterIndex + 1;
+			prop.components = [x_comp, y_comp, z_comp];
+
+			const x_reg = encoding.registerData();
+			const y_reg = encoding.registerData();
+			const z_reg = encoding.registerData();
+
+			const type_spec = type.charAt(0).toUpperCase() + type.slice(1, 3);
+			x_reg.name = `${connection.name}.${type_spec}.X`;
+			y_reg.name = `${connection.name}.${type_spec}.Y`;
+			z_reg.name = `${connection.name}.${type_spec}.Z`;
+
+			node.program.inoutRegisters.push(...[x_reg, y_reg, z_reg]);
+
+			connection.properties.push(prop);
+			if (!existing_connection) {
+				node.connections.push(connection);
+				this.add_gasm_path(object, target);
+			}
+
+			this.changed();
+		},
 		add_animation_target(object, target_object = undefined) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
@@ -1100,7 +1240,6 @@ export default {
 			trigger.triggerTargets.push(target);
 			this.add_trigger_path(object, target_object);
 			this.changed();
-			this.update_connection_visibility();
 		},
 		add_sublevel_target(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
@@ -1122,7 +1261,6 @@ export default {
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
 			trigger.triggerTargets.push(encoding.triggerTargetSound());
 			this.changed();
-			this.update_connection_visibility();
 		},
 		add_trigger_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
@@ -1222,6 +1360,7 @@ export default {
 					clicked_node.levelNodeCrumbling ||
 					clicked_node.levelNodeTrigger;
 				const selected_is_trigger = selected_node.levelNodeTrigger;
+				const selected_is_code = selected_node.levelNodeGASM;
 				const clicked_has_code = clicked_node.levelNodeGASM;
 				const clicked_is_trigger = clicked_node.levelNodeTrigger;
 				const clicked_can_animate =
@@ -1400,8 +1539,32 @@ export default {
 								},
 							},
 						}),
+					...(single_selection &&
+						selected_is_code &&
+						clicked_can_target && {
+							'Add as Connection': {
+								Position: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'position',
+										);
+									},
+								},
+								Rotation: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'rotation',
+										);
+									},
+								},
+							},
+						}),
 					...(clicked_is_selected && {
-						'Copy ID': {
+						[`Copy ID (${clicked_object?.userData?.id ?? 0})`]: {
 							func: () => {
 								this.copy_object_id(clicked_object);
 							},
