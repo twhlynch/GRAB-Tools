@@ -642,6 +642,16 @@ function json_parse(text) {
 	}
 }
 
+function special_registers() {
+	return [
+		'ProgramCounter', // index of instruction
+		'Halt', // boolean that halts the program
+		'HaltFrame', // boolean that skips a frame. equivelant to SLEEP 0
+		'SleepTimer', // idk time sleeping maybe but that seems wrong
+		'DeltaTime', // time since last frame
+	];
+}
+
 export default {
 	load,
 	set_protobuf,
@@ -687,4 +697,5 @@ export default {
 	ambienceSettings,
 	add_nodes,
 	json_parse,
+	special_registers,
 };

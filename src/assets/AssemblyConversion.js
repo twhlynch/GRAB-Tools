@@ -3,13 +3,7 @@ import encoding from '@/assets/tools/encoding';
 const instruction_map = encoding.load().COD.Level.InstructionData.Type;
 const operand_map = encoding.load().COD.Level.OperandData.Type;
 
-const special_registers = [
-	'ProgramCounter', // index of instruction
-	'Halt', // boolean that halts the program
-	'HaltFrame', // boolean that skips a frame. equivelant to SLEEP 0
-	'SleepTimer', // idk time sleeping maybe but that seems wrong
-	'DeltaTime', // time since last frame
-];
+const special_registers = encoding.special_registers();
 
 // asm to json
 function asm_to_json(asm, old_json) {
