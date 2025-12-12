@@ -5,6 +5,33 @@ const operand_map = encoding.load().COD.Level.OperandData.Type;
 
 const special_registers = encoding.special_registers();
 
+const operand_counts = {
+	[instruction_map.InNoop]: 0,
+	[instruction_map.InSet]: 2,
+	[instruction_map.InSwap]: 2,
+	[instruction_map.InAdd]: 3,
+	[instruction_map.InSub]: 3,
+	[instruction_map.InMul]: 3,
+	[instruction_map.InDiv]: 3,
+	[instruction_map.InEqual]: 3,
+	[instruction_map.InLess]: 3,
+	[instruction_map.InGreater]: 3,
+	[instruction_map.InAnd]: 3,
+	[instruction_map.InOr]: 3,
+	[instruction_map.InNot]: 2,
+	[instruction_map.InLabel]: 1,
+	[instruction_map.InGoto]: 1,
+	[instruction_map.InIf]: 2,
+	[instruction_map.InSleep]: 1,
+	[instruction_map.InEnd]: 0,
+	[instruction_map.InRand]: 2,
+	[instruction_map.InFloor]: 2,
+	[instruction_map.InMod]: 3,
+	[instruction_map.InSin]: 2,
+	[instruction_map.InCos]: 2,
+	[instruction_map.InSqrt]: 2,
+};
+
 // asm to json
 function asm_to_json(asm, old_json) {
 	old_json.levelNodeGASM.program.labels = [];
@@ -165,54 +192,83 @@ function instruction_asm_to_json(instruction, old_json) {
 	const operator = parts[0];
 	const operands = parts.slice(1);
 
+	const type = instruction_map[dirty_instruction(operator)];
+	const count = operand_counts[type];
+	// handle labels with spaces (they must be the last operand)
+	operands.push(operands.splice(count - 1, operands.length).join(' '));
+
 	return {
-		type: instruction_map[dirty_instruction(operator)],
-		operands: operands.map((operand) =>
-			operand_asm_to_json(operand, old_json),
-		),
+		type,
+		operands: operands
+			.map((operand, i) =>
+				operand_asm_to_json(operand, type, i, old_json),
+			)
+			.filter(Boolean),
 	};
 }
 
-function operand_asm_to_json(operand, old_json) {
-	const labels = old_json.levelNodeGASM.program.labels;
-	const inoutRegisters = old_json.levelNodeGASM.program.inoutRegisters ?? [];
+function operand_asm_to_json(operand, instruction, index, old_json) {
+	const program = old_json.levelNodeGASM.program;
+	const labels = program.labels;
+	const inoutRegisters = (program.inoutRegisters ?? []).map((r) => r.name);
+	const inRegisters = (program.inRegisters ?? []).map((r) => r.name);
+	const outRegisters = (program.outRegisters ?? []).map((r) => r.name);
 
-	if (special_registers.includes(operand)) {
-		return {
-			type: operand_map['OpSpecialRegister'],
-			index: special_registers.indexOf(operand),
-		};
-	} else if (/^-?\d+(\.\d+)?$/.test(operand)) {
-		return {
-			type: operand_map['OpConstant'],
-			value: parseFloat(operand),
-		};
-	} else if (inoutRegisters.map((r) => r.name).includes(operand)) {
-		const index = inoutRegisters.map((r) => r.name).indexOf(operand);
-		const op = operand_map['OpInOutRegister'];
-		return {
-			type: op,
-			index: index,
-		};
-	} else if (/^((R|IN|OUT)\d+)$/.test(operand)) {
-		const match = operand.match(/^([A-Za-z]+)(\d+)$/);
-		const op = operand_map[dirty_operand(match[1])];
-		const index = match[2];
-		return {
-			type: op,
-			index: parseInt(index),
-		};
-	} else {
+	const is_label =
+		(instruction === instruction_map.InLabel ||
+			instruction === instruction_map.InGoto ||
+			instruction === instruction_map.InIf) &&
+		index === operand_counts[instruction] - 1;
+
+	if (is_label) {
 		let index = labels.findIndex((label) => label.name === operand);
 		if (index === -1) {
 			labels.push({ name: operand });
 			index = labels.length - 1;
 		}
 		return {
-			type: operand_map['OpLabel'],
+			type: operand_map.OpLabel,
 			index: index,
 		};
 	}
+	if (special_registers.includes(operand)) {
+		return {
+			type: operand_map.OpSpecialRegister,
+			index: special_registers.indexOf(operand),
+		};
+	}
+	if (inoutRegisters.includes(operand)) {
+		return {
+			type: operand_map.OpInOutRegister,
+			index: inoutRegisters.indexOf(operand),
+		};
+	}
+	if (inRegisters.includes(operand)) {
+		return {
+			type: operand_map.OpInRegister,
+			index: inRegisters.indexOf(operand),
+		};
+	}
+	if (outRegisters.includes(operand)) {
+		return {
+			type: operand_map.OpOutRegister,
+			index: outRegisters.indexOf(operand),
+		};
+	}
+	if (/^R\d+$/.test(operand)) {
+		return {
+			type: operand_map.OpWorkingRegister,
+			index: parseInt(operand.slice(1)),
+		};
+	}
+	if (/^-?\d+(\.\d+)?$/.test(operand)) {
+		return {
+			type: operand_map.OpConstant,
+			value: parseFloat(operand),
+		};
+	}
+
+	return undefined;
 }
 
 // json to asm
@@ -235,36 +291,40 @@ function instruction_json_to_asm(instruction, json) {
 }
 
 function operand_json_to_asm(operand, json) {
-	const labels = json.levelNodeGASM.program.labels;
-	const inoutRegisters = json.levelNodeGASM.program.inoutRegisters ?? [];
+	const program = json.levelNodeGASM.program;
+	const labels = program.labels;
+	const inoutRegisters = program.inoutRegisters ?? [];
+	const inRegisters = program.inoRegisters ?? [];
+	const outRegisters = program.outRegisters ?? [];
 
-	const op = operand_map[operand.type ?? 0];
-	if (op === 'OpConstant') {
-		return `${operand.value}`;
-	} else if (op === `OpLabel`) {
-		return `${labels[operand.index].name}`;
-	} else if (op === 'OpSpecialRegister') {
-		return `${special_registers[operand.index]}`;
-	} else if (op === 'OpInOutRegister') {
-		return inoutRegisters[operand.index].name;
+	const type = operand.type ?? 0;
+	const index = operand.index ?? 0;
+	const value = operand.value ?? 0;
+	const ops = operand_map;
+
+	if (type === ops.OpConstant) {
+		return `${value}`;
 	}
-	return `${clean_operand(op)}${operand.index}`;
-}
+	if (type === ops.OpLabel) {
+		return `${labels[index].name}`;
+	}
+	if (type === ops.OpSpecialRegister) {
+		return `${special_registers[index]}`;
+	}
+	if (type === ops.OpInOutRegister) {
+		return inoutRegisters[index].name;
+	}
+	if (type === ops.OpInRegister) {
+		return inRegisters[index].name;
+	}
+	if (type === ops.OpOutRegister) {
+		return outRegisters[index].name;
+	}
+	if (type === ops.OpWorkingRegister) {
+		return `R${index}`;
+	}
 
-function clean_operand(name) {
-	return {
-		OpInputRegister: 'IN',
-		OpOutputRegister: 'OUT',
-		OpWorkingRegister: 'R',
-	}[name];
-}
-
-function dirty_operand(name) {
-	return {
-		IN: 'OpInputRegister',
-		OUT: 'OpOutputRegister',
-		R: 'OpWorkingRegister',
-	}[name];
+	return '';
 }
 
 function clean_instruction(name) {

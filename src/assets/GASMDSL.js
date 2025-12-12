@@ -34,7 +34,7 @@ export const gasm = StreamLanguage.define({
 		// registers
 		if (stream.match(/[A-Za-z_][A-Za-z0-9_]*\.[.A-Za-z0-9_]*\b/, true))
 			return 'variableName';
-		if (stream.match(/(R|IN|OUT)\d*\b/, true)) return 'variableName';
+		if (stream.match(/R\d*\b/, true)) return 'variableName';
 		// special registers
 		if (stream.match(special_reg_regex, true)) return 'propertyName';
 
