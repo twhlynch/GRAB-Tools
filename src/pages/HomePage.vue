@@ -41,7 +41,9 @@ export default {
 				<a href="https://grabvr.miraheze.org/wiki/.index">wiki page</a>
 				hosted with miraheze, and a chrome extension to add some extra
 				utility to the
-				<a href="https://grabvr.quest/levels">level browser</a>.
+				<a href="https://grabvr.quest/levels">level browser</a>. Also
+				check out
+				<a href="https://grab-tutorials.live">GRAB Tutorials</a>!
 			</p>
 		</section>
 		<section id="tools">
