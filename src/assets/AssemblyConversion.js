@@ -30,6 +30,7 @@ const operand_counts = {
 	[instruction_map.InSin]: 2,
 	[instruction_map.InCos]: 2,
 	[instruction_map.InSqrt]: 2,
+	[instruction_map.InAtan2]: 3,
 };
 
 // asm to json
