@@ -336,6 +336,7 @@ export default {
 			});
 			this.$refs.animation_panel.set_level(this.level);
 			console.log(this.level);
+			console.log(json);
 		},
 		configure_shadow_camera() {
 			const sun = this.level.sun;
