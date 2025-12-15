@@ -1,7 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
-import { minify } from 'terser';
-
 export default {
 	props: {
 		name: String,
@@ -15,16 +13,13 @@ export default {
 	},
 
 	async mounted() {
-		const modules = import.meta.glob('../assets/bookmarklets/*.js', {
-			as: 'raw',
-		});
-		const path = `../assets/bookmarklets/${this.script}`;
+		const path = `/bookmarklets/${this.script}`;
 
-		if (modules[path]) {
-			let code = await modules[path]();
-			const result = await minify(code);
-			this.bookmarklet = encodeURIComponent(result.code);
-		} else {
+		try {
+			const res = await fetch(path);
+			const code = await res.text();
+			this.bookmarklet = encodeURIComponent(code);
+		} catch (e) {
 			console.error('Bookmarklet not found:', path);
 		}
 	},

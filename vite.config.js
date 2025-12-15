@@ -4,11 +4,45 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import mkcert from 'vite-plugin-mkcert';
 import postcssNesting from 'postcss-nesting';
+import { minify } from 'terser';
+import fs from 'fs/promises';
+import path from 'path';
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
-	plugins: [vue(), mkcert()],
+	plugins: [
+		vue(),
+		mkcert(),
+		{
+			name: 'minify-bookmarklets',
+			apply: 'build',
+
+			async generateBundle(_, _bundle) {
+				const dir = path.resolve('public/bookmarklets');
+				const entries = await fs.readdir(dir, { withFileTypes: true });
+
+				for (const entry of entries) {
+					if (!entry.isFile() || !entry.name.endsWith('.js'))
+						continue;
+
+					const filepath = path.join(dir, entry.name);
+					const code = await fs.readFile(filepath, 'utf8');
+
+					const result = await minify(code, {
+						compress: true,
+						mangle: true,
+					});
+
+					this.emitFile({
+						type: 'asset',
+						fileName: `bookmarklets/${entry.name}`,
+						source: result.code,
+					});
+				}
+			},
+		},
+	],
 	resolve: {
 		alias: {
 			'@': fileURLToPath(
