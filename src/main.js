@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import * as Sentry from '@sentry/vue';
+import { init, setUser } from '@sentry/vue';
 import { useCookiesStore } from '@/stores/cookies';
 import { useUserStore } from '@/stores/user';
 
@@ -16,7 +16,7 @@ app.config.globalProperties.$config = config;
 
 app.config.unwrapInjectedRef = true;
 
-Sentry.init({
+init({
 	app,
 	// dummy dsn
 	dsn: 'https://SENTRY_PUBLIC_KEY@SENTRY_INGEST_HOST.ingest.us.sentry.io/0123456789',
@@ -39,7 +39,7 @@ app.use(pinia);
 const cookies = useCookiesStore();
 const user = useUserStore();
 if (user.user_name && cookies.allow_cookies) {
-	Sentry.setUser({ username: user.user_name });
+	setUser({ username: user.user_name });
 }
 
 app.mount('#app');

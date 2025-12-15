@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useUserStore } from './user';
-import * as Sentry from '@sentry/vue';
+import { setUser } from '@sentry/vue';
 
 export const useCookiesStore = defineStore('cookies', {
 	state: () => ({
@@ -13,11 +13,11 @@ export const useCookiesStore = defineStore('cookies', {
 			if (value) {
 				const user = useUserStore();
 				if (user.user_name && this.allow_cookies) {
-					Sentry.setUser({ username: user.user_name });
+					setUser({ username: user.user_name });
 				}
 			} else {
 				this.timestamp = Date.now();
-				Sentry.setUser({ username: null });
+				setUser({ username: null });
 			}
 		},
 	},

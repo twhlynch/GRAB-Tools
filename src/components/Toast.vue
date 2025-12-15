@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
 import { reactive } from 'vue';
-import * as Sentry from '@sentry/vue';
+import { captureException, captureMessage } from '@sentry/vue';
 
 export default {
 	data() {
@@ -47,9 +47,9 @@ export default {
 
 			if (message.severity.startsWith('err')) {
 				if (message.error) {
-					Sentry.captureException(message.error);
+					captureException(message.error);
 				} else {
-					Sentry.captureMessage(new Error(message.value));
+					captureMessage(new Error(message.value));
 				}
 			}
 		},

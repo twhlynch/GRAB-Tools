@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three/src/math/Vector3';
+import { Quaternion } from 'three/src/math/Quaternion';
 
 /**
  * @param {File} file - An svg file
@@ -54,7 +55,7 @@ function path(d, width, color, complexity) {
 	const points = [];
 	for (let i = 0; i <= complexity; i++) {
 		const pt = path.getPointAtLength((i / complexity) * length);
-		points.push(new THREE.Vector3(pt.x, -pt.y, 0));
+		points.push(new Vector3(pt.x, -pt.y, 0));
 	}
 
 	const cubes = [];
@@ -62,13 +63,13 @@ function path(d, width, color, complexity) {
 		const p1 = points[i - 1];
 		const p2 = points[i];
 
-		const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-		const dir = new THREE.Vector3().subVectors(p2, p1);
+		const mid = new Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+		const dir = new Vector3().subVectors(p2, p1);
 		const len = dir.length();
 		dir.normalize();
 
-		const quat = new THREE.Quaternion();
-		quat.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+		const quat = new Quaternion();
+		quat.setFromUnitVectors(new Vector3(0, 0, 1), dir);
 
 		cubes.push({
 			levelNodeStatic: {

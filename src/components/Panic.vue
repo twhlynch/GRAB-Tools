@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
-import * as Sentry from '@sentry/vue';
+import { captureException } from '@sentry/vue';
 import KeyHint from './EditorPanels/KeyHint.vue';
 
 export default {
@@ -19,7 +19,7 @@ export default {
 		if (window.panic === undefined) {
 			window.panic = (error) => {
 				error.message = 'PANIC: ' + error.message;
-				Sentry.captureException(error);
+				captureException(error);
 				this.message = error.message;
 			};
 		}

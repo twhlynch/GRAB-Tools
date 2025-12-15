@@ -1,5 +1,7 @@
 import encoding from '@/assets/tools/encoding';
-import * as THREE from 'three';
+import { Box3 } from 'three/src/math/Box3';
+import { Vector3 } from 'three/src/math/Vector3';
+import { Quaternion } from 'three/src/math/Quaternion';
 
 /**
  * @param {Array<Object>} nodes - A list of level nodes
@@ -9,15 +11,11 @@ function groupNodes(nodes) {
 	const positions = nodes.map((node) => {
 		const data = encoding.node_data(node);
 
-		return new THREE.Vector3(
-			data.position.x,
-			data.position.y,
-			data.position.z,
-		);
+		return new Vector3(data.position.x, data.position.y, data.position.z);
 	});
 
-	const box = new THREE.Box3().setFromPoints(positions);
-	const center = new THREE.Vector3();
+	const box = new Box3().setFromPoints(positions);
+	const center = new Vector3();
 	box.getCenter(center);
 
 	nodes.forEach((node) => {
@@ -39,18 +37,18 @@ function groupNodes(nodes) {
  * @returns {Array<Object>} - A list of level nodes
  */
 function ungroupNode(group) {
-	const group_position = new THREE.Vector3(
+	const group_position = new Vector3(
 		group.levelNodeGroup.position?.x ?? 0,
 		group.levelNodeGroup.position?.y ?? 0,
 		group.levelNodeGroup.position?.z ?? 0,
 	);
-	const group_quaternion = new THREE.Quaternion(
+	const group_quaternion = new Quaternion(
 		group.levelNodeGroup.rotation?.x ?? 0,
 		group.levelNodeGroup.rotation?.y ?? 0,
 		group.levelNodeGroup.rotation?.z ?? 0,
 		group.levelNodeGroup.rotation?.w ?? 0,
 	);
-	const group_scale = new THREE.Vector3(
+	const group_scale = new Vector3(
 		group.levelNodeGroup.scale?.x ?? 0,
 		group.levelNodeGroup.scale?.y ?? 0,
 		group.levelNodeGroup.scale?.z ?? 0,
@@ -61,18 +59,18 @@ function ungroupNode(group) {
 	child_nodes.forEach((node) => {
 		const data = encoding.node_data(node);
 
-		const position = new THREE.Vector3(
+		const position = new Vector3(
 			data.position?.x ?? 0,
 			data.position?.y ?? 0,
 			data.position?.z ?? 0,
 		);
-		const quaternion = new THREE.Quaternion(
+		const quaternion = new Quaternion(
 			data.rotation?.x ?? 0,
 			data.rotation?.y ?? 0,
 			data.rotation?.z ?? 0,
 			data.rotation?.w ?? 0,
 		);
-		const scale = new THREE.Vector3(
+		const scale = new Vector3(
 			data.scale?.x ?? 0,
 			data.scale?.y ?? 0,
 			data.scale?.z ?? 0,

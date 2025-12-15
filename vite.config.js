@@ -59,6 +59,29 @@ export default defineConfig({
 				: 'safari13',
 		minify: !process.env.TAURI_ENV_DEBUG ? 'esbuild' : false,
 		sourcemap: !!process.env.TAURI_ENV_DEBUG,
+		rollupOptions: {
+			output: {
+				manualChunks(path) {
+					if (!path.includes('node_modules')) return;
+					const name = path
+						.toString()
+						.split('node_modules/')[1]
+						.split('/')[0]
+						.toString();
+
+					if (path.includes('three/src/math')) return 'three-math';
+					if (name.includes('three')) return 'three';
+					if (name.includes('codemirror')) return 'editor';
+					if (name.includes('@replit')) return 'editor';
+					if (name.includes('@lezer')) return 'editor';
+					if (name.includes('protobufjs')) return 'protobuf';
+					if (name.includes('jsfft')) return 'jsfft';
+				},
+				entryFileNames: 'assets/[name]-[hash].js',
+				chunkFileNames: 'assets/[name]-[hash].js',
+				assetFileNames: 'assets/[name]-[hash][extname]',
+			},
+		},
 	},
 	server: {
 		https: true,
