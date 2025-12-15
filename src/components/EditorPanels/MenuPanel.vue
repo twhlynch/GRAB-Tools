@@ -968,13 +968,13 @@ export default {
 			});
 		},
 		make_gun() {
-			this.set_selectable_nodes((nodes) => {
-				gun.makeGun(nodes);
+			this.set_selectable_nodes(async (nodes) => {
+				await gun.makeGun(nodes);
 			});
 		},
 		make_car() {
-			this.set_selectable_nodes((nodes) => {
-				car.makeCar(nodes);
+			this.set_selectable_nodes(async (nodes) => {
+				await car.makeCar(nodes);
 			});
 		},
 		group_level() {
@@ -1086,11 +1086,11 @@ export default {
 		},
 		set_selectable_nodes(func) {
 			this.$emit('viewport', (scope) => {
-				this.$emit('modifier', (json) => {
+				this.$emit('modifier', async (json) => {
 					const node_list =
 						scope.editing_parent.userData?.node?.levelNodeGroup
 							?.childNodes ?? (json.levelNodes ??= []);
-					func(node_list);
+					await func(node_list);
 					console.log(json);
 					return json;
 				});

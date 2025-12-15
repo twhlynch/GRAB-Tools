@@ -2,12 +2,20 @@ import AssemblyConversion from '@/assets/AssemblyConversion';
 import encoding from '@/assets/tools/encoding';
 import group from '@/assets/tools/group';
 
-import car_asm from '@/assets/gasm/car.asm?raw';
-
-function makeCar(nodes) {
+async function makeCar(nodes) {
 	if (nodes.length !== 2) {
 		window.toast('Must have only 2 objects to make a car', 'warning');
 		return;
+	}
+
+	let asm;
+	try {
+		const res = await fetch('/gasm/gun.asm');
+		asm = await res.text();
+	} catch (e) {
+		e.message = 'Failed to load asm: ' + e.message;
+		window.toast(e, 'error');
+		return null;
 	}
 
 	let [car_node, wheel_node] = nodes;
@@ -50,7 +58,7 @@ function makeCar(nodes) {
 	encoding.add_code_connection(code_node, 'rotation', 'Car', car_id);
 	encoding.add_code_connection(code_node, 'active', 'Hol', trigger_id);
 
-	AssemblyConversion.asm_to_json(car_asm, code_node);
+	AssemblyConversion.asm_to_json(asm, code_node);
 
 	// connect trigger
 	const source = encoding.triggerSourceBasic();

@@ -2,12 +2,20 @@ import AssemblyConversion from '@/assets/AssemblyConversion';
 import encoding from '@/assets/tools/encoding';
 import group from '@/assets/tools/group';
 
-import gun_asm from '@/assets/gasm/gun.asm?raw';
-
-function makeGun(nodes) {
+async function makeGun(nodes) {
 	if (nodes.length !== 2) {
 		window.toast('Must have only 2 objects to make a gun', 'warning');
 		return;
+	}
+
+	let asm;
+	try {
+		const res = await fetch('/gasm/gun.asm');
+		asm = await res.text();
+	} catch (e) {
+		e.message = 'Failed to load asm: ' + e.message;
+		window.toast(e, 'error');
+		return null;
 	}
 
 	let [gun_node, bullet_node] = nodes;
@@ -54,7 +62,7 @@ function makeGun(nodes) {
 	encoding.add_code_connection(code_node, 'position', 'Laz', bullet_id);
 	encoding.add_code_connection(code_node, 'rotation', 'Laz', bullet_id);
 
-	AssemblyConversion.asm_to_json(gun_asm, code_node);
+	AssemblyConversion.asm_to_json(asm, code_node);
 
 	// connect trigger
 	const target = encoding.triggerTargetGASM();

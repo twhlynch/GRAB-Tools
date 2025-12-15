@@ -87,8 +87,8 @@ export default {
 		viewport_changed() {
 			this.set_json(this.json, ['viewport_panel']);
 		},
-		run_modifier(func) {
-			this.set_json(func(this.json));
+		async run_modifier(func) {
+			this.set_json(await func(this.json));
 		},
 		run_function(func) {
 			func(this.json);
