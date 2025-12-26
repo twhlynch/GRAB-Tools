@@ -232,8 +232,8 @@ function operand_asm_to_json(operand, instruction, index, old_json) {
 	const program = old_json.levelNodeGASM.program;
 	const labels = program.labels;
 	const inoutRegisters = (program.inoutRegisters ?? []).map((r) => r.name);
-	const inRegisters = (program.inRegisters ?? []).map((r) => r.name);
-	const outRegisters = (program.outRegisters ?? []).map((r) => r.name);
+	const inRegisters = (program.inputRegisters ?? []).map((r) => r.name);
+	const outRegisters = (program.outputRegisters ?? []).map((r) => r.name);
 
 	const is_label =
 		(instruction === instruction_map.InLabel ||
@@ -266,13 +266,13 @@ function operand_asm_to_json(operand, instruction, index, old_json) {
 	}
 	if (inRegisters.includes(operand)) {
 		return {
-			type: operand_map.OpInRegister,
+			type: operand_map.OpInputRegister,
 			index: inRegisters.indexOf(operand),
 		};
 	}
 	if (outRegisters.includes(operand)) {
 		return {
-			type: operand_map.OpOutRegister,
+			type: operand_map.OpOutputRegister,
 			index: outRegisters.indexOf(operand),
 		};
 	}
@@ -315,8 +315,8 @@ function operand_json_to_asm(operand, json) {
 	const program = json.levelNodeGASM.program;
 	const labels = program.labels;
 	const inoutRegisters = program.inoutRegisters ?? [];
-	const inRegisters = program.inoRegisters ?? [];
-	const outRegisters = program.outRegisters ?? [];
+	const inRegisters = program.inputRegisters ?? [];
+	const outRegisters = program.outputRegisters ?? [];
 
 	const type = operand.type ?? 0;
 	const index = operand.index ?? 0;
@@ -335,10 +335,10 @@ function operand_json_to_asm(operand, json) {
 	if (type === ops.OpInOutRegister) {
 		return inoutRegisters[index].name;
 	}
-	if (type === ops.OpInRegister) {
+	if (type === ops.OpInputRegister) {
 		return inRegisters[index].name;
 	}
-	if (type === ops.OpOutRegister) {
+	if (type === ops.OpOutputRegister) {
 		return outRegisters[index].name;
 	}
 	if (type === ops.OpWorkingRegister) {

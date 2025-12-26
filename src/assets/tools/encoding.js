@@ -679,6 +679,8 @@ function add_code_connection(object, type, name, objectID) {
 	const node = object.levelNodeGASM;
 	if (!node) return false;
 	(node.program ??= {}).inoutRegisters ??= [];
+	(node.program ??= {}).inputRegisters ??= [];
+	(node.program ??= {}).outputRegisters ??= [];
 	node.connections ??= [];
 
 	const existing_connection = node.connections.find(
@@ -694,16 +696,16 @@ function add_code_connection(object, type, name, objectID) {
 
 	const prop = programmablePropertyData();
 	prop.objectID = objectID; // redundant??
-	prop[type] = {};
+	prop[type.replace('active', 'triggerActive')] = {};
 
 	if (type === 'active') {
 		const comp = programmablePropertyDataComponent();
-		comp.inoutRegisterIndex = node.program.inoutRegisters.length;
+		comp.inputRegisterIndex = node.program.inputRegisters.length;
 		prop.components = [comp];
 
 		const act_reg = registerData();
 		act_reg.name = `${connection.name}.Act`;
-		node.program.inoutRegisters.push(act_reg);
+		node.program.inputRegisters.push(act_reg);
 	} else {
 		const x_comp = programmablePropertyDataComponent();
 		const y_comp = programmablePropertyDataComponent();
