@@ -3,6 +3,7 @@ export default {
 	props: {
 		menu: Object,
 	},
+	emits: ['close'],
 };
 </script>
 
@@ -10,9 +11,17 @@ export default {
 	<section>
 		<ul class="menu-dropdown">
 			<li v-for="[button, data] of Object.entries(menu)" :key="button">
-				<a class="menu-btn" v-if="data.href" :href="data.href">{{
-					button
-				}}</a>
+				<a
+					class="menu-btn"
+					v-if="data.href"
+					:href="data.href"
+					@click="
+						() => {
+							this.$emit('close');
+						}
+					"
+					>{{ button }}</a
+				>
 				<button
 					:class="
 						'menu-btn' +
@@ -23,7 +32,10 @@ export default {
 					v-else
 					@click="
 						() => {
-							!data.file && data.func && data.func();
+							if (!data.file && data.func) {
+								data.func();
+								this.$emit('close');
+							}
 						}
 					"
 				>
@@ -37,6 +49,11 @@ export default {
 					<li
 						v-for="[sub_button, sub_data] of Object.entries(data)"
 						:key="button + sub_button"
+						@click="
+							() => {
+								this.$emit('close');
+							}
+						"
 					>
 						<a
 							class="menu-btn"

@@ -48,6 +48,11 @@ export default {
 			show_key_hints: true,
 			show_shadows: false,
 			group_depth: 0,
+			hold: {
+				timeout: undefined,
+				x: 0,
+				y: 0,
+			},
 		};
 	},
 	components: {
@@ -1280,258 +1285,247 @@ export default {
 				)
 				.join(' ');
 		},
-		open_context_menu(e) {
-			if (e.target === this.renderer.domElement) {
-				this.contextmenu_position.x = e.clientX;
-				this.contextmenu_position.y = e.clientY;
-				this.contextmenu = undefined;
+		open_context_menu(x, y, e) {
+			if (e?.target !== this.renderer.domElement) return;
 
-				const clicked_object = this.cast_for_node(e.clientX, e.clientY);
-				if (!clicked_object) return;
-				const clicked_node = clicked_object.userData?.node;
-				if (!clicked_node) return;
-				const selection = this.gizmo.selection;
-				if (!selection.length) return;
-				if (selection.some((n) => !n.userData?.node)) return;
-				const single_selection = selection.length === 1;
-				const selected_object = selection[0];
-				const selected_node = selected_object.userData.node;
+			this.contextmenu_position.x = x;
+			this.contextmenu_position.y = y;
+			this.contextmenu = undefined;
 
-				const clicked_is_selected = this.gizmo.includes(clicked_object);
-				const clicked_has_shape =
-					clicked_node.levelNodeStatic ||
-					clicked_node.levelNodeCrumbling ||
-					clicked_node.levelNodeTrigger;
-				const selected_is_trigger = selected_node.levelNodeTrigger;
-				const selected_is_code = selected_node.levelNodeGASM;
-				const clicked_has_code = clicked_node.levelNodeGASM;
-				const clicked_is_trigger = clicked_node.levelNodeTrigger;
-				const clicked_can_animate =
-					!clicked_node.levelNodeStart &&
-					!clicked_node.levelNodeFinish;
-				const can_group = !selection.some((object) => {
-					return (
-						object.userData.node.levelNodeStart ||
-						object.userData.node.levelNodeFinish
-					);
-				});
-				const selected_is_group = selected_node.levelNodeGroup;
-				const can_clone = !selection.some((object) => {
-					return object.userData.node.levelNodeFinish;
-				});
-				const clicked_has_material = clicked_node.levelNodeStatic;
-				const clicked_can_target =
-					!clicked_node.levelNodeStart &&
-					!clicked_node.levelNodeFinish;
+			const clicked_object = this.cast_for_node(x, y);
+			if (!clicked_object) return;
+			const clicked_node = clicked_object.userData?.node;
+			if (!clicked_node) return;
+			const selection = this.gizmo.selection;
+			if (!selection.length) return;
+			if (selection.some((n) => !n.userData?.node)) return;
+			const single_selection = selection.length === 1;
+			const selected_object = selection[0];
+			const selected_node = selected_object.userData.node;
 
-				this.contextmenu = {
-					...(clicked_is_selected && {
-						'Edit JSON': {
+			const clicked_is_selected = this.gizmo.includes(clicked_object);
+			const clicked_has_shape =
+				clicked_node.levelNodeStatic ||
+				clicked_node.levelNodeCrumbling ||
+				clicked_node.levelNodeTrigger;
+			const selected_is_trigger = selected_node.levelNodeTrigger;
+			const selected_is_code = selected_node.levelNodeGASM;
+			const clicked_has_code = clicked_node.levelNodeGASM;
+			const clicked_is_trigger = clicked_node.levelNodeTrigger;
+			const clicked_can_animate =
+				!clicked_node.levelNodeStart && !clicked_node.levelNodeFinish;
+			const can_group = !selection.some((object) => {
+				return (
+					object.userData.node.levelNodeStart ||
+					object.userData.node.levelNodeFinish
+				);
+			});
+			const selected_is_group = selected_node.levelNodeGroup;
+			const can_clone = !selection.some((object) => {
+				return object.userData.node.levelNodeFinish;
+			});
+			const clicked_has_material = clicked_node.levelNodeStatic;
+			const clicked_can_target =
+				!clicked_node.levelNodeStart && !clicked_node.levelNodeFinish;
+
+			this.contextmenu = {
+				...(clicked_is_selected && {
+					'Edit JSON': {
+						func: () => {
+							this.edit_object_json(clicked_object);
+						},
+					},
+					...(clicked_has_code && {
+						'Edit Code': {
 							func: () => {
-								this.edit_object_json(clicked_object);
+								this.edit_gasm_code(clicked_object);
 							},
 						},
-						...(clicked_has_code && {
-							'Edit Code': {
-								func: () => {
-									this.edit_gasm_code(clicked_object);
-								},
-							},
-						}),
-						Delete: {
-							func: this.delete_selection,
+					}),
+					Delete: {
+						func: this.delete_selection,
+					},
+					...(can_clone && {
+						Clone: {
+							func: this.clone_selection,
 						},
-						...(can_clone && {
-							Clone: {
-								func: this.clone_selection,
-							},
-						}),
-						...(can_group && {
-							Group: {
-								func: this.group_selection,
-							},
-						}),
-						...(single_selection &&
-							selected_is_group && {
-								Ungroup: {
-									func: this.ungroup_selection,
-								},
-							}),
-						...(clicked_has_shape && {
-							Shape: {
-								...Object.fromEntries(
-									Array.from(
-										{
-											length:
-												Object.entries(
-													encoding.shapes(),
-												).length -
-												encoding.shapes()
-													.__END_OF_SPECIAL_PARTS__ -
-												1,
-										},
-										(_, i) => {
-											return [
-												this.format_type(
-													encoding.shapes()[1000 + i],
-												),
-												{
-													func: () => {
-														this.set_shape(
-															1000 + i,
-														);
-													},
-												},
-											];
-										},
-									),
-								),
-							},
-						}),
-						...(clicked_has_material && {
-							Material: {
-								...Object.fromEntries(
-									Array.from(
-										{
-											length: Object.entries(
-												encoding.materials(),
-											).length,
-										},
-										(_, i) => {
-											return [
-												this.format_type(
-													encoding.materials()[i],
-												),
-												{
-													func: () => {
-														this.set_material(i);
-													},
-													num: i,
-												},
-											];
-										},
-									).filter(
-										(item) =>
-											item[1].num !==
-											encoding.materials().TRIGGER,
-									),
-								),
-							},
-						}),
-						...(clicked_can_animate && {
-							'Add Animation': {
-								func: () => {
-									this.add_animation(clicked_object);
-								},
-							},
-						}),
-						...(clicked_is_trigger && {
-							'Add Target': {
-								Animation: {
-									func: () => {
-										this.add_animation_target(
-											clicked_object,
-										);
-									},
-								},
-								SubLevel: {
-									func: () => {
-										this.add_sublevel_target(
-											clicked_object,
-										);
-									},
-								},
-								Ambience: {
-									func: () => {
-										this.add_ambience_target(
-											clicked_object,
-										);
-									},
-								},
-								Sound: {
-									func: () => {
-										this.add_sound_target(clicked_object);
-									},
-								},
-							},
-							'Add Source': {
-								Basic: {
-									func: () => {
-										this.add_trigger_source(clicked_object);
-									},
-								},
-								Blocks: {
-									func: () => {
-										this.add_trigger_blocks_source(
-											clicked_object,
-										);
-									},
-								},
-							},
-						}),
+					}),
+					...(can_group && {
+						Group: {
+							func: this.group_selection,
+						},
 					}),
 					...(single_selection &&
-						selected_is_trigger &&
-						clicked_can_target && {
-							'Add as Target': {
+						selected_is_group && {
+							Ungroup: {
+								func: this.ungroup_selection,
+							},
+						}),
+					...(clicked_has_shape && {
+						Shape: {
+							...Object.fromEntries(
+								Array.from(
+									{
+										length:
+											Object.entries(encoding.shapes())
+												.length -
+											encoding.shapes()
+												.__END_OF_SPECIAL_PARTS__ -
+											1,
+									},
+									(_, i) => {
+										return [
+											this.format_type(
+												encoding.shapes()[1000 + i],
+											),
+											{
+												func: () => {
+													this.set_shape(1000 + i);
+												},
+											},
+										];
+									},
+								),
+							),
+						},
+					}),
+					...(clicked_has_material && {
+						Material: {
+							...Object.fromEntries(
+								Array.from(
+									{
+										length: Object.entries(
+											encoding.materials(),
+										).length,
+									},
+									(_, i) => {
+										return [
+											this.format_type(
+												encoding.materials()[i],
+											),
+											{
+												func: () => {
+													this.set_material(i);
+												},
+												num: i,
+											},
+										];
+									},
+								).filter(
+									(item) =>
+										item[1].num !==
+										encoding.materials().TRIGGER,
+								),
+							),
+						},
+					}),
+					...(clicked_can_animate && {
+						'Add Animation': {
+							func: () => {
+								this.add_animation(clicked_object);
+							},
+						},
+					}),
+					...(clicked_is_trigger && {
+						'Add Target': {
+							Animation: {
 								func: () => {
-									this.add_animation_target(
-										selected_object,
+									this.add_animation_target(clicked_object);
+								},
+							},
+							SubLevel: {
+								func: () => {
+									this.add_sublevel_target(clicked_object);
+								},
+							},
+							Ambience: {
+								func: () => {
+									this.add_ambience_target(clicked_object);
+								},
+							},
+							Sound: {
+								func: () => {
+									this.add_sound_target(clicked_object);
+								},
+							},
+						},
+						'Add Source': {
+							Basic: {
+								func: () => {
+									this.add_trigger_source(clicked_object);
+								},
+							},
+							Blocks: {
+								func: () => {
+									this.add_trigger_blocks_source(
 										clicked_object,
 									);
 								},
 							},
-						}),
-					...(single_selection &&
-						selected_is_code &&
-						clicked_can_target && {
-							'Add as Connection': {
-								Position: {
-									func: () => {
-										this.add_code_connection(
-											selected_object,
-											clicked_object,
-											'position',
-										);
-									},
-								},
-								Rotation: {
-									func: () => {
-										this.add_code_connection(
-											selected_object,
-											clicked_object,
-											'rotation',
-										);
-									},
-								},
-								...(clicked_is_trigger && {
-									Active: {
-										func: () => {
-											this.add_code_connection(
-												selected_object,
-												clicked_object,
-												'active',
-											);
-										},
-									},
-								}),
-							},
-						}),
-					...(clicked_is_selected && {
-						[`Copy ID (${clicked_object?.userData?.id ?? 0})`]: {
+						},
+					}),
+				}),
+				...(single_selection &&
+					selected_is_trigger &&
+					clicked_can_target && {
+						'Add as Target': {
 							func: () => {
-								this.copy_object_id(clicked_object);
+								this.add_animation_target(
+									selected_object,
+									clicked_object,
+								);
 							},
 						},
 					}),
-				};
+				...(single_selection &&
+					selected_is_code &&
+					clicked_can_target && {
+						'Add as Connection': {
+							Position: {
+								func: () => {
+									this.add_code_connection(
+										selected_object,
+										clicked_object,
+										'position',
+									);
+								},
+							},
+							Rotation: {
+								func: () => {
+									this.add_code_connection(
+										selected_object,
+										clicked_object,
+										'rotation',
+									);
+								},
+							},
+							...(clicked_is_trigger && {
+								Active: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'active',
+										);
+									},
+								},
+							}),
+						},
+					}),
+				...(clicked_is_selected && {
+					[`Copy ID (${clicked_object?.userData?.id ?? 0})`]: {
+						func: () => {
+							this.copy_object_id(clicked_object);
+						},
+					},
+				}),
+			};
 
-				if (
-					this.contextmenu &&
-					Object.keys(this.contextmenu).length === 0
-				) {
-					e.preventDefault();
-				}
+			if (
+				this.contextmenu &&
+				Object.keys(this.contextmenu).length === 0
+			) {
+				e?.preventDefault?.();
 			}
 		},
 		copy_object_id(object) {
@@ -1706,6 +1700,35 @@ export default {
 				return json;
 			});
 		},
+		pointerstart(e) {
+			if (e.touches.length !== 1) return;
+
+			this.hold.x = e.clientX;
+			this.hold.y = e.clientY;
+
+			clearTimeout(this.hold.timeout);
+
+			this.hold.timeout = setTimeout(() => {
+				this.open_context_menu(this.hold.x, this.hold.y, e);
+			}, 600);
+		},
+		pointerend(e) {
+			clearTimeout(this.hold.timeout);
+		},
+		pointercancel(e) {
+			clearTimeout(this.hold.timeout);
+		},
+		pointermove(e) {
+			const dx = Math.abs(e.clientX - this.hold.x);
+			const dy = Math.abs(e.clientY - this.hold.y);
+
+			if (dx > 10 || dy > 10) {
+				clearTimeout(this.hold.timeout);
+			}
+		},
+		rightmousedown(e) {
+			this.open_context_menu(e.clientX, e.clientY, e);
+		},
 		run_in_scope(func) {
 			func(this);
 		},
@@ -1721,14 +1744,18 @@ export default {
 				class="viewport"
 				@mousedown="mousedown"
 				@mouseup="mouseup"
-				@contextmenu="open_context_menu"
+				@contextmenu="rightmousedown"
+				@pointerstart="pointerstart"
+				@pointerend="pointerend"
+				@pointercancel="pointercancel"
+				@pointermove="pointermove"
 			>
 				<ContextMenu
 					v-if="contextmenu"
 					:ref="'contextmenu'"
 					:menu="contextmenu"
 					:style="`top: ${contextmenu_position.y}px; left: ${contextmenu_position.x}px;`"
-					@click="close_context_menu"
+					@close="close_context_menu"
 				/>
 				<GASMPanel
 					ref="gasm_editor"
