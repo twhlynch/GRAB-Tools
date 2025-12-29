@@ -64,6 +64,7 @@ export default {
 						Static: { func: this.insert_static },
 						Animated: { func: this.insert_animated },
 						Colored: { func: this.insert_colored },
+						Crumbling: { func: this.insert_crumbling },
 						Sign: { func: this.insert_sign },
 						Start: { func: this.insert_start },
 						Finish: { func: this.insert_finish },
@@ -723,6 +724,10 @@ export default {
 			const node = encoding.levelNodeStatic();
 			delete node.levelNodeStatic.color1;
 			delete node.levelNodeStatic.color2;
+			this.insert_selection_nodes([node]);
+		},
+		insert_crumbling() {
+			const node = encoding.levelNodeCrumbling();
 			this.insert_selection_nodes([node]);
 		},
 		insert_animated() {
