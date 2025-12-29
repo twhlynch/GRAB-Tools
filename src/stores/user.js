@@ -3,17 +3,21 @@ import { defineStore } from 'pinia';
 import { LogEvent } from '@/requests/LogEvent';
 import { setUser } from '@sentry/vue';
 import { useCookiesStore } from './cookies';
+import { user_info_request } from '@/requests/UserInfoRequest';
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
 		user_name: undefined,
-		meta_id: undefined,
+		grab_id: undefined,
+		access_token: undefined,
 		user: undefined,
+		is_site_admin: false,
+		logged_in: false,
 	}),
 
 	getters: {
 		is_logged_in: (state) => {
-			return state.user_name !== undefined;
+			return state.logged_in;
 		},
 		is_admin: (state) => {
 			return state.user?.is_admin;
@@ -47,12 +51,22 @@ export const useUserStore = defineStore('user', {
 			const response = await fetch(
 				`${SERVER_URL}get_access_token?service_token=${org_scoped_id}:${code}`,
 			);
-			if (response.ok) {
-				const data = await response.json();
-				this.user_name = data.alias;
-				this.meta_id = data.id;
+
+			if (!response.ok) {
+				window.toast(await response.text(), 'error');
 			}
-			// TODO: load user info
+
+			const data = await response.json();
+			this.user_name = data.user_name;
+			this.grab_id = data.grab_id;
+			this.access_token = data.access_token;
+			this.is_site_admin = data.is_admin;
+			this.logged_in = true;
+
+			if (this.grab_id) {
+				this.user = await user_info_request(this.grab_id);
+			}
+
 			LogEvent('LOGIN');
 
 			const cookies = useCookiesStore();
