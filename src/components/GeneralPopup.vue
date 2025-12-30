@@ -32,7 +32,7 @@ export default {
 
 <template>
 	<dialog
-		class="popup"
+		class="popup super-unique-popup-class"
 		ref="popup"
 		@close="close"
 		@cancel="close"
@@ -70,16 +70,15 @@ export default {
 		background-color: #000d;
 		opacity: 0.75;
 	}
-
-	:global(button) {
-		height: 2rem;
-		border-radius: 1rem;
-		padding-inline: 1rem;
-		width: 100%;
-		color: white;
-		line-height: 2rem;
-		cursor: pointer;
-		background-color: var(--blue);
-	}
+}
+:global(.super-unique-popup-class button) {
+	height: 2rem;
+	border-radius: 1rem;
+	padding-inline: 1rem;
+	width: 100%;
+	color: white;
+	line-height: 2rem;
+	cursor: pointer;
+	background-color: var(--blue);
 }
 </style>
