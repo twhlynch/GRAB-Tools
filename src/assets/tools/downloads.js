@@ -2,26 +2,55 @@ import { useUserStore } from '@/stores/user';
 import { user_info_request } from '@/requests/UserInfoRequest';
 import { download_level_request } from '@/requests/DownloadLevelRequest';
 import { level_details_request } from '@/requests/LevelDetailsRequest';
+import { can_download_level_request } from '@/requests/CanDownloadLevelRequest';
 
 async function can_download_level(level_id) {
 	const user = useUserStore();
 
 	if (!user.is_logged_in) {
-		window.toast('Login to download your levels', 'warning');
+		window.toast('Login to download levels', 'warning');
 		return false;
 	}
 
 	const user_id = level_id.split(':')[0];
 
-	const user_info = await user_info_request(user_id);
-	if (user_info === null) return false;
+	// can always download own levels
+	if (user.grab_id === user_id) return true;
 
-	if (user.user_name !== user_info.user_name) {
-		window.toast('You can only download your own levels', 'warning');
+	// trust level flags first
+	const level_details = await level_details_request(level_id);
+	if (!level_details) {
+		window.toast('Failed to get level info', 'warning');
 		return false;
 	}
 
-	return true;
+	const { description, curated_listings } = level_details;
+
+	if (description?.includes?.('[gt-dl]')) return true;
+	if (description?.includes?.('[gt-nodl]')) {
+		window.toast('Not permitted to download this level', 'warning');
+		return false;
+	}
+
+	// then check server
+	const can_download = await can_download_level_request(level_id);
+	if (can_download) return true;
+	if (can_download === false) {
+		window.toast('Not permitted to download this level', 'warning');
+		return false;
+	}
+
+	// then challenge and ooak
+	if (curated_listings?.includes?.('challenge')) return true;
+	if (curated_listings?.includes?.('one_of_a_kind')) return true;
+
+	// if in doubt match username
+	const user_info = await user_info_request(user_id);
+	if (user.user_name === user_info?.user_name) return true;
+
+	// default to false
+	window.toast('Not permitted to download this level', 'warning');
+	return false;
 }
 
 async function download_level(level_id) {
