@@ -1,11 +1,13 @@
 <script>
-import { mapState } from 'pinia';
+import { mapActions, mapState } from 'pinia';
 import { useUserStore } from '@/stores/user';
 import GeneralPopup from './GeneralPopup.vue';
+import VerifyMenu from './VerifyMenu.vue';
 
 export default {
 	components: {
 		GeneralPopup,
+		VerifyMenu,
 	},
 	methods: {
 		logout() {
@@ -16,6 +18,11 @@ export default {
 	},
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name', 'grab_id']),
+	},
+	data() {
+		return {
+			show_verify_menu: false,
+		};
 	},
 	props: {
 		visible: {
@@ -32,8 +39,15 @@ export default {
 		:visible="visible"
 		@update:visible="$emit('update:visible', $event)"
 	>
-		<span>{{ user_name }}</span>
+		<div class="header">
+			<span>{{ user_name }}</span>
+			<span class="grab-id">{{ grab_id ?? 'unverified' }}</span>
+		</div>
 		<button class="logout" @click="logout">Logout</button>
+		<button class="verify" v-if="!grab_id" @click="show_verify_menu = true">
+			Verify Account
+		</button>
+		<VerifyMenu v-model:visible="show_verify_menu" />
 	</GeneralPopup>
 </template>
 
@@ -43,5 +57,15 @@ export default {
 }
 .verify {
 	background-color: var(--blue);
+}
+.header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding-inline: 0.5rem;
+}
+.grab-id {
+	opacity: 0.5;
 }
 </style>
