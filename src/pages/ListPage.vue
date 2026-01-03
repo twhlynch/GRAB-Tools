@@ -5,42 +5,31 @@ import { useUserStore } from '@/stores/user';
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
 import MapIcon from '@/icons/MapIcon.vue';
 import PeopleIcon from '@/icons/PeopleIcon.vue';
+import ListRow from '@/components/ListRow.vue';
 
 export default {
 	components: {
 		GHLLogoIcon,
 		MapIcon,
 		PeopleIcon,
+		ListRow,
 	},
 	data() {
 		return {
 			hardest_levels: [],
 			featured_creators: [],
-			metrics: {},
+			all_metrics: {},
 			top_metrics: [],
-			labels: {
-				records: 'Records',
-				finishes: 'Finishes',
-				challengeFinishes: 'Challenge Finishes',
-				challengeFirsts: 'Challenge Records',
-				featuredRecords: 'BOG Records',
-				soleVictories: 'Sole Finishes',
-				challengeMaps: 'Challenge Maps',
-				unbeatenMaps: 'Unbeaten Maps',
-				hardestMaps: 'Hardest Maps',
-				unbeatenMapPlays: 'Unbeaten Maps Plays',
-			},
-			adjustmentMetrics: {
-				records: 1,
-				finishes: 1,
-				challengeFinishes: 1,
-				challengeFirsts: 1,
-				featuredRecords: 1,
-				soleVictories: 1,
-				challengeMaps: 1,
-				unbeatenMaps: 1,
-				hardestMaps: 1,
-				unbeatenMapPlays: 1,
+			weights: {
+				level_records: 1, // 0.5, //     values time over skill
+				level_finishes: 1, // 0.7, //    easy to get
+				challenge_finishes: 1, // 1, //  good
+				challenge_records: 1, // 2, //   most important
+				featured_records: 1, // 0.9, //  less than challenge finishes
+				sole_finishes: 1, // 1.5, //     very important
+				challenge_created: 1, // 0.5, // largely dupes
+				unbeaten_created: 1, // 1.5, //  very important
+				hardest_created: 1, // 1, //     good
 			},
 		};
 	},
@@ -58,11 +47,6 @@ export default {
 			list.style.display = 'flex';
 			selected.classList.add('sort-active');
 		},
-		getSuffix(number) {
-			const suffixes = ['th', 'st', 'nd', 'rd'];
-			const lastDigit = Math.abs(number) % 10;
-			return suffixes[lastDigit < 4 ? lastDigit : 0];
-		},
 		async fetchThen(filename, func) {
 			let response = await fetch(
 				`${this.$config.STATS_SERVER_URL}${filename}.json`,
@@ -75,14 +59,8 @@ export default {
 			const json = await response.json();
 			func(json);
 		},
-		expand(element) {
-			document.querySelectorAll('.list-item-expanded').forEach((e) => {
-				e.classList.remove('list-item-expanded');
-			});
-			element.classList.add('list-item-expanded');
-		},
 		init() {
-			return (async () => {
+			(async () => {
 				let featured_creators = [];
 				let metrics = {};
 
@@ -99,19 +77,19 @@ export default {
 							positions: {},
 							username: username.split(' ')[0],
 							// metrics
-							records: 0,
-							finishes: 0,
-							challengeFinishes: 0,
-							challengeFirsts: 0,
-							challengeMaps: 0,
-							soleVictories: 0,
-							featuredRecords: 0,
-							unbeatenMapPlays: 0,
-							unbeatenMaps: 0,
-							hardestMaps: 0,
+							level_records: 0,
+							level_finishes: 0,
+							challenge_finishes: 0,
+							challenge_records: 0,
+							featured_records: 0,
+							sole_finishes: 0,
+							challenge_created: 0,
+							unbeaten_created: 0,
+							hardest_created: 0,
 						};
 					}
 				};
+
 				await this.fetchThen('featured_creators', (data) => {
 					featured_creators = data;
 				});
@@ -121,11 +99,11 @@ export default {
 
 						for (let level of data) {
 							const identifier = level.id.split(':')[0];
-							const username = level.creator || 'Unknown';
+							const username = level.creator ?? 'Unknown';
 
 							checkMetric(identifier, username);
 
-							metrics[identifier].hardestMaps += 1;
+							metrics[identifier].hardest_created += 1;
 						}
 					}),
 					this.fetchThen('user_finishes', (data) => {
@@ -134,7 +112,8 @@ export default {
 
 							checkMetric(identifier, username);
 
-							metrics[identifier].finishes += data[identifier][0];
+							metrics[identifier].level_finishes +=
+								data[identifier][0];
 						}
 					}),
 					this.fetchThen('sorted_leaderboard_records', (data) => {
@@ -144,7 +123,7 @@ export default {
 
 							checkMetric(identifier, username);
 
-							metrics[identifier].records += data[key][0];
+							metrics[identifier].level_records += data[key][0];
 						}
 					}),
 					this.fetchThen('sole_victors', (data) => {
@@ -157,7 +136,7 @@ export default {
 
 								checkMetric(identifier, username);
 
-								metrics[identifier].soleVictories += 1;
+								metrics[identifier].sole_finishes += 1;
 							}
 						}
 					}),
@@ -171,9 +150,7 @@ export default {
 
 								checkMetric(id, username);
 
-								metrics[id].unbeatenMaps += 1;
-								metrics[id].unbeatenMapPlays +=
-									level?.statistics?.total_played || 0;
+								metrics[id].unbeaten_created += 1;
 							}
 						}
 					}),
@@ -192,30 +169,26 @@ export default {
 								if (
 									level.list_key.includes('curated_challenge')
 								) {
-									metrics[item.user_id].challengeFirsts += 1;
+									metrics[
+										item.user_id
+									].challenge_records += 1;
 								}
-								metrics[item.user_id].featuredRecords += 1;
+								metrics[item.user_id].featured_records += 1;
 							}
 
 							checkMetric(id, username);
 
 							if (level.list_key.includes('curated_challenge')) {
-								metrics[id].challengeMaps += 1;
+								metrics[id].challenge_created += 1;
 
-								let creatorFinished = false;
 								for (let i = 0; i < leaderboard.length; i++) {
 									const item = leaderboard[i];
-									if (item.user_id === id) {
-										creatorFinished = true;
-									}
 
 									checkMetric(item.user_id, item.user_name);
+
 									metrics[
 										item.user_id
-									].challengeFinishes += 1;
-								}
-								if (!creatorFinished) {
-									metrics[id].challengeFinishes += 1;
+									].challenge_finishes += 1;
 								}
 							}
 						}
@@ -223,39 +196,46 @@ export default {
 				]);
 
 				// adjust metrics
-				const adjustmentMetrics = {
-					records: 1,
-					finishes: 1,
-					challengeFinishes: 1,
-					challengeFirsts: 1,
-					featuredRecords: 1,
-					soleVictories: 1,
-					challengeMaps: 1,
-					unbeatenMaps: 1,
-					hardestMaps: 1,
-					unbeatenMapPlays: 1,
+				const adjustments = {
+					level_records: 1,
+					level_finishes: 1,
+					challenge_finishes: 1,
+					challenge_records: 1,
+					featured_records: 1,
+					sole_finishes: 1,
+					challenge_created: 1,
+					unbeaten_created: 1,
+					hardest_created: 1,
 				};
 
-				for (const key in adjustmentMetrics) {
+				for (const key in adjustments) {
 					// maximum of each metric
-					adjustmentMetrics[key] = Math.max(
+					adjustments[key] = Math.max(
 						...Object.values(metrics).map(
 							(values) => values[key] || 0,
 						),
 					);
 					// adjust values
 					Object.values(metrics).forEach(
-						(values) => (values[key] /= adjustmentMetrics[key]),
+						(values) =>
+							(values[key] =
+								(values[key] / adjustments[key]) *
+								this.weights[key]),
 					);
 					// sort by metric and add positions
+					// -1 for positions for values of 0
 					Object.entries(metrics)
 						.sort((a, b) => b[1][key] - a[1][key])
-						.forEach(([id], i) => (metrics[id].positions[key] = i));
+						.forEach(
+							([id], i) =>
+								(metrics[id].positions[key] =
+									metrics[id][key] == 0 ? -1 : i),
+						);
 				}
 
 				// accumulate scores
 				Object.values(metrics).forEach((values) =>
-					Object.keys(adjustmentMetrics).forEach(
+					Object.keys(adjustments).forEach(
 						(key) => (values.score += values[key]),
 					),
 				);
@@ -267,17 +247,39 @@ export default {
 				// top 100
 				let top_metrics = sorted.slice(0, 100);
 
-				this.adjustmentMetrics = adjustmentMetrics;
-				this.top_metrics = top_metrics;
-				this.metrics = metrics;
+				this.top_metrics = top_metrics.map((metric) => ({
+					user_id: metric[0],
+					user_name: metric[1].username,
+					positions: metric[1].positions,
+					metrics: metric[1],
+					score: metric[1].score,
+					raw: Object.fromEntries(
+						Object.entries(metric[1]).map(([key, value]) => [
+							key,
+							Math.round(
+								(value / this.weights[key]) *
+									adjustments[key] *
+									100,
+							) / 100,
+						]),
+					),
+				}));
+				this.all_metrics = metrics;
 				this.featured_creators = featured_creators;
 			})();
+		},
+		level_url(level_id) {
+			return this.$config.GRAB_VIEWER_URL + level_id;
+		},
+		on_expand() {
+			this.$refs.row.forEach((row) => {
+				row.expanded = false;
+			});
 		},
 	},
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
-
 	created() {
 		document.title = 'GRAB Hardest Levels | GRAB Tools';
 	},
@@ -314,19 +316,17 @@ export default {
 			</div>
 		</section>
 		<section id="list-section">
-			<div class="listData" id="data">
+			<div class="ghl-list-data" id="data">
 				<div class="LeaderboardOutput" id="maps">
 					<div
-						v-for="(level, i) in this.hardest_levels"
+						v-for="(level, i) in hardest_levels"
 						:key="level.identifier"
 						class="leaderboard-item list-item"
 					>
 						<p>{{ i + 1 }}</p>
-						<a
-							:href="`https://grabvr.quest/levels/viewer?level=${level.id}`"
-							target="_blank"
-							>{{ level.title }}</a
-						>
+						<a :href="level_url(level.id)" target="_blank">
+							{{ level.title }}
+						</a>
 						<p>{{ level.creator }}</p>
 					</div>
 				</div>
@@ -335,149 +335,43 @@ export default {
 					class="LeaderboardOutput"
 					id="players"
 				>
-					<div
-						v-for="(item, i) in this.top_metrics"
-						:key="item[0]"
-						class="leaderboard-item list-item"
-						@click="expand($event.currentTarget)"
-					>
-						<p>{{ i + 1 }}</p>
-						<a
-							:href="`https://grabvr.quest/levels?tab=tab_other_user&user_id=${item[0]}`"
-							target="_blank"
-							>{{ item[1].username }}</a
-						>
-						<div class="list-chart">
-							<div
-								v-for="(_, key) in this.metrics[item[0]]
-									.positions"
-								:key="key + '-'"
-								class="metric-bar"
-							>
-								<div
-									:class="`metric-bar-fill${
-										this.metrics[item[0]].positions[key] ==
-										0
-											? ' metric-bar-first'
-											: ''
-									}`"
-									:style="`height: ${
-										100 * this.metrics[item[0]][key]
-									}%`"
-								></div>
-								<span class="metric-bar-label">
-									{{ this.labels[key] }}<br />{{
-										this.metrics[item[0]][key] == 0
-											? 'N/a'
-											: this.metrics[item[0]].positions[
-													key
-											  ] + 1
-									}}{{
-										this.metrics[item[0]][key] == 0
-											? ''
-											: this.getSuffix(
-													this.metrics[item[0]]
-														.positions[key] + 1,
-											  )
-									}}
-								</span>
-							</div>
-						</div>
-						<p>
-							{{
-								(Math.round(item[1].score * 100) / 100)
-									.toString()
-									.padEnd(2, '.')
-									.padEnd(4, '0')
-							}}
-							<span class="metric-data">{{
-								JSON.stringify(metrics[item[0]], null, 2)
-							}}</span>
-						</p>
-						<div class="list-item-expanded-content">
-							<div class="list-chart">
-								<template
-									v-for="(_, key) in this.metrics[item[0]]
-										.positions"
-									:key="key + item[0]"
-								>
-									<span class="metric-bar-label">
-										{{ this.labels[key] }}:
-										{{
-											this.metrics[item[0]][key] == 0
-												? 'N/a'
-												: this.metrics[item[0]]
-														.positions[key] + 1
-										}}{{
-											this.metrics[item[0]][key] == 0
-												? ''
-												: this.getSuffix(
-														this.metrics[item[0]]
-															.positions[key] + 1,
-												  )
-										}}
-										[{{
-											'+' +
-											(
-												Math.round(
-													this.metrics[item[0]][key] *
-														100,
-												) / 100
-											)
-												.toString()
-												.padEnd(2, '.')
-												.padEnd(4, '0')
-										}}]
-										{{
-											this.metrics[item[0]][key] == 0
-												? ''
-												: '(' +
-												  (
-														Math.round(
-															this.metrics[
-																item[0]
-															][key] *
-																this
-																	.adjustmentMetrics[
-																	key
-																] *
-																100,
-														) / 100
-												  ).toString() +
-												  ')'
-										}}
-									</span>
-									<div class="metric-bar">
-										<div
-											:class="`metric-bar-fill${
-												this.metrics[item[0]].positions[
-													key
-												] == 0
-													? ' metric-bar-first'
-													: ''
-											}`"
-											:style="`width: ${
-												100 * this.metrics[item[0]][key]
-											}%`"
-										></div>
-									</div>
-								</template>
-							</div>
-						</div>
-					</div>
+					<ListRow
+						v-for="(
+							{
+								user_id,
+								user_name,
+								positions,
+								metrics,
+								score,
+								raw,
+							},
+							i
+						) in top_metrics"
+						:key="i"
+						:position="i + 1"
+						:user_id="user_id"
+						:user_name="user_name"
+						:positions="positions"
+						:metrics="metrics"
+						:score="score"
+						:raw="raw"
+						:weights="weights"
+						@expand="on_expand"
+						ref="row"
+					/>
 				</div>
 			</div>
 		</section>
 		<section id="list-credit">
 			<span>Organised by .index & Luhmao.</span>
-			<span
-				>Maintained by .index, Thezra, FitArtist, Caziggy, Mrs. Madlord,
-				and luhmao.</span
-			>
-			<span
-				>Assisted by Polaris, BurningAlpaca, Poggggg, littlebeastM8,
-				EBspark, BWLBuck, iamaverage8, 13OliviA, and TronisRobot.</span
-			>
+			<span>
+				Maintained by .index, Thezra, FitArtist, Caziggy, Mrs.Madlord,
+				and luhmao.
+			</span>
+			<span>
+				Assisted by Polaris, BurningAlpaca, Poggggg, littlebeastM8,
+				EBspark, BWLBuck, iamaverage8, 13OliviA, and TronisRobot.
+			</span>
 		</section>
 	</main>
 </template>
@@ -492,7 +386,7 @@ export default {
 	}
 	.sort-btn svg {
 		width: 18px;
-		height: 18px;
+		height: 18pxghl-list-data;
 	}
 }
 </style>
@@ -500,16 +394,10 @@ export default {
 .list-main {
 	width: min(800px, 90%);
 }
-.listData,
-.listData #maps,
+.ghl-list-data,
+#maps,
 #players {
 	width: 100%;
-}
-.listData .leaderboard-item {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
 }
 #judges {
 	margin-inline: auto;
@@ -525,31 +413,6 @@ export default {
 	align-items: center;
 	justify-content: center;
 }
-.list-item {
-	display: flex;
-	flex-direction: row;
-	gap: 5px;
-	align-items: center;
-	justify-content: space-between;
-}
-.list-item p:nth-last-child(2) {
-	min-width: 40px;
-	text-align: end;
-}
-.list-item p:first-child {
-	font-size: 18px;
-	font-weight: 600;
-	color: #2976d4;
-	margin-bottom: 0;
-}
-.list-item p:nth-child(2),
-.list-item a:nth-child(2) {
-	font-size: 14px;
-	font-weight: 400;
-	margin-top: 0;
-	margin-right: auto;
-	color: var(--text-color-default);
-}
 #list-credit {
 	display: flex;
 	flex-direction: column;
@@ -558,136 +421,55 @@ export default {
 	font-size: 12px;
 	color: var(--text-color-alt);
 }
-.metric-data {
-	display: none;
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	z-index: 100;
-	background-color: var(--background-color-alt);
-	padding: var(--padding-secondary);
-	border-radius: var(--border-radius);
-	white-space: pre;
-	font-size: 0.5rem;
-}
-.list-sorting {
-	display: flex;
-	flex-direction: row;
-	gap: 5px;
-	align-items: center;
-	justify-content: center;
-	flex-wrap: wrap;
-	max-width: 90%;
-	margin-inline: auto;
-}
-.list-sorting > .button-sml {
-	gap: 5px;
-}
-.sort-active {
-	background-color: #1b5eb135;
-	border: solid 2px #2063b570;
-}
 #sorters {
 	padding-bottom: 0;
-}
 
-.list-chart {
-	width: fit-content;
-	position: relative;
-	display: flex;
-	flex-direction: row;
-	gap: 6px;
-	height: 20px;
-}
-.list-item-expanded-content .list-chart {
-	height: fit-content;
-	width: 100%;
-	display: grid;
-	grid-template-columns: 1fr 2fr 1fr 2fr;
-	gap: 6px;
-	align-items: center;
-}
-@media screen and (max-width: 730px) {
-	.list-item-expanded-content .list-chart {
-		grid-template-columns: 1fr 2fr;
+	.list-sorting {
+		display: flex;
+		flex-direction: row;
+		gap: 5px;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		max-width: 90%;
+		margin-inline: auto;
+
+		& > .button-sml {
+			gap: 5px;
+
+			&.sort-active {
+				background-color: #1b5eb135;
+				border: solid 2px #2063b570;
+			}
+		}
 	}
 }
-.metric-bar {
-	height: 100%;
-	width: 5px;
-	background-color: #d65151a0;
-	border-radius: 5px;
-	/* overflow: hidden; */
-	display: flex;
-	align-items: flex-end;
-}
-.list-item-expanded-content .metric-bar {
-	position: relative;
-	width: 100%;
-	min-height: 5px;
-	height: 8px;
-	border-radius: 5px;
+
+:global(.ghl-list-data .leaderboard-item) {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	justify-content: flex-start;
+	justify-content: space-between;
 }
-.metric-bar-fill {
-	border-radius: 5px;
-	width: 100%;
-	background-color: #51d677a0;
-}
-.list-item-expanded-content .metric-bar-fill {
-	height: 100%;
-}
-.metric-bar-label {
-	display: none;
-	position: absolute;
-	height: 100%;
-	right: 100%;
-	transform: translateX(-10px);
-	white-space: nowrap;
-
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	font-size: 10px;
-	padding: 5px;
-	border-radius: 10px;
-	color: var(--text-color-default) !important;
-}
-.list-item-expanded-content .metric-bar-label {
+:global(.ghl-list-data .list-item) {
 	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-end;
-	position: static;
-	text-align: right;
-	width: 100%;
-	transform: none;
-	font-size: 10px !important;
-}
-.metric-bar:hover .metric-bar-label {
-	display: flex;
-}
-.metric-bar-first {
-	box-shadow: 0 0 4px #ff07;
-}
-.list-item-expanded {
-	flex-wrap: wrap;
-}
-.list-item-expanded-content {
-	display: none;
-
 	flex-direction: row;
 	gap: 5px;
 	align-items: center;
 	justify-content: space-between;
-	padding: 5px;
-	flex-basis: 100%;
 }
-.list-item-expanded .list-item-expanded-content {
-	display: flex;
+:global(.ghl-list-data .list-item p:first-child) {
+	font-size: 18px;
+	font-weight: 600;
+	color: #2976d4;
+	margin-bottom: 0;
+}
+:global(.ghl-list-data .list-item p:nth-child(2)),
+:global(.ghl-list-data .list-item a:nth-child(2)) {
+	font-size: 14px;
+	font-weight: 400;
+	margin-top: 0;
+	margin-right: auto;
+	color: var(--text-color-default);
 }
 </style>

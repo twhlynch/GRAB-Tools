@@ -2,6 +2,8 @@ export const GRAB_SERVER_URL = 'https://api.slin.dev/grab/v1/';
 export const GRAB_DATA_URL = 'https://grab-data.slin.dev/';
 export const GRAB_IMAGES_URL = 'https://grab-images.slin.dev/';
 export const GRAB_PAGE_URL = 'https://grabvr.quest/';
+export const GRAB_VIEWER_URL = `${GRAB_PAGE_URL}levels/viewer?level=`;
+export const GRAB_USER_URL = `${GRAB_PAGE_URL}levels?tab=tab_other_user&user_id=`;
 
 export const LIVE_PAGE_URL = 'https://grabvr.tools/';
 export const STATS_SERVER_URL = 'https://grab-tools.live/stats_data/';
