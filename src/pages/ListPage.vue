@@ -1,11 +1,9 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
 import MapIcon from '@/icons/MapIcon.vue';
 import PeopleIcon from '@/icons/PeopleIcon.vue';
 import ListRow from '@/components/ListRow.vue';
+import HardestLevelsList from '@/components/HardestLevelsList.vue';
 
 export default {
 	components: {
@@ -13,6 +11,7 @@ export default {
 		MapIcon,
 		PeopleIcon,
 		ListRow,
+		HardestLevelsList,
 	},
 	data() {
 		return {
@@ -268,17 +267,11 @@ export default {
 				this.featured_creators = featured_creators;
 			})();
 		},
-		level_url(level_id) {
-			return this.$config.GRAB_VIEWER_URL + level_id;
-		},
 		on_expand() {
 			this.$refs.row.forEach((row) => {
 				row.expanded = false;
 			});
 		},
-	},
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
 	created() {
 		document.title = 'GRAB Hardest Levels | GRAB Tools';
@@ -317,19 +310,11 @@ export default {
 		</section>
 		<section id="list-section">
 			<div class="ghl-list-data" id="data">
-				<div class="LeaderboardOutput" id="maps">
-					<div
-						v-for="(level, i) in hardest_levels"
-						:key="level.identifier"
-						class="leaderboard-item list-item"
-					>
-						<p>{{ i + 1 }}</p>
-						<a :href="level_url(level.id)" target="_blank">
-							{{ level.title }}
-						</a>
-						<p>{{ level.creator }}</p>
-					</div>
-				</div>
+				<HardestLevelsList
+					class="LeaderboardOutput"
+					id="maps"
+					:list="hardest_levels"
+				/>
 				<div
 					style="display: none"
 					class="LeaderboardOutput"
@@ -471,5 +456,9 @@ export default {
 	margin-top: 0;
 	margin-right: auto;
 	color: var(--text-color-default);
+}
+:global(.ghl-list-data .personal) {
+	box-shadow: inset 0 0 40px #306a40a0;
+	border: 2px solid #1d843aa0;
 }
 </style>

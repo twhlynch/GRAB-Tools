@@ -1,4 +1,7 @@
 <script>
+import { mapState } from 'pinia';
+import { useUserStore } from '@/stores/user';
+
 export default {
 	props: {
 		position: Number,
@@ -58,10 +61,18 @@ export default {
 			this.expanded = true;
 		},
 	},
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
+		user_class() {
+			return (
+				this.is_logged_in && this.grab_id === this.user_id && 'personal'
+			);
+		},
+	},
 };
 </script>
 <template>
-	<div class="leaderboard-item list-item" @click="expand">
+	<div :class="['leaderboard-item', 'list-item', user_class]" @click="expand">
 		<p>{{ position }}</p>
 		<a :href="user_url(user_id)" target="_blank">
 			{{ user_name }}
