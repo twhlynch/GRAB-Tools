@@ -15,20 +15,23 @@ export default {
 	},
 	data() {
 		return {
+			tab: 'maps',
 			hardest_levels: [],
 			featured_creators: [],
 			all_metrics: {},
 			top_metrics: [],
+			// prettier-ignore
 			weights: {
-				level_records: 1, // 0.5, //     values time over skill
-				level_finishes: 1, // 0.7, //    easy to get
-				challenge_finishes: 1, // 1, //  good
-				challenge_records: 1, // 2, //   most important
-				featured_records: 1, // 0.9, //  less than challenge finishes
-				sole_finishes: 1, // 1.5, //     very important
-				challenge_created: 1, // 0.5, // largely dupes
-				unbeaten_created: 1, // 1.5, //  very important
-				hardest_created: 1, // 1, //     good
+				level_records:      0.7, // 0.70 1.20 0.50 0.80 0.60
+				level_finishes:     0.5, // 0.50 0.40 0.30 0.40 0.40
+				challenge_finishes: 1.2, // 1.00 0.90 1.00 0.97 1.00
+				challenge_records:  2.0, // 2.00 2.50 2.00 2.17 2.00
+				featured_records:   0.9, // 0.90 1.60 1.00 1.17 0.95
+				sole_finishes:      1.5, // 1.50 2.00 1.25 1.58 1.37
+				challenge_created:  0.5, // 0.50 0.40 0.75 0.55 0.62
+				unbeaten_created:   1.5, // 1.50 2.20 1.50 1.73 1.50
+				hardest_created:    2.0, // 1.00 1.00 2.50 1.50 1.75
+				hardest_created_placement: 1.0,
 			},
 		};
 	},
@@ -37,14 +40,9 @@ export default {
 			document
 				.querySelector('.sort-active')
 				.classList.remove('sort-active');
-			const maps = document.getElementById('maps');
-			const players = document.getElementById('players');
 			const selected = document.getElementById(id + '-sort-btn');
-			const list = document.getElementById(id);
-			maps.style.display = 'none';
-			players.style.display = 'none';
-			list.style.display = 'flex';
 			selected.classList.add('sort-active');
+			this.tab = id;
 		},
 		async fetchThen(filename, func) {
 			let response = await fetch(
@@ -74,17 +72,13 @@ export default {
 							score: 0,
 							maps: 0,
 							positions: {},
-							username: username.split(' ')[0],
+							raw: {},
+							username: (username ?? 'Unknown').split(' ')[0],
 							// metrics
-							level_records: 0,
-							level_finishes: 0,
-							challenge_finishes: 0,
-							challenge_records: 0,
-							featured_records: 0,
-							sole_finishes: 0,
-							challenge_created: 0,
-							unbeaten_created: 0,
-							hardest_created: 0,
+							...Object.fromEntries(
+								Object.keys(this.weights).map((k) => [k, 0]),
+							),
+							hardest_created_placement: 0,
 						};
 					}
 				};
@@ -92,17 +86,30 @@ export default {
 				await this.fetchThen('featured_creators', (data) => {
 					featured_creators = data;
 				});
+
 				await Promise.all([
 					this.fetchThen('hardest_levels_list', (data) => {
 						this.hardest_levels = data;
 
-						for (let level of data) {
+						for (let i = 0; i < 100; i++) {
+							const level = data[i];
+
 							const identifier = level.id.split(':')[0];
-							const username = level.creator ?? 'Unknown';
+							const username = level.creator;
 
 							checkMetric(identifier, username);
 
 							metrics[identifier].hardest_created += 1;
+							if (
+								metrics[identifier]
+									.hardest_created_placement === 0
+							) {
+								metrics[identifier].hardest_created_placement =
+									1 - (i + 1 - 1) * 0.01;
+								metrics[
+									identifier
+								].raw.hardest_created_placement = i + 1;
+							}
 						}
 					}),
 					this.fetchThen('user_finishes', (data) => {
@@ -143,9 +150,7 @@ export default {
 						for (let level of data) {
 							if (!('sole' in level)) {
 								const id = level.identifier.split(':')[0];
-								const username = level?.creators?.length
-									? level.creators[0]
-									: 'Unknown';
+								const username = level?.creators?.[0];
 
 								checkMetric(id, username);
 
@@ -157,17 +162,15 @@ export default {
 						for (let level of data) {
 							const leaderboard = level.leaderboard;
 							const id = level.identifier.split(':')[0];
-							const username = level?.creators?.length
-								? level.creators[0]
-								: 'Unknown';
+							const username = level?.creators?.[0];
+							const is_challenge =
+								level.list_key.includes('curated_challenge');
 
 							if (leaderboard.length > 0) {
 								const item = leaderboard[0];
 								checkMetric(item.user_id, item.user_name);
 
-								if (
-									level.list_key.includes('curated_challenge')
-								) {
+								if (is_challenge) {
 									metrics[
 										item.user_id
 									].challenge_records += 1;
@@ -177,7 +180,7 @@ export default {
 
 							checkMetric(id, username);
 
-							if (level.list_key.includes('curated_challenge')) {
+							if (is_challenge) {
 								metrics[id].challenge_created += 1;
 
 								for (let i = 0; i < leaderboard.length; i++) {
@@ -195,49 +198,76 @@ export default {
 				]);
 
 				// adjust metrics
-				const adjustments = {
-					level_records: 1,
-					level_finishes: 1,
-					challenge_finishes: 1,
-					challenge_records: 1,
-					featured_records: 1,
-					sole_finishes: 1,
-					challenge_created: 1,
-					unbeaten_created: 1,
-					hardest_created: 1,
-				};
+				const adjustments = {};
 
-				for (const key in adjustments) {
-					// maximum of each metric
-					adjustments[key] = Math.max(
-						...Object.values(metrics).map(
-							(values) => values[key] || 0,
-						),
-					);
-					// adjust values
-					Object.values(metrics).forEach(
-						(values) =>
-							(values[key] =
-								(values[key] / adjustments[key]) *
-								this.weights[key]),
-					);
+				for (const key in this.weights) {
+					if (key !== 'hardest_created_placement') {
+						// save raw value
+						Object.values(metrics).forEach((values) => {
+							values.raw[key] = values[key];
+						});
+						// mon / max
+						adjustments[key] = {
+							max: Math.max(
+								...Object.values(metrics).map(
+									(values) => values[key] || 0,
+								),
+							),
+							min: Math.min(
+								...Object.values(metrics).map(
+									(values) => values[key] || 0,
+								),
+							),
+						};
+						// adjust values
+						Object.values(metrics).forEach((values) => {
+							const { max, min } = adjustments[key];
+							const value = values[key];
+							const alpha = 0.7;
+							const weight = this.weights[key];
+							const t = (value - min) / (max - min);
+
+							const inverse_power =
+								(1 - Math.pow(1 - t, 0.6)) * weight;
+							const step = t * t * (3 - 2 * t) * weight;
+							const power = Math.pow(t, 0.6) * weight;
+							const stepp =
+								t * t * t * (t * (t * 6 - 15) + 10) * weight;
+
+							values[key] = power;
+
+							// values[key] = Math.pow(t, alpha) * weight;
+							// values[key] = t * weight;
+							// values[key] = Math.pow(t, alpha) * weight;
+							// values[key] = Math.sqrt(t) * weight;
+							// values[key] = t * t * (3 - 2 * t) * weight;
+							// values[key] = t * t * t * (t * (t * 6 - 15) + 10) * weight;
+							// values[key] = (Math.log1p(t) / Math.log(2)) * weight;
+							// values[key] = (1 - Math.exp(-alpha * t)) * weight;
+							// values[key] = (1 - Math.pow(1 - t, alpha)) * weight;
+							// values[key] = (t * 0.4 + Math.pow(t, alpha) * 0.6) * weight;
+							// values[key] = (0.2 + 0.8 * Math.pow(t, alpha)) * weight;
+						});
+					}
 					// sort by metric and add positions
 					// -1 for positions for values of 0
 					Object.entries(metrics)
 						.sort((a, b) => b[1][key] - a[1][key])
-						.forEach(
-							([id], i) =>
-								(metrics[id].positions[key] =
-									metrics[id][key] == 0 ? -1 : i),
-						);
+						.forEach(([id], i) => {
+							metrics[id].positions[key] =
+								metrics[id][key] == 0 ? -1 : i;
+						});
 				}
 
 				// accumulate scores
-				Object.values(metrics).forEach((values) =>
-					Object.keys(adjustments).forEach(
-						(key) => (values.score += values[key]),
-					),
-				);
+				Object.values(metrics).forEach((values) => {
+					Object.keys(adjustments).forEach((key) => {
+						values.score += values[key];
+					});
+					if (values.hardest_created_placement !== 0) {
+						values.score += values.hardest_created_placement;
+					}
+				});
 
 				// sort by score
 				const sorted = Object.entries(metrics).sort((a, b) => {
@@ -252,16 +282,7 @@ export default {
 					positions: metric[1].positions,
 					metrics: metric[1],
 					score: metric[1].score,
-					raw: Object.fromEntries(
-						Object.entries(metric[1]).map(([key, value]) => [
-							key,
-							Math.round(
-								(value / this.weights[key]) *
-									adjustments[key] *
-									100,
-							) / 100,
-						]),
-					),
+					raw: metric[1].raw,
 				}));
 				this.all_metrics = metrics;
 				this.featured_creators = featured_creators;
@@ -312,14 +333,10 @@ export default {
 			<div class="ghl-list-data" id="data">
 				<HardestLevelsList
 					class="LeaderboardOutput"
-					id="maps"
+					v-show="tab === 'maps'"
 					:list="hardest_levels"
 				/>
-				<div
-					style="display: none"
-					class="LeaderboardOutput"
-					id="players"
-				>
+				<div class="LeaderboardOutput" v-show="tab === 'players'">
 					<ListRow
 						v-for="(
 							{
@@ -380,15 +397,13 @@ export default {
 	width: min(800px, 90%);
 }
 .ghl-list-data,
-#maps,
-#players {
+.LeaderboardOutput {
 	width: 100%;
 }
 #judges {
 	margin-inline: auto;
 }
-#maps,
-#players {
+.LeaderboardOutput {
 	display: flex;
 }
 #info {

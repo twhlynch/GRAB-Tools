@@ -26,6 +26,7 @@ export default {
 				challenge_created: 'Challenge Maps',
 				unbeaten_created: 'Unbeaten Maps',
 				hardest_created: 'Hardest Maps',
+				hardest_created_placement: 'Hardest Map Placement',
 			},
 		};
 	},
