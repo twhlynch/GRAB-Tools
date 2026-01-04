@@ -289,6 +289,7 @@ function operand_asm_to_json(operand, instruction, index, old_json) {
 		};
 	}
 
+	window.toast(`Failed to parse ${operand}`, 'warn');
 	return undefined;
 }
 
