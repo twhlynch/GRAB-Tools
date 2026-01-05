@@ -17,13 +17,7 @@ export const gasm = StreamLanguage.define({
 		if (stream.match(/;.*/, true)) return 'lineComment';
 
 		// macro
-		if (
-			stream.match(
-				/#(FOR|IF|END|RAND|EQUAL|LESS|GREATER|AND|NOT|OR|MIN|MAX)/,
-				true,
-			)
-		)
-			return 'regexp';
+		if (stream.match(/#(FOR|IF|END|DEFINE)/, true)) return 'regexp';
 
 		// variable
 		if (stream.match(/#[A-Za-z_][A-Za-z0-9_]*/, true)) return 'regexp';

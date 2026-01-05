@@ -54,53 +54,8 @@ function asm_to_json(asm, old_json) {
 }
 
 function preprocess_asm(lines) {
-	const processed_functions = preprocess_functions(lines);
-	const processed_scopes = preprocess_scopes(processed_functions);
+	const processed_scopes = preprocess_scopes(lines);
 	return processed_scopes;
-}
-
-function preprocess_functions(lines) {
-	const result = lines.flatMap((line) => {
-		if (line.startsWith('#RAND')) {
-			const [_, reg, from, to] = line.split(/\s+/);
-			const diff = Number(to) - Number(from);
-			return [
-				`ADD ${reg} ${diff} 1`,
-				`RAND ${reg} ${reg}`,
-				`ADD ${reg} ${reg} ${from}`,
-			];
-		} else if (
-			line.startsWith('#EQUAL') ||
-			line.startsWith('#LESS') ||
-			line.startsWith('#GREATER') ||
-			line.startsWith('#AND') ||
-			line.startsWith('#NOT') ||
-			line.startsWith('#OR')
-		) {
-			const [ins, out, reg, cmp, label] = line.split(/\s+/);
-			return [
-				`${ins.slice(1)} ${out} ${reg} ${cmp}`,
-				`IF ${out} ${label}`,
-			];
-		} else if (line.startsWith('#MIN') || line.startsWith('#MAX')) {
-			const [ins, out, first, second, label] = line.split(/\s+/);
-			return [
-				`${
-					ins === '#MIN' ? 'LESS' : 'GREATER'
-				} ${out} ${first} ${second}`,
-				`IF ${out} ${label}_1`,
-				`SET ${out} ${second}`,
-				`GOTO ${label}_2`,
-				`LABEL ${label}_1`,
-				`SET ${out} ${first}`,
-				`LABEL ${label}_2`,
-			];
-		} else {
-			return line;
-		}
-	});
-
-	return result;
 }
 
 function preprocess_scopes(lines, context = {}) {
@@ -158,7 +113,14 @@ function preprocess_scopes(lines, context = {}) {
 		const parts = trimmed.split(/\s+/);
 		const directive = parts[0];
 
-		if (directive === '#FOR') {
+		if (directive === '#DEFINE') {
+			const [_, variable, ...rest] = parts;
+			const setup = Object.keys(context)
+				.map((v) => `let ${v} = ${context[v]};`)
+				.join('');
+			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
+			context[variable] = eval(expr);
+		} else if (directive === '#FOR') {
 			const varName = parts[1];
 
 			const start = resolve(parts[2], context);
