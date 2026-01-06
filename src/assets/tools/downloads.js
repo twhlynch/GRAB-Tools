@@ -3,6 +3,7 @@ import { user_info_request } from '@/requests/UserInfoRequest';
 import { download_level_request } from '@/requests/DownloadLevelRequest';
 import { level_details_request } from '@/requests/LevelDetailsRequest';
 import { can_download_level_request } from '@/requests/CanDownloadLevelRequest';
+import { stats_data_request } from '@/requests/StatsDataRequest';
 
 async function can_download_level(level_id) {
 	const user = useUserStore();
@@ -43,6 +44,10 @@ async function can_download_level(level_id) {
 	// then challenge and ooak
 	if (curated_listings?.includes?.('challenge')) return true;
 	if (curated_listings?.includes?.('one_of_a_kind')) return true;
+
+	// check hardest levels list
+	const hardest_list = await stats_data_request('hardest_levels_list');
+	if (hardest_list?.find((level) => level.id === level_id)) return true;
 
 	// if in doubt match username
 	const user_info = await user_info_request(user_id);

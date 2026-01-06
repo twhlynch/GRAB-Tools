@@ -11,14 +11,11 @@ export async function can_download_level_request(level_id) {
 		const response = await fetch(url);
 
 		if (response.status !== 200) {
-			const text = await response.text();
-			window.toast(`Error: ${text}`, 'error');
 			return null;
 		}
 
 		return (await response.json()).allow;
 	} catch {
-		window.toast(`Error: Failed to check level`, 'error');
 		return null;
 	}
 }
