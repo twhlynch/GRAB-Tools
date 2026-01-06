@@ -464,13 +464,14 @@ export default {
 	color: #2976d4;
 	margin-bottom: 0;
 }
-:global(.ghl-list-data .list-item p:nth-child(2)),
-:global(.ghl-list-data .list-item a:nth-child(2)) {
+:global(.ghl-list-data a) {
 	font-size: 14px;
 	font-weight: 400;
 	margin-top: 0;
-	margin-right: auto;
 	color: var(--text-color-default);
+}
+:global(.ghl-list-data .divider) {
+	margin-right: auto;
 }
 :global(.ghl-list-data .personal) {
 	box-shadow: inset 0 0 40px #306a40a0;

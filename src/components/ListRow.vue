@@ -75,7 +75,7 @@ export default {
 <template>
 	<div :class="['leaderboard-item', 'list-item', user_class]" @click="expand">
 		<p>{{ position }}</p>
-		<a :href="user_url(user_id)" target="_blank">
+		<a :href="user_url(user_id)" target="_blank" class="divider">
 			{{ user_name }}
 		</a>
 		<div class="list-chart">
