@@ -44,7 +44,11 @@ export default {
 			<span class="grab-id">{{ grab_id ?? 'unverified' }}</span>
 		</div>
 		<button class="logout" @click="logout">Logout</button>
-		<button class="verify" v-if="!grab_id" @click="show_verify_menu = true">
+		<button
+			class="verify"
+			v-if="!grab_id && false"
+			@click="show_verify_menu = true"
+		>
 			Verify Account
 		</button>
 		<VerifyMenu v-model:visible="show_verify_menu" />
