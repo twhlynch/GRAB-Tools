@@ -1483,11 +1483,11 @@ class LevelLoader {
 
 						const processedText = processString(signText);
 
-						const color = new THREE.Color(255, 255, 255);
+						const color = new THREE.Color(1, 1, 1);
 						if (node.levelNodeSign.color) {
-							color.r = (node.levelNodeSign.color.r ?? 0) * 255;
-							color.g = (node.levelNodeSign.color.g ?? 0) * 255;
-							color.b = (node.levelNodeSign.color.b ?? 0) * 255;
+							color.r = node.levelNodeSign.color.r ?? 0;
+							color.g = node.levelNodeSign.color.g ?? 0;
+							color.b = node.levelNodeSign.color.b ?? 0;
 						}
 						const lines = processedText.split('\n');
 						lines.forEach((line, index) => {
