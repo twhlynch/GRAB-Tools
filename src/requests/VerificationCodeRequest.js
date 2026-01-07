@@ -2,7 +2,7 @@ import { SERVER_URL } from '@/config';
 import { useUserStore } from '@/stores/user';
 
 /**
- * @returns {String | null}
+ * @returns {Promise<String | null>}
  */
 export async function verification_code_request() {
 	const userStore = useUserStore();

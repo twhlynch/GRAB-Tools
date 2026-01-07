@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user';
 /**
  * @param {String | null} level_url
  * @param {String | null} access_token
- * @returns {Boolean}
+ * @returns {Promise<Boolean>}
  */
 export async function verify_account_request(level_url, access_token) {
 	if (!level_url && !access_token) return;
