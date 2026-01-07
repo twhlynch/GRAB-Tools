@@ -18,7 +18,14 @@ export default {
 			this.tab = tab;
 		},
 		async submit_access_token() {
-			await verify_account_request(null, this.access_token);
+			const success = await verify_account_request(
+				null,
+				this.access_token,
+			);
+			if (success) {
+				window.toast('Successfully verified GRAB account!');
+				this.$emit('update:visible', false);
+			}
 		},
 		async submit_level_url() {
 			await verify_account_request(this.level_url, null);
@@ -144,7 +151,7 @@ export default {
 
 			<input
 				v-model="access_token"
-				type="text"
+				type="password"
 				placeholder="access token"
 			/>
 
