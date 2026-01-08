@@ -77,7 +77,9 @@ export default {
 							score: 0,
 							maps: 0,
 							positions: {},
-							raw: {},
+							raw: {
+								hardest_created_placement: 0,
+							},
 							username: (username ?? 'Unknown').split(' ')[0],
 							// metrics
 							...Object.fromEntries(
