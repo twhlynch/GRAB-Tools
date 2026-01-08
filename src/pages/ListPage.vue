@@ -4,6 +4,8 @@ import MapIcon from '@/icons/MapIcon.vue';
 import PeopleIcon from '@/icons/PeopleIcon.vue';
 import ListRow from '@/components/ListRow.vue';
 import HardestLevelsList from '@/components/HardestLevelsList.vue';
+import { mapState } from 'pinia';
+import { useUserStore } from '@/stores/user';
 
 export default {
 	components: {
@@ -34,6 +36,9 @@ export default {
 				hardest_created_placement: 1.0,
 			},
 		};
+	},
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
 	},
 	methods: {
 		selectTab(id) {
@@ -273,10 +278,7 @@ export default {
 				const sorted = Object.entries(metrics).sort((a, b) => {
 					return b[1].score - a[1].score;
 				});
-				// top 100
-				let top_metrics = sorted.slice(0, 100);
-
-				this.top_metrics = top_metrics.map((metric) => ({
+				this.all_metrics = sorted.map((metric) => ({
 					user_id: metric[0],
 					user_name: metric[1].username,
 					positions: metric[1].positions,
@@ -284,7 +286,18 @@ export default {
 					score: metric[1].score,
 					raw: metric[1].raw,
 				}));
-				this.all_metrics = metrics;
+				// top 100
+				let top_metrics = this.all_metrics.slice(0, 100);
+				if (
+					this.is_logged_in &&
+					!top_metrics.find((m) => m.user_id === this.grab_id)
+				) {
+					const own_metric = this.all_metrics.find(
+						(m) => m.user_id === this.grab_id,
+					);
+					if (own_metric) top_metrics.push(own_metric);
+				}
+				this.top_metrics = top_metrics;
 				this.featured_creators = featured_creators;
 			})();
 		},
