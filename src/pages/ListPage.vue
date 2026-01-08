@@ -22,6 +22,7 @@ export default {
 			featured_creators: [],
 			all_metrics: {},
 			top_metrics: [],
+			query: '',
 			// prettier-ignore
 			weights: {
 				level_records:      0.7, // 0.70 1.20 0.50 0.80 0.60
@@ -303,6 +304,33 @@ export default {
 				this.featured_creators = featured_creators;
 			})();
 		},
+		query_user() {
+			if (!this.query?.length) return;
+
+			if (
+				!this.top_metrics.find(
+					(m) =>
+						m.user_id === this.query ||
+						m.user_name.toLowerCase() === this.query.toLowerCase(),
+				)
+			) {
+				const query_metric = this.all_metrics.find(
+					(m) =>
+						m.user_id === this.query ||
+						m.user_name.toLowerCase() === this.query.toLowerCase(),
+				);
+
+				if (query_metric) this.top_metrics.push(query_metric);
+			}
+			requestAnimationFrame(() => {
+				this.$refs.players.scrollTo({
+					top: this.$refs.players.scrollHeight,
+					behavior: 'smooth',
+				});
+			});
+			this.query = '';
+		},
+
 		on_expand() {
 			this.$refs.row.forEach((row) => {
 				row.expanded = false;
@@ -351,7 +379,11 @@ export default {
 					v-show="tab === 'maps'"
 					:list="hardest_levels"
 				/>
-				<div class="LeaderboardOutput" v-show="tab === 'players'">
+				<div
+					class="LeaderboardOutput"
+					v-show="tab === 'players'"
+					ref="players"
+				>
 					<ListRow
 						v-for="(
 							{
@@ -364,7 +396,7 @@ export default {
 							},
 							i
 						) in top_metrics"
-						:key="i"
+						:key="user_id"
 						:position="i + 1"
 						:user_id="user_id"
 						:user_name="user_name"
@@ -376,6 +408,15 @@ export default {
 						@expand="on_expand"
 						ref="row"
 					/>
+				</div>
+				<div v-show="tab === 'players'" class="query-container">
+					<input
+						type="text"
+						v-model="query"
+						placeholder="User ID or username"
+						@keyup.enter="query_user"
+					/>
+					<button @click="query_user">Query User</button>
 				</div>
 			</div>
 		</section>
@@ -457,6 +498,35 @@ export default {
 				border: solid 2px #2063b570;
 			}
 		}
+	}
+}
+.query-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 5px;
+	margin-inline: 10px;
+	padding: 5px;
+	background: #2e5d9740;
+	border-radius: 5px;
+	margin-top: 5px;
+
+	input {
+		padding: 5px 10px;
+		background: #2e5d9740;
+		border-radius: 5px;
+		width: 80%;
+		color: var(--text-color-default);
+	}
+
+	button {
+		padding: 5px 10px;
+		background: #2e5d9740;
+		border-radius: 5px;
+		width: 20%;
+		min-width: fit-content;
+		color: var(--text-color-default);
 	}
 }
 
