@@ -1,8 +1,12 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import audio from '@/assets/tools/audio.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
@@ -38,21 +42,19 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Import audio</h2>
-		<p>Generate audio with triggers and sound blocks.</p>
-		<div>
-			<input
-				type="number"
-				id="audio-tool-pitch-samples"
-				placeholder="samples (40)"
-			/>
-			<input type="file" id="audio-tool-file" accept="audio/*" />
-			<button class="button" id="audio-tool-btn" @click="run">
-				Generate
-			</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>Import audio</template>
+		<template #info>
+			Generate audio with triggers and sound blocks.
+		</template>
+		<input
+			type="number"
+			id="audio-tool-pitch-samples"
+			placeholder="samples (40)"
+		/>
+		<input type="file" id="audio-tool-file" accept="audio/*" />
+		<button class="button" id="audio-tool-btn" @click="run">
+			Generate
+		</button>
+	</ToolTemplate>
 </template>
-
-<style scoped></style>

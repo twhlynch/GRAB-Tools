@@ -362,7 +362,7 @@ export default {
 					@click="selectTab('maps')"
 				>
 					Maps
-					<MapIcon />
+					<MapIcon class="sort-icon" />
 				</button>
 				<button
 					class="sort-btn button-sml"
@@ -370,7 +370,7 @@ export default {
 					@click="selectTab('players')"
 				>
 					Players
-					<PeopleIcon />
+					<PeopleIcon class="sort-icon" />
 				</button>
 			</div>
 		</section>
@@ -436,21 +436,16 @@ export default {
 	</main>
 </template>
 
-<style>
-.list-main {
-	.ghl-icon svg,
-	.ghl-icon {
-		width: 50px;
-		height: 50px;
-		color: #ffdf5b;
-	}
-	.sort-btn svg {
-		width: 18px;
-		height: 18pxghl-list-data;
-	}
-}
-</style>
 <style scoped>
+.ghl-icon {
+	width: 50px;
+	height: 50px;
+	color: #ffdf5b;
+}
+.sort-icon {
+	width: 18px;
+	height: 18px;
+}
 .list-main {
 	width: min(800px, 90%);
 }

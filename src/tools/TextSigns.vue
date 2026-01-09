@@ -1,8 +1,12 @@
 <script>
 import signs from '@/assets/tools/signs';
 import encoding from '@/assets/tools/encoding';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
@@ -30,25 +34,23 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Text to Signs</h2>
-		<p>Generate a list of signs or an animated playback of text.</p>
-		<div>
-			<textarea
-				id="text-signs-tool-text"
-				cols="30"
-				rows="5"
-				placeholder="text"
-			></textarea>
-			<select id="text-signs-tool-mode">
-				<option value="simple" selected>simple</option>
-				<option value="animated">animated</option>
-			</select>
-			<button class="button" id="text-signs-tool-btn" @click="run">
-				Generate
-			</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>Text to Signs</template>
+		<template #info>
+			Generate a list of signs or an animated playback of text.
+		</template>
+		<textarea
+			id="text-signs-tool-text"
+			cols="30"
+			rows="5"
+			placeholder="text"
+		></textarea>
+		<select id="text-signs-tool-mode">
+			<option value="simple" selected>simple</option>
+			<option value="animated">animated</option>
+		</select>
+		<button class="button" id="text-signs-tool-btn" @click="run">
+			Generate
+		</button>
+	</ToolTemplate>
 </template>
-
-<style scoped></style>

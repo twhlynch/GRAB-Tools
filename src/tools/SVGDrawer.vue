@@ -1,8 +1,12 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import svg from '@/assets/tools/svg.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async draw() {
 			const getByID = (id) => document.getElementById(id);
@@ -35,16 +39,12 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>SVG Drawer</h2>
-		<p>Convert simple SVG images into their built paths.</p>
-		<div>
-			<input type="file" id="svg-tool-file" accept=".svg" />
-			<button class="button" id="svg-tool-btn" @click="draw">
-				Process
-			</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>SVG Drawer</template>
+		<template #info>
+			Convert simple SVG images into their built paths.
+		</template>
+		<input type="file" id="svg-tool-file" accept=".svg" />
+		<button class="button" id="svg-tool-btn" @click="draw">Process</button>
+	</ToolTemplate>
 </template>
-
-<style scoped></style>

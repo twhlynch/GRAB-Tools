@@ -46,7 +46,7 @@ export default {
 				<a href="https://grab-tutorials.live">GRAB Tutorials</a>!
 			</p>
 		</section>
-		<section id="tools">
+		<section class="tools">
 			<a class="button" href="/editor" target="_blank"
 				>JSON Level Editor</a
 			>
@@ -61,7 +61,7 @@ export default {
 				>Chrome extension</a
 			>
 		</section>
-		<section id="bookmarklets">
+		<section class="bookmarklets">
 			<h2>Bookmarklets</h2>
 			<p>
 				Drag these tools onto your bookmarks bar and click to run them
@@ -76,7 +76,7 @@ export default {
 				<a :href="this.$config.GRAB_LEVELS_URL">level browser</a>.
 			</p>
 		</section>
-		<section id="bookmark-links">
+		<section class="bookmark-links">
 			<Bookmarklet
 				class="button"
 				:name="'Chrome Extension'"
@@ -103,7 +103,7 @@ export default {
 				:script="'CustomColors.js'"
 			/>
 		</section>
-		<section id="editor">
+		<section class="editor">
 			<div>
 				<h2>JSON Editor</h2>
 				<p>
@@ -123,9 +123,9 @@ export default {
 				title="The JSON Editor"
 			/>
 		</section>
-		<section id="state">
+		<section class="state">
 			<h2>Help</h2>
-			<div id="socials">
+			<div class="socials">
 				<a
 					href="https://discordapp.com/users/649165311257608192"
 					class="social"
@@ -160,10 +160,7 @@ export default {
 </template>
 
 <style scoped>
-#extension-update {
-	display: none;
-}
-#socials {
+.socials {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-start;
@@ -181,7 +178,7 @@ export default {
 	text-decoration: none;
 	color: var(--text-color-default);
 }
-#bookmark-links {
+.bookmark-links {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
@@ -190,7 +187,7 @@ export default {
 	padding-block: var(--padding-secondary);
 	flex-wrap: wrap;
 }
-#tools {
+.tools {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
@@ -199,7 +196,7 @@ export default {
 	padding-block: var(--padding-secondary);
 	flex-wrap: wrap;
 }
-#editor {
+.editor {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	gap: 2rem;
@@ -216,19 +213,12 @@ export default {
 		max-width: 40ch;
 	}
 }
-#state span,
-#currentTime,
-#currentState {
+.state span {
 	color: var(--text-color-alt);
 }
-</style>
-<style>
-#tools {
-	.ghl-icon svg,
-	.ghl-icon {
-		width: 21px;
-		height: 21px;
-		color: #ffdf5b;
-	}
+.ghl-icon {
+	width: 21px;
+	height: 21px;
+	color: #ffdf5b;
 }
 </style>

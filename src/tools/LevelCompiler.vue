@@ -1,8 +1,12 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import compiler from '@/assets/tools/compiler.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		showQuestMultiSelect() {
 			const getByID = (id) => document.getElementById(id);
@@ -50,65 +54,58 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Level Compiler</h2>
-		<p>
+	<ToolTemplate>
+		<template #title>Level Compiler</template>
+		<template #info>
 			Select multiple level files and combine them into one file. Each
 			level will be grouped.
-		</p>
+		</template>
 		<button class="button-sml" @click="showQuestMultiSelect">
 			Click me if you are on quest and can't select multiple files
 		</button>
-		<div>
+		<input type="text" id="level-compiler-tool-title" placeholder="Title" />
+		<textarea
+			id="level-compiler-tool-description"
+			maxlength="300"
+			placeholder="Description"
+		></textarea>
+		<input
+			type="text"
+			id="level-compiler-tool-creators"
+			placeholder="Creators"
+			maxlength="80"
+		/>
+		<input
+			type="number"
+			id="level-compiler-tool-checkpoints"
+			placeholder="Checkpoints"
+		/>
+		<input
+			type="file"
+			id="level-compiler-tool-file"
+			accept=".level"
+			multiple
+		/>
+		<div id="level-compiler-tool-quest-multi-select">
 			<input
-				type="text"
-				id="level-compiler-tool-title"
-				placeholder="Title"
-			/>
-			<textarea
-				id="level-compiler-tool-description"
-				maxlength="300"
-				placeholder="Description"
-			></textarea>
-			<input
-				type="text"
-				id="level-compiler-tool-creators"
-				placeholder="Creators"
-				maxlength="80"
-			/>
-			<input
-				type="number"
-				id="level-compiler-tool-checkpoints"
-				placeholder="Checkpoints"
-			/>
-			<input
+				v-for="i in 10"
 				type="file"
-				id="level-compiler-tool-file"
+				:key="i"
+				:id="'level-compiler-tool-file' + (i - 1)"
 				accept=".level"
-				multiple
 			/>
-			<div id="level-compiler-tool-quest-multi-select">
-				<input
-					v-for="i in 10"
-					type="file"
-					:key="i"
-					:id="'level-compiler-tool-file' + (i - 1)"
-					accept=".level"
-				/>
-			</div>
-			<button
-				id="level-compiler-tool-btn"
-				class="button"
-				@click="compile"
-			>
-				Compile
-			</button>
 		</div>
-	</div>
+		<button id="level-compiler-tool-btn" class="button" @click="compile">
+			Compile
+		</button>
+	</ToolTemplate>
 </template>
 
 <style scoped>
 #level-compiler-tool-quest-multi-select {
 	display: none;
+	flex-direction: column;
+	width: 100%;
+	gap: 5px;
 }
 </style>

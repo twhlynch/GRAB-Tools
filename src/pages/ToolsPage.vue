@@ -206,20 +206,14 @@ export default {
 	</main>
 </template>
 
-<style>
-#tools {
-	div {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 5px;
-	}
-	> div {
-		display: none;
-	}
-	> div.active-tool {
-		display: flex;
-	}
+<style scoped>
+#custom-colors-tool,
+#custom-colors-tool div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+
 	input,
 	textarea,
 	select {
@@ -229,14 +223,13 @@ export default {
 		border-radius: 5px;
 		outline: none;
 		width: 100%;
+		color: var(--text-color-default);
 	}
 	h2 {
 		color: #2976d4;
 		margin-bottom: 0;
 	}
 }
-</style>
-<style scoped>
 #tools-buttons {
 	display: flex;
 	flex-direction: row;
@@ -251,6 +244,12 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	gap: 5px;
+	> div {
+		display: none;
+	}
+	> div.active-tool {
+		display: flex;
+	}
 }
 .active-tool-button {
 	background-color: #5f8cc235;

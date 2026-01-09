@@ -81,7 +81,7 @@ export default {
 <template>
 	<section id="statistics-panel">
 		<button @click="click">
-			<StatsIcon />
+			<StatsIcon class="stats-icon" />
 		</button>
 		<div
 			v-for="[key, value] of Object.entries(statistics)"
@@ -105,14 +105,15 @@ export default {
 	</section>
 </template>
 
-<style>
-#statistics-panel > button svg {
+<style scoped>
+.stats-icon {
 	width: 80%;
 	height: 80%;
-	cursor: pointer;
 }
-</style>
-<style scoped>
+#statistics-panel > button {
+	cursor: pointer;
+	color: var(--text-color-default);
+}
 section {
 	width: 100%;
 	height: 100%;

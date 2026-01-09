@@ -293,7 +293,11 @@ export default {
 					"
 				>
 					{{ list.name }}
-					<component v-if="list.icon" :is="list.icon" />
+					<component
+						v-if="list.icon"
+						:is="list.icon"
+						class="sort-icon"
+					/>
 				</button>
 			</div>
 		</section>
@@ -310,13 +314,11 @@ export default {
 	</main>
 </template>
 
-<style>
-#stats-page .stats-sorting .sort-btn svg {
+<style scoped>
+.stats-sorting .sort-btn .sort-icon {
 	width: 18px;
 	height: 18px;
 }
-</style>
-<style scoped>
 .leaderboard-output {
 	display: flex;
 	flex-direction: column;

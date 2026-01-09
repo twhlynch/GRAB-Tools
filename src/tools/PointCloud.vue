@@ -1,8 +1,12 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import obj from '@/assets/tools/obj.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
@@ -36,20 +40,16 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Point Cloud</h2>
-		<p>Convert .obj 3D models into grab levels.</p>
-		<div>
-			<input type="file" id="point-cloud-tool-file" accept=".obj" />
-			<select id="point-cloud-tool-mode">
-				<option value="particles" selected>particles</option>
-				<option value="spheres">spheres</option>
-			</select>
-			<button class="button" id="point-cloud-tool-btn" @click="run">
-				Process
-			</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>Point Cloud</template>
+		<template #info>Convert .obj 3D models into grab levels.</template>
+		<input type="file" id="point-cloud-tool-file" accept=".obj" />
+		<select id="point-cloud-tool-mode">
+			<option value="particles" selected>particles</option>
+			<option value="spheres">spheres</option>
+		</select>
+		<button class="button" id="point-cloud-tool-btn" @click="run">
+			Process
+		</button>
+	</ToolTemplate>
 </template>
-
-<style scoped></style>

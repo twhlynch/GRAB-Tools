@@ -1,7 +1,11 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
@@ -36,17 +40,17 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Level to JSON</h2>
-		<p>Convert a levels to readable JSON data and back.</p>
-		<div>
-			<input
-				type="file"
-				id="level-json-tool-file"
-				accept=".level,.json"
-				multiple
-			/>
-			<button class="button" @click="run">Convert</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>Level to JSON</template>
+		<template #info>
+			Convert a levels to readable JSON data and back.
+		</template>
+		<input
+			type="file"
+			id="level-json-tool-file"
+			accept=".level,.json"
+			multiple
+		/>
+		<button class="button" @click="run">Convert</button>
+	</ToolTemplate>
 </template>

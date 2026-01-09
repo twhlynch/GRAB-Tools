@@ -52,7 +52,7 @@ export default {
 <template>
 	<div class="login-button">
 		<button v-if="is_logged_in" class="button-sml" @click="open_menu">
-			<UserIcon />
+			<UserIcon class="user-icon" />
 			{{ user_name }}
 		</button>
 		<a
@@ -60,7 +60,7 @@ export default {
 			v-else
 			class="button-sml"
 		>
-			<UserIcon />
+			<UserIcon class="user-icon" />
 			<span class="login-text-long">Meta Login</span>
 			<span class="login-text-short">Login</span>
 		</a>
@@ -68,16 +68,11 @@ export default {
 	</div>
 </template>
 
-<style>
-/* TODO: use css variables instead of manual scopes */
-.login-button {
-	svg {
-		height: 16px;
-		width: 16px;
-	}
-}
-</style>
 <style scoped>
+.user-icon {
+	height: 16px;
+	width: 16px;
+}
 .login-text-short {
 	display: none;
 }

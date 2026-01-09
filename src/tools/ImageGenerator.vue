@@ -1,8 +1,12 @@
 <script>
 import encoding from '@/assets/tools/encoding.js';
 import image from '@/assets/tools/image.js';
+import ToolTemplate from './ToolTemplate.vue';
 
 export default {
+	components: {
+		ToolTemplate,
+	},
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
@@ -39,34 +43,21 @@ export default {
 </script>
 
 <template>
-	<div>
-		<h2>Pixel Art</h2>
-		<p>Generate pixel art from an image.</p>
-		<div>
-			<input
-				type="number"
-				id="image-tool-width"
-				placeholder="width (50)"
-			/>
-			<input
-				type="number"
-				id="image-tool-height"
-				placeholder="height (50)"
-			/>
-			<select id="image-tool-mode">
-				<option value="cubes" selected>cubes</option>
-				<option value="particles">particles</option>
-			</select>
-			<select id="image-tool-shape">
-				<option value="plane" selected>plane</option>
-				<option value="sphere">sphere</option>
-			</select>
-			<input type="file" id="image-tool-file" accept="image/*" />
-			<button class="button" id="image-tool-btn" @click="run">
-				Generate
-			</button>
-		</div>
-	</div>
+	<ToolTemplate>
+		<template #title>Pixel Art</template>
+		<template #info>Generate pixel art from an image.</template>
+		<textarea
+			id="text-signs-tool-text"
+			cols="30"
+			rows="5"
+			placeholder="text"
+		></textarea>
+		<select id="text-signs-tool-mode">
+			<option value="simple" selected>simple</option>
+			<option value="animated">animated</option>
+		</select>
+		<button class="button" id="text-signs-tool-btn" @click="run">
+			Generate
+		</button>
+	</ToolTemplate>
 </template>
-
-<style scoped></style>
