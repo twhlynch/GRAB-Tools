@@ -6,6 +6,8 @@ import ListRow from '@/components/ListRow.vue';
 import HardestLevelsList from '@/components/HardestLevelsList.vue';
 import { mapState } from 'pinia';
 import { useUserStore } from '@/stores/user';
+import { add_hardest_level_request } from '@/requests/AddHardestLevelRequest';
+import { get_hardest_levels_request } from '@/requests/GetHardestLevelsRequest';
 
 export default {
 	components: {
@@ -23,6 +25,8 @@ export default {
 			all_metrics: {},
 			top_metrics: [],
 			query: '',
+			add_level_id: '',
+			add_level_position: '',
 			// prettier-ignore
 			weights: {
 				level_records:      0.7, // 0.70 1.20 0.50 0.80 0.60
@@ -39,7 +43,11 @@ export default {
 		};
 	},
 	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
+		...mapState(useUserStore, [
+			'is_logged_in',
+			'grab_id',
+			'is_list_moderator',
+		]),
 	},
 	methods: {
 		selectTab(id) {
@@ -96,16 +104,17 @@ export default {
 				});
 
 				await Promise.all([
-					this.fetchThen('hardest_levels_list', (data) => {
-						this.hardest_levels = data;
+					get_hardest_levels_request().then((data) => {
+						this.hardest_levels = data.sort(
+							(a, b) => a.position - b.position,
+						);
 
-						for (let i = 0; i < 100; i++) {
-							const level = data[i];
+						for (let i = 0; i < Math.min(100, data.length); i++) {
+							const { level_id, creators } = data[i];
 
-							const identifier = level.id.split(':')[0];
-							const username = level.creator;
+							const identifier = level_id.split(':')[0];
 
-							checkMetric(identifier, username);
+							checkMetric(identifier, creators);
 
 							metrics[identifier].hardest_created += 1;
 							if (
@@ -332,7 +341,28 @@ export default {
 			});
 			this.query = '';
 		},
+		async add_level() {
+			if (!this.add_level_id?.length || !this.add_level_position) return;
 
+			let level_id = this.add_level_id;
+			let position = this.add_level_position;
+			if (level_id.includes('https')) {
+				level_id = level_id.split('level=')[1];
+			}
+
+			this.add_level_id = '';
+			this.add_level_position = '';
+
+			const success = await add_hardest_level_request(level_id, position);
+
+			if (success) window.toast(`Added level`);
+
+			await this.update_levels();
+		},
+		async update_levels() {
+			const list = await get_hardest_levels_request();
+			this.hardest_levels = list.sort((a, b) => a.position - b.position);
+		},
 		on_expand() {
 			this.$refs.row.forEach((row) => {
 				row.expanded = false;
@@ -376,10 +406,31 @@ export default {
 		</section>
 		<section id="list-section">
 			<div class="ghl-list-data" id="data">
+				<div
+					class="controls"
+					v-show="tab === 'maps' && is_list_moderator"
+				>
+					<input
+						type="text"
+						placeholder="Level ID or URL"
+						autocapitalize="false"
+						autocorrect="false"
+						v-model="add_level_id"
+						@keyup.enter="add_level"
+					/>
+					<input
+						type="number"
+						placeholder="Position"
+						v-model="add_level_position"
+						@keyup.enter="add_level"
+					/>
+					<button @click="add_level">Add Level</button>
+				</div>
 				<HardestLevelsList
 					class="LeaderboardOutput"
 					v-show="tab === 'maps'"
 					:list="hardest_levels"
+					@update="update_levels"
 				/>
 				<div
 					class="LeaderboardOutput"
@@ -497,7 +548,8 @@ export default {
 		}
 	}
 }
-.query-container {
+.query-container,
+.controls {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -507,7 +559,7 @@ export default {
 	padding: 5px;
 	background: #2e5d9740;
 	border-radius: 5px;
-	margin-top: 5px;
+	margin-block: 5px;
 
 	input {
 		padding: 5px 10px;
@@ -524,6 +576,7 @@ export default {
 		width: 20%;
 		min-width: fit-content;
 		color: var(--text-color-default);
+		cursor: pointer;
 	}
 }
 

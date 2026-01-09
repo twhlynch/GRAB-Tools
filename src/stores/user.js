@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user', {
 		access_token: undefined,
 		user: undefined,
 		is_site_admin: false,
+		is_list_moderator: false,
 		logged_in: false,
 	}),
 
@@ -61,6 +62,7 @@ export const useUserStore = defineStore('user', {
 			this.grab_id = data.grab_id;
 			this.access_token = data.access_token;
 			this.is_site_admin = data.is_admin;
+			this.is_list_moderator = data.is_list_moderator;
 			this.logged_in = true;
 
 			if (this.grab_id) {
