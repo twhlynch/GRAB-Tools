@@ -213,6 +213,9 @@ export default {
 				'click',
 				this.select_event,
 			);
+			this.renderer.domElement.addEventListener('dragover', (e) => {
+				e.preventDefault();
+			});
 		},
 		reset_node_positions() {
 			this.level.meta.time = 0;
