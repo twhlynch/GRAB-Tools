@@ -322,6 +322,7 @@ export default {
 				);
 
 				if (query_metric) this.top_metrics.push(query_metric);
+				else window.toast('Failed to find user');
 			}
 			requestAnimationFrame(() => {
 				this.$refs.players.scrollTo({
