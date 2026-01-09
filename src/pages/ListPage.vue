@@ -281,13 +281,14 @@ export default {
 				const sorted = Object.entries(metrics).sort((a, b) => {
 					return b[1].score - a[1].score;
 				});
-				this.all_metrics = sorted.map((metric) => ({
+				this.all_metrics = sorted.map((metric, i) => ({
 					user_id: metric[0],
 					user_name: metric[1].username,
 					positions: metric[1].positions,
 					metrics: metric[1],
 					score: metric[1].score,
 					raw: metric[1].raw,
+					position: i + 1,
 				}));
 				// top 100
 				let top_metrics = this.all_metrics.slice(0, 100);
@@ -385,19 +386,17 @@ export default {
 					ref="players"
 				>
 					<ListRow
-						v-for="(
-							{
-								user_id,
-								user_name,
-								positions,
-								metrics,
-								score,
-								raw,
-							},
-							i
-						) in top_metrics"
+						v-for="{
+							user_id,
+							user_name,
+							positions,
+							metrics,
+							score,
+							raw,
+							position,
+						} in top_metrics"
 						:key="user_id"
-						:position="i + 1"
+						:position="position"
 						:user_id="user_id"
 						:user_name="user_name"
 						:positions="positions"
@@ -414,6 +413,8 @@ export default {
 						type="text"
 						v-model="query"
 						placeholder="User ID or username"
+						autocapitalize="false"
+						autocorrect="false"
 						@keyup.enter="query_user"
 					/>
 					<button @click="query_user">Query User</button>
