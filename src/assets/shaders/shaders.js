@@ -8,6 +8,7 @@ import signVS from './sign.vert?raw';
 import signFS from './sign.frag?raw';
 import particleVS from './particle.vert?raw';
 import particleFS from './particle.frag?raw';
+import startDirectionFS from './start_direction.frag?raw';
 
 export {
 	skyVS,
@@ -20,4 +21,5 @@ export {
 	signFS,
 	particleVS,
 	particleFS,
+	startDirectionFS,
 };

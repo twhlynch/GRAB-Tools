@@ -16,6 +16,7 @@ import modelPrismURL from './models/prism.gltf';
 import modelConeURL from './models/cone.gltf';
 import modelStartEndURL from './models/start_end.gltf';
 import modelSignURL from './models/sign.gltf';
+import modelStartDirectionURL from './models/start_direction.glb';
 
 import textureDefaultURL from './textures/default.png';
 import textureGrabbableURL from './textures/grabbable.png';
@@ -66,6 +67,7 @@ class LevelLoader {
 		let objectPromises = [
 			getGeometryForModel(modelStartEndURL),
 			getGeometryForModel(modelSignURL),
+			getGeometryForModel(modelStartDirectionURL),
 		];
 
 		this.objectPromise = Promise.all(objectPromises).then((result) => {
@@ -73,6 +75,7 @@ class LevelLoader {
 				this.objects.push(object);
 				object.rotateY(Math.PI);
 			}
+			this.objects[2].rotateX(Math.PI / 2); // start arrow
 		});
 
 		this.materials = [
@@ -233,6 +236,30 @@ class LevelLoader {
 			isSelected: { value: false },
 		};
 
+		let startDirectionMaterial = new THREE.ShaderMaterial();
+		startDirectionMaterial.vertexShader = SHADERS.startFinishVS;
+		startDirectionMaterial.fragmentShader = SHADERS.startDirectionFS;
+		startDirectionMaterial.flatShading = true;
+		startDirectionMaterial.transparent = true;
+		startDirectionMaterial.depthWrite = false;
+		startDirectionMaterial.uniforms = {
+			diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		};
+
+		let altStartDirectionMaterial = new THREE.ShaderMaterial();
+		altStartDirectionMaterial.vertexShader = SHADERS.startFinishVS;
+		altStartDirectionMaterial.fragmentShader = SHADERS.startDirectionFS;
+		altStartDirectionMaterial.flatShading = true;
+		altStartDirectionMaterial.transparent = true;
+		altStartDirectionMaterial.depthWrite = false;
+		altStartDirectionMaterial.uniforms = {
+			diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		};
+
 		this.objectMaterials = [
 			startMaterial,
 			finishMaterial,
@@ -298,6 +325,8 @@ class LevelLoader {
 				0.0,
 				this.options.fog ? 1.0 : 0.0,
 			),
+			startDirectionMaterial,
+			altStartDirectionMaterial,
 		];
 
 		let skyMaterial = new THREE.ShaderMaterial();
@@ -1370,8 +1399,14 @@ class LevelLoader {
 							level.nodes.all.length;
 					if (isDefaultSpawn) {
 						object = new THREE.Mesh(objects[0], objectMaterials[0]);
+						object.add(
+							new THREE.Mesh(objects[2], objectMaterials[10]),
+						);
 					} else {
 						object = new THREE.Mesh(objects[0], objectMaterials[6]);
+						object.add(
+							new THREE.Mesh(objects[2], objectMaterials[11]),
+						);
 					}
 					parentNode.add(object);
 					object.position.x = node.levelNodeStart.position?.x ?? 0;
