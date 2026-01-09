@@ -52,11 +52,11 @@ export default {
 			<span>Games</span>
 			<RocketIcon class="nav-hideable" />
 		</a>
-		<a href="http://discord.grabvr.tools" class="nav-button">
+		<a :href="this.$config.DISCORD_URL" class="nav-button">
 			<span>Discord</span>
 			<DiscordIcon class="nav-hideable" />
 		</a>
-		<a href="https://wiki.grabvr.tools" class="nav-button">
+		<a :href="this.$config.WIKI_URL" class="nav-button">
 			<span>Wiki</span>
 			<GlobeIcon class="nav-hideable" />
 		</a>

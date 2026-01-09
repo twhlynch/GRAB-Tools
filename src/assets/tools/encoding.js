@@ -1,5 +1,5 @@
 import protobuf from 'protobufjs';
-import { FORMAT_VERSION } from '@/config';
+import { FORMAT_VERSION, DOMAIN } from '@/config';
 import definition from '@/assets/proto/proto.proto?raw';
 
 let protobuf_definition = definition;
@@ -145,7 +145,7 @@ function createLevel(
 	nodes = [],
 	title = 'New Level',
 	description = 'Made with GRAB Tools',
-	creators = ['grabvr.tools'],
+	creators = [DOMAIN],
 	checkpoints = 10,
 	horizon = {
 		a: 1.0,

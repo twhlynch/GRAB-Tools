@@ -30,7 +30,7 @@ export default {
 		You have the right to request that we delete any personal data we have
 		collected about you. If you wish to delete your data, please contact us
 		at:<br />
-		Email: support@grabvr.tools<br />
+		Email: {{ this.$config.SUPPORT_EMAIL }}<br />
 		We will process your request within 30 days of receiving it.
 
 		<h3>4. Third-Party Services</h3>
@@ -45,7 +45,7 @@ export default {
 		<h3>6. Contact Us</h3>
 		If you have any questions about this Privacy Policy, you can contact us
 		at:<br />
-		Email: support@grabvr.tools
+		Email: {{ this.$config.SUPPORT_EMAIL }}
 	</main>
 </template>
 

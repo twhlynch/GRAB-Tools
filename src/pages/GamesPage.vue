@@ -13,7 +13,7 @@ export default {
 			<p>
 				A collection of GRAB themed games available to play online or
 				download! Join the
-				<a href="https://discord.grabvr.tools">discord</a> to request a
+				<a :href="this.$config.DISCORD_URL">discord</a> to request a
 				game to add.
 			</p>
 		</section>

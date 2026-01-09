@@ -251,7 +251,7 @@ export default {
 				},
 				Settings: {
 					Login: {
-						href: `https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=https://grabvr.tools/editor`,
+						href: `https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=${this.$config.PAGE_URL}editor`,
 					},
 					'Save Config': { func: this.save_config },
 					'Edit Protobuf': { func: this.edit_protobuf },
@@ -271,7 +271,7 @@ export default {
 				},
 				Help: {
 					Tutorial: { href: 'https://youtube.com/@dotindex' },
-					Discord: { href: 'http://discord.grabvr.tools' },
+					Discord: { href: this.$config.DISCORD_URL },
 					'Clear Storage': { func: this.clear_storage },
 					'Show Keybinds': {
 						func: this.show_keybinds,
@@ -282,7 +282,7 @@ export default {
 						TheTrueFax: { href: 'https://thetruefax.github.io/' },
 					},
 					[`v${this.$config.VERSION}`]: {
-						href: 'https://github.com/twhlynch/GRAB-Tools',
+						href: this.$config.REPO_URL,
 					},
 				},
 			},

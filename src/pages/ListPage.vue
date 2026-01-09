@@ -52,7 +52,7 @@ export default {
 		},
 		async fetchThen(filename, func) {
 			let response = await fetch(
-				`${this.$config.STATS_SERVER_URL}${filename}.json`,
+				`${this.$config.STATS_URL}${filename}.json`,
 			);
 			if (!response.ok) {
 				const error = await response.text();

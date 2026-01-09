@@ -114,7 +114,7 @@ export default {
 				<li>Publish or update the level</li>
 				<li>
 					Find the level on the
-					<a href="https://grabvr.quest/levels">level browser</a>
+					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>Copy the URL, and paste it here</li>
 				<li>Once verified you can delete the level</li>
@@ -133,7 +133,7 @@ export default {
 			<ol>
 				<li>
 					Login to the
-					<a href="https://grabvr.quest/levels">level browser</a>
+					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>
 					Open DevTools with CTRL+SHIFT+I, or right click, Inspect
@@ -166,7 +166,7 @@ export default {
 				<li>Drag the bookmarklet into your bookmarks</li>
 				<li>
 					Login to the
-					<a href="https://grabvr.quest/levels">level browser</a>
+					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>Click the bookmark to run it</li>
 				<li>On success, login again to see changes</li>

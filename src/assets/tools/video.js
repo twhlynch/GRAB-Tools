@@ -1,6 +1,7 @@
 import encoding from '@/assets/tools/encoding.js';
+import { PYTHON_SERVER_URL } from '@/config';
 
-const VIDEO_SERVER_URL = 'https://dotindex.pythonanywhere.com/process_video';
+const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
 
 /**
  * @param {File} file - A video file

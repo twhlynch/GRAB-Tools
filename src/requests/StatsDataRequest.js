@@ -1,4 +1,4 @@
-import { STATS_SERVER_URL } from '@/config';
+import { STATS_URL } from '@/config';
 
 /**
  * @param {String} key
@@ -16,7 +16,7 @@ export async function stats_data_request(key) {
 		(current_hours === update_hour && current_minutes > 0);
 	const cache_value = is_past ? days_since_epoch + 1 : days_since_epoch;
 
-	const url = `${STATS_SERVER_URL}${key}.json?cache=${cache_value}`;
+	const url = `${STATS_URL}${key}.json?cache=${cache_value}`;
 
 	try {
 		const response = await fetch(url);

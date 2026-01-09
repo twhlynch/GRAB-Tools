@@ -191,8 +191,8 @@ export default {
 				<p>
 					Drag this to your bookmarks bar or click it to copy it and
 					paste it into a bookmark. Then go to
-					<a href="https://grabvr.quest/levels">the level browser</a>,
-					log in, and click it to run.
+					<a :href="this.$config.GRAB_VIEWER_URL">the level browser</a
+					>, log in, and click it to run.
 				</p>
 				<div id="bookmark-links">
 					<Bookmarklet

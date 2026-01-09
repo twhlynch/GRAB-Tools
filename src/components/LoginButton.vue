@@ -11,7 +11,7 @@ export default {
 	},
 	data() {
 		return {
-			origin: this.$config.LIVE_PAGE_URL,
+			origin: this.$config.PAGE_URL,
 			show_menu: false,
 		};
 	},
