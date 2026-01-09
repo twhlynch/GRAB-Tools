@@ -42,7 +42,7 @@ export default {
 	},
 	data() {
 		return {
-			tab: 'level',
+			tab: 'bookmark',
 			access_token: '',
 			level_url: '',
 			code: null,
@@ -61,6 +61,8 @@ export default {
 				if (!response.ok) {
 					const text = await response.text();
 					window.toast('Error: ' + text, 'error');
+				} else {
+					window.toast('Successfully verified GRAB account!');
 				}
 			} catch {
 				window.toast('Request failed', 'error');
@@ -167,6 +169,7 @@ export default {
 					<a href="https://grabvr.quest/levels">level browser</a>
 				</li>
 				<li>Click the bookmark to run it</li>
+				<li>On success, login again to see changes</li>
 			</ol>
 
 			<p>Disclaimer: Never run a script from an untrusted third party.</p>
