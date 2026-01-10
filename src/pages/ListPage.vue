@@ -75,13 +75,28 @@ export default {
 				let featured_creators = [];
 				let metrics = {};
 
-				const checkMetric = (id, username) => {
+				const checkMetric = (id, username, priority = 1) => {
 					for (let featured_creator of featured_creators) {
 						if (featured_creator.list_key.split(':')[1] == id) {
 							username = featured_creator.title;
 						}
 					}
-					if (!(id in metrics)) {
+
+					if (!username) {
+						priority = 0;
+						username = 'Unknown';
+					}
+
+					username = username.split(/[,\s]/)[0];
+
+					const metric = metrics[id];
+
+					if (metric) {
+						if (metric.username_priority < priority) {
+							metric.username_priority = priority;
+							metric.username = username;
+						}
+					} else {
 						metrics[id] = {
 							score: 0,
 							maps: 0,
@@ -89,7 +104,8 @@ export default {
 							raw: {
 								hardest_created_placement: 0,
 							},
-							username: (username ?? 'Unknown').split(' ')[0],
+							username: username,
+							username_priority: priority,
 							// metrics
 							...Object.fromEntries(
 								Object.keys(this.weights).map((k) => [k, 0]),
@@ -113,8 +129,10 @@ export default {
 							const { level_id, creators } = data[i];
 
 							const identifier = level_id.split(':')[0];
+							const priority =
+								parseInt(level_id.split(':')[1]) / 10;
 
-							checkMetric(identifier, creators);
+							checkMetric(identifier, creators, priority);
 
 							metrics[identifier].hardest_created += 1;
 							if (
@@ -156,8 +174,9 @@ export default {
 
 								const identifier = item.user_id;
 								const username = item.user_name;
+								const priority = item.timestamp;
 
-								checkMetric(identifier, username);
+								checkMetric(identifier, username, priority);
 
 								metrics[identifier].sole_finishes += 1;
 							}
@@ -168,8 +187,10 @@ export default {
 							if (!('sole' in level)) {
 								const id = level.identifier.split(':')[0];
 								const username = level?.creators?.[0];
+								const priority =
+									(level.creation_timestamp ?? 10) / 10;
 
-								checkMetric(id, username);
+								checkMetric(id, username, priority);
 
 								metrics[id].unbeaten_created += 1;
 							}
@@ -185,7 +206,13 @@ export default {
 
 							if (leaderboard.length > 0) {
 								const item = leaderboard[0];
-								checkMetric(item.user_id, item.user_name);
+								const priority = item.timestamp;
+
+								checkMetric(
+									item.user_id,
+									item.user_name,
+									priority,
+								);
 
 								if (is_challenge) {
 									metrics[
@@ -195,7 +222,9 @@ export default {
 								metrics[item.user_id].featured_records += 1;
 							}
 
-							checkMetric(id, username);
+							const priority =
+								parseInt(level.identifier.split(':')[1]) / 10;
+							checkMetric(id, username, priority);
 
 							if (is_challenge) {
 								metrics[id].challenge_created += 1;
@@ -203,7 +232,11 @@ export default {
 								for (let i = 0; i < leaderboard.length; i++) {
 									const item = leaderboard[i];
 
-									checkMetric(item.user_id, item.user_name);
+									checkMetric(
+										item.user_id,
+										item.user_name,
+										item.timestamp,
+									);
 
 									metrics[
 										item.user_id
