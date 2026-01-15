@@ -7,7 +7,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"host": "vite --host",
-		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore",
 		"format": "prettier --write src/",
 		"tauri": "tauri"
 	},
@@ -30,7 +30,10 @@
 	"devDependencies": {
 		"@rushstack/eslint-patch": "^1.2.0",
 		"@tauri-apps/cli": "^2.8.4",
+		"@types/node": "^25.0.8",
 		"@types/three": "^0.181.0",
+		"@typescript-eslint/eslint-plugin": "^8.53.0",
+		"@typescript-eslint/parser": "^8.53.0",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"@vue/eslint-config-prettier": "^7.1.0",
 		"eslint": "^8.34.0",

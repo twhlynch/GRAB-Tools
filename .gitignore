@@ -1,4 +1,11 @@
+# system
 .DS_Store
-node_modules/
-.vscode/*
-dist/
+
+# dependencies
+/node_modules
+
+# editor config
+/.vscode
+
+# build output
+/dist
