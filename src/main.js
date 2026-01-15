@@ -1,13 +1,12 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import { init, setUser } from '@sentry/vue';
+import App from '@/App.vue';
+import * as config from '@/config';
+import router from '@/router';
 import { useCookiesStore } from '@/stores/cookies';
 import { useUserStore } from '@/stores/user';
-
-import * as config from './config';
-import router from './router';
-import App from './App.vue';
+import { init, setUser } from '@sentry/vue';
+import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import { createApp } from 'vue';
 
 import '@/assets/globals.css';
 

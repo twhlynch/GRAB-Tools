@@ -1,6 +1,6 @@
 <script>
-import encoding from '@/assets/tools/encoding.js';
-import ToolTemplate from './ToolTemplate.vue';
+import encoding from '@/assets/tools/encoding';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

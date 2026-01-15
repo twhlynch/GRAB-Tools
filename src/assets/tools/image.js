@@ -1,4 +1,4 @@
-import group from '@/assets/tools/group.js';
+import group from '@/assets/tools/group';
 
 /**
  * @param {File} file - An image file

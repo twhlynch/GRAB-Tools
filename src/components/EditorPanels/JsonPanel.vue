@@ -1,11 +1,11 @@
 <script>
 import build_editor from '@/assets/EditorSetup';
+import { grabCompletion } from '@/assets/grabCompletion';
+import { redo, undo } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
 import { foldGutter } from '@codemirror/language';
-import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
-import { grabCompletion } from '@/assets/grabCompletion';
-import { undo, redo } from '@codemirror/commands';
 
 export default {
 	props: {

@@ -1,6 +1,6 @@
+import encoding from '@/assets/tools/encoding';
 import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 import { EditorView } from '@codemirror/view';
-import encoding from '@/assets/tools/encoding';
 
 function get_field_name(doc, pos) {
 	const text = doc.sliceString(0, pos);

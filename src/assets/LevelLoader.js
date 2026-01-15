@@ -1,38 +1,36 @@
+import * as SHADERS from '@/assets/shaders/shaders';
+import encoding from '@/assets/tools/encoding';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-import encoding from '@/assets/tools/encoding.js';
-
-import * as SHADERS from './shaders/shaders.js';
-
+import modelConeURL from './models/cone.gltf';
 import modelCubeURL from './models/cube.gltf';
-import modelSphereURL from './models/sphere.gltf';
 import modelCylinderURL from './models/cylinder.gltf';
+import modelPrismURL from './models/prism.gltf';
 import modelPyramidURL from './models/pyramid.gltf';
 import modelPyramid4URL from './models/pyramid4.glb';
-import modelPrismURL from './models/prism.gltf';
-import modelConeURL from './models/cone.gltf';
-import modelStartEndURL from './models/start_end.gltf';
 import modelSignURL from './models/sign.gltf';
+import modelSphereURL from './models/sphere.gltf';
 import modelStartDirectionURL from './models/start_direction.glb';
+import modelStartEndURL from './models/start_end.gltf';
 
+import textureBouncingURL from './textures/bouncing.png';
+import textureCodeURL from './textures/code.png';
 import textureDefaultURL from './textures/default.png';
+import textureDefaultColoredURL from './textures/default_colored.png';
 import textureGrabbableURL from './textures/grabbable.png';
-import textureIceURL from './textures/ice.png';
-import textureLavaURL from './textures/lava.png';
-import textureWoodURL from './textures/wood.png';
+import textureGrabbableCrumblingURL from './textures/grabbable_crumbling.png';
 import textureGrapplableURL from './textures/grapplable.png';
 import textureGrapplableLavaURL from './textures/grapplable_lava.png';
-import textureGrabbableCrumblingURL from './textures/grabbable_crumbling.png';
-import textureDefaultColoredURL from './textures/default_colored.png';
-import textureBouncingURL from './textures/bouncing.png';
+import textureIceURL from './textures/ice.png';
+import textureLavaURL from './textures/lava.png';
 import textureSnowURL from './textures/snow.png';
-import textureTriggerURL from './textures/trigger.png';
-import textureSublevelTriggerURL from './textures/sublevel_trigger.png';
 import textureSoundURL from './textures/sound.png';
-import textureCodeURL from './textures/code.png';
+import textureSublevelTriggerURL from './textures/sublevel_trigger.png';
+import textureTriggerURL from './textures/trigger.png';
+import textureWoodURL from './textures/wood.png';
 
 let textureLoader, gltfLoader, fontLoader;
 

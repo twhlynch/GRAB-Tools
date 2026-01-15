@@ -1,26 +1,24 @@
 <script>
-import ShrinkIcon from '@/icons/ShrinkIcon.vue';
+import Bookmarklet from '@/components/Bookmarklet.vue';
 import BrushIcon from '@/icons/BrushIcon.vue';
-import DownloadsIcon from '@/icons/DownloadsIcon.vue';
-import PalletteIcon from '@/icons/PalletteIcon.vue';
-import XMLIcon from '@/icons/XMLIcon.vue';
 import ChatIcon from '@/icons/ChatIcon.vue';
 import CubeIcon from '@/icons/CubeIcon.vue';
-import PlayIcon from '@/icons/PlayIcon.vue';
+import DownloadsIcon from '@/icons/DownloadsIcon.vue';
+import MusicIcon from '@/icons/MusicIcon.vue';
+import PalletteIcon from '@/icons/PalletteIcon.vue';
 import PencilIcon from '@/icons/PencilIcon.vue';
-
-import Bookmarklet from '@/components/Bookmarklet.vue';
-
-import LevelCompiler from '@/tools/LevelCompiler.vue';
+import PlayIcon from '@/icons/PlayIcon.vue';
+import ShrinkIcon from '@/icons/ShrinkIcon.vue';
+import XMLIcon from '@/icons/XMLIcon.vue';
+import AudioImporter from '@/tools/AudioImporter.vue';
 import ImageGenerator from '@/tools/ImageGenerator.vue';
-import VideoGenerator from '@/tools/VideoGenerator.vue';
-import SVGDrawer from '@/tools/SVGDrawer.vue';
+import LevelCompiler from '@/tools/LevelCompiler.vue';
+import LevelDownloader from '@/tools/LevelDownloader.vue';
 import LevelJSON from '@/tools/LevelJSON.vue';
 import PointCloud from '@/tools/PointCloud.vue';
-import LevelDownloader from '@/tools/LevelDownloader.vue';
+import SVGDrawer from '@/tools/SVGDrawer.vue';
 import TextSigns from '@/tools/TextSigns.vue';
-import AudioImporter from '@/tools/AudioImporter.vue';
-import MusicIcon from '@/icons/MusicIcon.vue';
+import VideoGenerator from '@/tools/VideoGenerator.vue';
 
 export default {
 	components: {

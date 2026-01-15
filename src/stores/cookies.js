@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
-import { useUserStore } from './user';
+import { useUserStore } from '@/stores/user';
 import { setUser } from '@sentry/vue';
+import { defineStore } from 'pinia';
 
 export const useCookiesStore = defineStore('cookies', {
 	state: () => ({

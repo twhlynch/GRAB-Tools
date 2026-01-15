@@ -1,9 +1,9 @@
-import { useUserStore } from '@/stores/user';
-import { user_info_request } from '@/requests/UserInfoRequest';
+import { can_download_level_request } from '@/requests/CanDownloadLevelRequest';
 import { download_level_request } from '@/requests/DownloadLevelRequest';
 import { level_details_request } from '@/requests/LevelDetailsRequest';
-import { can_download_level_request } from '@/requests/CanDownloadLevelRequest';
 import { stats_data_request } from '@/requests/StatsDataRequest';
+import { user_info_request } from '@/requests/UserInfoRequest';
+import { useUserStore } from '@/stores/user';
 
 async function can_download_level(level_id) {
 	const user = useUserStore();

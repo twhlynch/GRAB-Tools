@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 const _changeEvent = { type: 'change' };
 
+// prettier-ignore
 class FreeControls extends THREE.EventDispatcher {
 
 	constructor( object, domElement ) {
@@ -305,6 +306,7 @@ class FreeControls extends THREE.EventDispatcher {
 	}
 }
 
+// prettier-ignore
 function contextmenu(event)
 {
 	event.preventDefault();

@@ -1,8 +1,8 @@
 <script>
-import encoding from '@/assets/tools/encoding.js';
-import video from '@/assets/tools/video.js';
+import encoding from '@/assets/tools/encoding';
+import video from '@/assets/tools/video';
 import ProgressBar from '@/components/ProgressBar.vue';
-import ToolTemplate from './ToolTemplate.vue';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

@@ -1,7 +1,7 @@
 <script>
-import signs from '@/assets/tools/signs';
 import encoding from '@/assets/tools/encoding';
-import ToolTemplate from './ToolTemplate.vue';
+import signs from '@/assets/tools/signs';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

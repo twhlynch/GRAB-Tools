@@ -1,6 +1,6 @@
 <script>
-import StatsIcon from '@/icons/StatsIcon.vue';
 import encoding from '@/assets/tools/encoding';
+import StatsIcon from '@/icons/StatsIcon.vue';
 
 export default {
 	components: {

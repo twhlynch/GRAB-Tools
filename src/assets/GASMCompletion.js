@@ -1,7 +1,7 @@
 import encoding from '@/assets/tools/encoding';
-import { EditorView } from 'codemirror';
-import { autocompletion, acceptCompletion } from '@codemirror/autocomplete';
+import { acceptCompletion, autocompletion } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
+import { EditorView } from 'codemirror';
 
 const instruction_map = encoding.load().COD.Level.InstructionData.Type;
 const instructions_list = Object.keys(instruction_map)

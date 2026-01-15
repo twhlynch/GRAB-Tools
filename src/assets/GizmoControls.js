@@ -1,6 +1,6 @@
-import { TransformControls } from 'three/addons/controls/TransformControls.js';
-import * as THREE from 'three';
 import encoding from '@/assets/tools/encoding';
+import * as THREE from 'three';
+import { TransformControls } from 'three/addons/controls/TransformControls';
 
 class GizmoControls {
 	constructor(camera, domElement, scene, changing_event, changed_event) {

@@ -1,10 +1,10 @@
 <script>
 import Bookmarklet from '@/components/Bookmarklet.vue';
+import DiscordAltIcon from '@/icons/DiscordAltIcon.vue';
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
 import GithubIcon from '@/icons/GithubIcon.vue';
 import MailIcon from '@/icons/MailIcon.vue';
 import YoutubeIcon from '@/icons/YoutubeIcon.vue';
-import DiscordAltIcon from '@/icons/DiscordAltIcon.vue';
 
 export default {
 	components: {

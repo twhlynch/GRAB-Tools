@@ -1,7 +1,7 @@
 // SFX2GL Tool by TheTrueFax (https://github.com/thetruefax/)
 
-import group from '@/assets/tools/group.js';
-import encoding from './encoding';
+import encoding from '@/assets/tools/encoding';
+import group from '@/assets/tools/group';
 import { ComplexArray } from 'jsfft';
 
 /**

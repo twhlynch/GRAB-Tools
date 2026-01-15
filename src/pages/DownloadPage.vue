@@ -1,8 +1,8 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-import encoding from '@/assets/tools/encoding';
 import downloads from '@/assets/tools/downloads';
+import encoding from '@/assets/tools/encoding';
+import { useUserStore } from '@/stores/user';
+import { mapState } from 'pinia';
 
 export default {
 	computed: {

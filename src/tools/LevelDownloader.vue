@@ -1,5 +1,5 @@
 <script>
-import ToolTemplate from './ToolTemplate.vue';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

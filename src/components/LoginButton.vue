@@ -1,8 +1,8 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
+import AccountMenu from '@/components/AccountMenu.vue';
 import UserIcon from '@/icons/UserIcon.vue';
-import AccountMenu from './AccountMenu.vue';
+import { useUserStore } from '@/stores/user';
+import { mapState } from 'pinia';
 
 export default {
 	components: {

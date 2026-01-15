@@ -1,9 +1,9 @@
 import { SERVER_URL } from '@/config';
-import { defineStore } from 'pinia';
 import { LogEvent } from '@/requests/LogEvent';
-import { setUser } from '@sentry/vue';
-import { useCookiesStore } from './cookies';
 import { user_info_request } from '@/requests/UserInfoRequest';
+import { useCookiesStore } from '@/stores/cookies';
+import { setUser } from '@sentry/vue';
+import { defineStore } from 'pinia';
 
 export const useUserStore = defineStore('user', {
 	state: () => ({

@@ -1,10 +1,9 @@
 <script>
 import build_editor from '@/assets/EditorSetup';
-import { foldGutter } from '@codemirror/language';
-import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
-import { EditorSelection } from '@codemirror/state';
-import { StreamLanguage } from '@codemirror/language';
+import { foldGutter, StreamLanguage } from '@codemirror/language';
 import { protobuf } from '@codemirror/legacy-modes/mode/protobuf';
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import { EditorSelection } from '@codemirror/state';
 
 export default {
 	mounted() {

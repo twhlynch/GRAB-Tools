@@ -1,25 +1,25 @@
 <script>
-import { LevelLoader } from '../../../src/assets/LevelLoader.js';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { FreeControls } from '@/assets/FreeControls.js';
-import encoding from '@/assets/tools/encoding.js';
+import { FreeControls } from '@/assets/FreeControls';
+import GizmoControls from '@/assets/GizmoControls';
+import { LevelLoader } from '@/assets/LevelLoader';
+import encoding from '@/assets/tools/encoding';
+import group from '@/assets/tools/group';
+import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
+import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
+import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
+import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
+import KeyHint from '@/components/EditorPanels/KeyHint.vue';
+import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
-import GizmoControls from '@/assets/GizmoControls.js';
-import { useConfigStore } from '@/stores/config.js';
-import TranslateIcon from '@/icons/TranslateIcon.vue';
+import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';
 import RotateIcon from '@/icons/RotateIcon.vue';
 import ScaleIcon from '@/icons/ScaleIcon.vue';
-import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';
 import SpaceIcon from '@/icons/SpaceIcon.vue';
-import group from '@/assets/tools/group.js';
-import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
-import JsonPanel from './JsonPanel.vue';
-import GASMPanel from './GASMPanel.vue';
-import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
-import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
-import KeyHint from '@/components/EditorPanels/KeyHint.vue';
+import TranslateIcon from '@/icons/TranslateIcon.vue';
+import { useConfigStore } from '@/stores/config';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls';
 
 export default {
 	data() {

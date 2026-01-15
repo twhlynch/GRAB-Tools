@@ -1,4 +1,4 @@
-import group from '@/assets/tools/group.js';
+import group from '@/assets/tools/group';
 
 function traverseNode(node, func, parent = null) {
 	func(node, parent);

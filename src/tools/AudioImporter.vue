@@ -1,7 +1,7 @@
 <script>
-import encoding from '@/assets/tools/encoding.js';
-import audio from '@/assets/tools/audio.js';
-import ToolTemplate from './ToolTemplate.vue';
+import audio from '@/assets/tools/audio';
+import encoding from '@/assets/tools/encoding';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

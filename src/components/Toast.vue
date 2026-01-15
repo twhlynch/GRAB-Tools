@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
-import { reactive } from 'vue';
 import { captureException, captureMessage } from '@sentry/vue';
+import { reactive } from 'vue';
 
 export default {
 	data() {

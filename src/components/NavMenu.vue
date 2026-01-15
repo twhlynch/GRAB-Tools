@@ -1,12 +1,12 @@
 <script>
-import HouseIcon from '@/icons/HouseIcon.vue';
-import StatsIcon from '@/icons/StatsIcon.vue';
-import ToolsIcon from '@/icons/ToolsIcon.vue';
-import RocketIcon from '@/icons/RocketIcon.vue';
+import DarkModeToggle from '@/components/DarkModeToggle.vue';
+import LoginButton from '@/components/LoginButton.vue';
 import DiscordIcon from '@/icons/DiscordIcon.vue';
 import GlobeIcon from '@/icons/GlobeIcon.vue';
-import LoginButton from '@/components/LoginButton.vue';
-import DarkModeToggle from './DarkModeToggle.vue';
+import HouseIcon from '@/icons/HouseIcon.vue';
+import RocketIcon from '@/icons/RocketIcon.vue';
+import StatsIcon from '@/icons/StatsIcon.vue';
+import ToolsIcon from '@/icons/ToolsIcon.vue';
 
 export default {
 	components: {

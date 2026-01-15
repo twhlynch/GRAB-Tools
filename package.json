@@ -15,8 +15,8 @@
 		"@codemirror/lang-javascript": "^6.2.4",
 		"@codemirror/lang-json": "^6.0.2",
 		"@codemirror/legacy-modes": "^6.5.2",
-		"@sentry/vue": "^10.27.0",
 		"@replit/codemirror-vim": "^6.3.0",
+		"@sentry/vue": "^10.27.0",
 		"codemirror": "^6.0.2",
 		"jsfft": "^0.0.4",
 		"pako": "^2.1.0",
@@ -37,8 +37,10 @@
 		"eslint-plugin-vue": "^9.9.0",
 		"postcss-nesting": "^13.0.1",
 		"prettier": "^2.8.4",
+		"prettier-plugin-organize-imports": "^4.3.0",
 		"terser": "^5.44.0",
 		"vite": "^4.1.4",
-		"vite-plugin-mkcert": "^1.14.0"
+		"vite-plugin-mkcert": "^1.14.0",
+		"vue-tsc": "^3.2.2"
 	}
 }

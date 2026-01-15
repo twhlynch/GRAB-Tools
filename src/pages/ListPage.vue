@@ -1,13 +1,13 @@
 <script>
+import HardestLevelsList from '@/components/HardestLevelsList.vue';
+import ListRow from '@/components/ListRow.vue';
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
 import MapIcon from '@/icons/MapIcon.vue';
 import PeopleIcon from '@/icons/PeopleIcon.vue';
-import ListRow from '@/components/ListRow.vue';
-import HardestLevelsList from '@/components/HardestLevelsList.vue';
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
 import { add_hardest_level_request } from '@/requests/AddHardestLevelRequest';
 import { get_hardest_levels_request } from '@/requests/GetHardestLevelsRequest';
+import { useUserStore } from '@/stores/user';
+import { mapState } from 'pinia';
 
 export default {
 	components: {

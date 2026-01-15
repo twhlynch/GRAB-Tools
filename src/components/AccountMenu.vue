@@ -1,8 +1,8 @@
 <script>
-import { mapActions, mapState } from 'pinia';
+import GeneralPopup from '@/components/GeneralPopup.vue';
+import VerifyMenu from '@/components/VerifyMenu.vue';
 import { useUserStore } from '@/stores/user';
-import GeneralPopup from './GeneralPopup.vue';
-import VerifyMenu from './VerifyMenu.vue';
+import { mapState } from 'pinia';
 
 export default {
 	components: {

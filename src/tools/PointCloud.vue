@@ -1,7 +1,7 @@
 <script>
-import encoding from '@/assets/tools/encoding.js';
-import obj from '@/assets/tools/obj.js';
-import ToolTemplate from './ToolTemplate.vue';
+import encoding from '@/assets/tools/encoding';
+import obj from '@/assets/tools/obj';
+import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
 	components: {

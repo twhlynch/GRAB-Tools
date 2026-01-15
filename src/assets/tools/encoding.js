@@ -1,6 +1,6 @@
-import protobuf from 'protobufjs';
-import { FORMAT_VERSION, DOMAIN } from '@/config';
 import definition from '@/assets/proto/proto.proto?raw';
+import { DOMAIN, FORMAT_VERSION } from '@/config';
+import protobuf from 'protobufjs';
 
 let protobuf_definition = definition;
 const vanilla_root = protobuf.parse(protobuf_definition).root;

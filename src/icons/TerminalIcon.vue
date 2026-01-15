@@ -1,5 +1,5 @@
 <script>
-import IconTemplate from './IconTemplate.vue';
+import IconTemplate from '@/icons/IconTemplate.vue';
 
 export default {
 	components: {

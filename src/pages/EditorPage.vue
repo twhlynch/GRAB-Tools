@@ -1,21 +1,19 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-import { useConfigStore } from '@/stores/config';
-
-import encoding from '@/assets/tools/encoding';
 import downloads from '@/assets/tools/downloads';
-
-import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
-import ViewportPanel from '@/components/EditorPanels/ViewportPanel.vue';
-import ResizableRowPanel from '@/components/EditorPanels/ResizableRowPanel.vue';
-import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
+import encoding from '@/assets/tools/encoding';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
-import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
+import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
+import ProtobufPanel from '@/components/EditorPanels/ProtobufPanel.vue';
+import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
+import ResizableRowPanel from '@/components/EditorPanels/ResizableRowPanel.vue';
 import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
 import TemplatesPanel from '@/components/EditorPanels/TemplatesPanel.vue';
-import ProtobufPanel from '@/components/EditorPanels/ProtobufPanel.vue';
+import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
+import ViewportPanel from '@/components/EditorPanels/ViewportPanel.vue';
+import { useConfigStore } from '@/stores/config';
+import { useUserStore } from '@/stores/user';
+import { mapState } from 'pinia';
 
 export default {
 	components: {

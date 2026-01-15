@@ -1,13 +1,13 @@
-import { tags as t } from '@lezer/highlight';
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { EditorView } from 'codemirror';
-import { keymap } from '@codemirror/view';
 import {
-	indentWithTab,
 	defaultKeymap,
 	history,
 	historyKeymap,
+	indentWithTab,
 } from '@codemirror/commands';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { keymap } from '@codemirror/view';
+import { tags as t } from '@lezer/highlight';
+import { EditorView } from 'codemirror';
 
 const colors = {
 	bg: '#141415',

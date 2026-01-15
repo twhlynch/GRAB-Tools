@@ -1,9 +1,9 @@
 <script>
-import { mapState } from 'pinia';
-import { useUserStore } from '@/stores/user';
-import GeneralPopup from './GeneralPopup.vue';
-import { verify_account_request } from '@/requests/VerifyAccountRequest';
+import GeneralPopup from '@/components/GeneralPopup.vue';
 import { verification_code_request } from '@/requests/VerificationCodeRequest';
+import { verify_account_request } from '@/requests/VerifyAccountRequest';
+import { useUserStore } from '@/stores/user';
+import { mapState } from 'pinia';
 
 export default {
 	components: {

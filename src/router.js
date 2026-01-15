@@ -1,17 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
-
 import MainLayout from '@/layouts/MainLayout.vue';
 import PlainLayout from '@/layouts/PlainLayout.vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
+const DownloadPage = () => import('./pages/DownloadPage.vue');
+const EditorPage = () => import('./pages/EditorPage.vue');
+const ErrorPage = () => import('./pages/ErrorPage.vue');
+const GamesPage = () => import('./pages/GamesPage.vue');
 const HomePage = () => import('./pages/HomePage.vue');
+const ListPage = () => import('./pages/ListPage.vue');
+const PrivacyPage = () => import('./pages/PrivacyPage.vue');
 const StatsPage = () => import('./pages/StatsPage.vue');
 const ToolsPage = () => import('./pages/ToolsPage.vue');
-const ListPage = () => import('./pages/ListPage.vue');
-const GamesPage = () => import('./pages/GamesPage.vue');
-const ErrorPage = () => import('./pages/ErrorPage.vue');
-const PrivacyPage = () => import('./pages/PrivacyPage.vue');
-const EditorPage = () => import('./pages/EditorPage.vue');
-const DownloadPage = () => import('./pages/DownloadPage.vue');
 
 const routes = [
 	{

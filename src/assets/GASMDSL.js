@@ -1,5 +1,5 @@
-import { StreamLanguage } from '@codemirror/language';
 import encoding from '@/assets/tools/encoding';
+import { StreamLanguage } from '@codemirror/language';
 
 const instruction_map = encoding.load().COD.Level.InstructionData.Type;
 const instructions_list = Object.keys(instruction_map).map((ins) =>

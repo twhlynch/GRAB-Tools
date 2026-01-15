@@ -1,7 +1,7 @@
 import encoding from '@/assets/tools/encoding';
 import { Box3 } from 'three/src/math/Box3';
-import { Vector3 } from 'three/src/math/Vector3';
 import { Quaternion } from 'three/src/math/Quaternion';
+import { Vector3 } from 'three/src/math/Vector3';
 
 /**
  * @param {Array<Object>} nodes - A list of level nodes

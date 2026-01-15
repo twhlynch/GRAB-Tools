@@ -1,19 +1,19 @@
 <script>
-import build_editor from '@/assets/EditorSetup';
-import { foldGutter } from '@codemirror/language';
-import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
-import { EditorSelection, StateEffect } from '@codemirror/state';
 import AssemblyConversion from '@/assets/AssemblyConversion';
-import { gasm } from '@/assets/GASMDSL';
-import { vim } from '@replit/codemirror-vim';
-import { basicSetup } from 'codemirror';
+import build_editor from '@/assets/EditorSetup';
 import {
 	gasmCompletion,
 	update_json_completions,
 	update_text_completions,
 } from '@/assets/GASMCompletion';
-import { mapState } from 'pinia';
+import { gasm } from '@/assets/GASMDSL';
 import { useConfigStore } from '@/stores/config';
+import { foldGutter } from '@codemirror/language';
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import { EditorSelection } from '@codemirror/state';
+import { vim } from '@replit/codemirror-vim';
+import { basicSetup } from 'codemirror';
+import { mapState } from 'pinia';
 
 export default {
 	data() {
