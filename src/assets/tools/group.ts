@@ -1,17 +1,29 @@
 import encoding from '@/assets/tools/encoding';
-import { Box3 } from 'three/src/math/Box3';
-import { Quaternion } from 'three/src/math/Quaternion';
-import { Vector3 } from 'three/src/math/Vector3';
+import {
+	LevelNode,
+	LevelNodeFinish,
+	LevelNodeGroup,
+	LevelNodeLobbyTerminal,
+	LevelNodeStart,
+} from '@/generated/proto';
+import {
+	isLevelNode,
+	LevelNodeTypesExcepts,
+	LevelNodeWith,
+} from '@/types/levelNodes';
+import { Box3 } from 'three/src/math/Box3.js';
+import { Quaternion } from 'three/src/math/Quaternion.js';
+import { Vector3 } from 'three/src/math/Vector3.js';
 
-/**
- * @param {Array<Object>} nodes - A list of level nodes
- * @returns {Object} - A single level node
- */
-function groupNodes(nodes) {
+function groupNodes(nodes: Array<LevelNode>): LevelNodeWith<LevelNodeGroup> {
 	const positions = nodes.map((node) => {
 		const data = encoding.node_data(node);
 
-		return new Vector3(data.position.x, data.position.y, data.position.z);
+		return new Vector3(
+			data.position?.x ?? 0,
+			data.position?.y ?? 0,
+			data.position?.z ?? 0,
+		);
 	});
 
 	const box = new Box3().setFromPoints(positions);
@@ -21,6 +33,7 @@ function groupNodes(nodes) {
 	nodes.forEach((node) => {
 		const data = encoding.node_data(node);
 
+		data.position ??= {};
 		data.position.x = (data.position.x ?? 0) - center.x;
 		data.position.y = (data.position.y ?? 0) - center.y;
 		data.position.z = (data.position.z ?? 0) - center.z;
@@ -32,11 +45,7 @@ function groupNodes(nodes) {
 	return group;
 }
 
-/**
- * @param {Object} group - A single group node
- * @returns {Array<Object>} - A list of level nodes
- */
-function ungroupNode(group) {
+function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): Array<LevelNode> {
 	const group_position = new Vector3(
 		group.levelNodeGroup.position?.x ?? 0,
 		group.levelNodeGroup.position?.y ?? 0,
@@ -54,10 +63,15 @@ function ungroupNode(group) {
 		group.levelNodeGroup.scale?.z ?? 0,
 	);
 
-	const child_nodes = group.levelNodeGroup.childNodes;
+	const child_nodes = group.levelNodeGroup.childNodes ?? [];
 
 	child_nodes.forEach((node) => {
-		const data = encoding.node_data(node);
+		if (isLevelNode<LevelNodeStart>(node, 'levelNodeStart')) return;
+		if (isLevelNode<LevelNodeFinish>(node, 'levelNodeFinish')) return;
+
+		const data = encoding.node_data(node) as LevelNodeTypesExcepts<
+			[LevelNodeStart, LevelNodeFinish, LevelNodeLobbyTerminal]
+		>;
 
 		const position = new Vector3(
 			data.position?.x ?? 0,
@@ -71,9 +85,21 @@ function ungroupNode(group) {
 			data.rotation?.w ?? 0,
 		);
 		const scale = new Vector3(
-			data.scale?.x ?? 0,
-			data.scale?.y ?? 0,
-			data.scale?.z ?? 0,
+			'scale' in data
+				? typeof data.scale === 'number'
+					? data.scale
+					: data.scale?.x ?? 0
+				: 0,
+			'scale' in data
+				? typeof data.scale === 'number'
+					? data.scale
+					: data.scale?.y ?? 0
+				: 0,
+			'scale' in data
+				? typeof data.scale === 'number'
+					? data.scale
+					: data.scale?.z ?? 0
+				: 0,
 		);
 
 		scale.multiply(group_scale);
@@ -94,15 +120,15 @@ function ungroupNode(group) {
 			data.rotation.z = quaternion.z;
 			data.rotation.w = quaternion.w;
 		}
-		if (data.scale && typeof data.scale === 'object') {
+		if ('scale' in data && data.scale && typeof data.scale === 'object') {
 			data.scale.x = scale.x;
 			data.scale.y = scale.y;
 			data.scale.z = scale.z;
 		}
-		if (data.scale && typeof data.scale === 'number') {
+		if ('scale' in data && data.scale && typeof data.scale === 'number') {
 			data.scale = scale.x;
 		}
-		if (data.radius) {
+		if ('radius' in data && data.radius) {
 			data.radius = scale.x / 2;
 		}
 	});
@@ -110,15 +136,22 @@ function ungroupNode(group) {
 	return child_nodes;
 }
 
-function recursiveUngroup(nodes) {
-	if (!nodes?.length) return nodes;
+function recursiveUngroup(nodes: Array<LevelNode>): Array<LevelNode> {
+	if (!nodes || nodes.length === 0) return [];
 
-	let index = nodes.findIndex((node) => node.levelNodeGroup);
+	let index = nodes.findIndex((node) =>
+		isLevelNode<LevelNodeGroup>(node, 'levelNodeGroup'),
+	);
 	while (index !== -1) {
 		const [node] = nodes.splice(index, 1);
-		nodes.push(...ungroupNode(node));
 
-		index = nodes.findIndex((node) => node.levelNodeGroup);
+		if (node && isLevelNode<LevelNodeGroup>(node, 'levelNodeGroup')) {
+			nodes.push(...ungroupNode(node));
+		}
+
+		index = nodes.findIndex((node) =>
+			isLevelNode<LevelNodeGroup>(node, 'levelNodeGroup'),
+		);
 	}
 
 	return nodes;

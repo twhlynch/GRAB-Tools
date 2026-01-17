@@ -9,7 +9,8 @@
 		"host": "vite --host",
 		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore",
 		"format": "prettier --write src/",
-		"tauri": "tauri"
+		"tauri": "tauri",
+		"proto": "npx pbts -i src/assets/proto/proto.proto -o src/generated/proto.ts && echo 'You will have to manually clean up the file as it may have errors'"
 	},
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.4",

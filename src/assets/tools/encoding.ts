@@ -1,40 +1,59 @@
 import definition from '@/assets/proto/proto.proto?raw';
 import { DOMAIN, FORMAT_VERSION } from '@/config';
+import {
+	Animation,
+	AnimationFrame,
+	Color,
+	Level,
+	LevelNode,
+	LevelNodeCrumbling,
+	LevelNodeFinish,
+	LevelNodeGASM,
+	LevelNodeGASMConnection,
+	LevelNodeGravity,
+	LevelNodeGroup,
+	LevelNodeLobbyTerminal,
+	LevelNodeParticleEmitter,
+	LevelNodeSign,
+	LevelNodeSound,
+	LevelNodeStart,
+	LevelNodeStatic,
+	LevelNodeTrigger,
+	ProgrammablePropertyData,
+	ProgrammablePropertyDataComponent,
+	RegisterData,
+	TriggerSource,
+	TriggerTarget,
+} from '@/generated/proto';
+import { LevelNodeTypes, LevelNodeWith, Root } from '@/types/levelNodes';
 import protobuf from 'protobufjs';
+import { Object3D } from 'three';
 
-let protobuf_definition = definition;
-const vanilla_root = protobuf.parse(protobuf_definition).root;
-add_modded_types();
+let protobuf_definition: string = definition;
+const vanilla_root: Root = protobuf.parse(protobuf_definition).root as Root;
+protobuf_definition = add_modded_types(protobuf_definition);
 
-/**
- * @returns {protobuf.Root} - The level message root
- */
-function load() {
-	if (window._root === undefined) {
-		const { root } = protobuf.parse(protobuf_definition);
-		window._root = root;
-	}
-
-	return window._root;
+export function load(): Root {
+	return (window._root ??= protobuf.parse(protobuf_definition).root as Root);
 }
 
-function set_protobuf(new_definition) {
+function set_protobuf(new_definition: string) {
 	protobuf_definition = new_definition;
-	window._root = undefined;
+	window._root = protobuf.parse(protobuf_definition).root as Root;
 }
 
-function get_protobuf() {
+function get_protobuf(): string {
 	return protobuf_definition;
 }
 
-function add_modded_types() {
+function add_modded_types(definition: string): string {
 	const root = load();
 
 	let modded_shapes = '';
 	let modded_materials = '';
 
-	let current_materials = Object.values(root.COD.Level.LevelNodeMaterial);
-	let current_shapes = Object.values(root.COD.Level.LevelNodeShape);
+	const current_materials = Object.values(root.COD.Level.LevelNodeMaterial);
+	const current_shapes = Object.values(root.COD.Level.LevelNodeShape);
 
 	for (let i = -2000; i < 2000; i++) {
 		if (!current_materials.includes(i)) {
@@ -45,59 +64,72 @@ function add_modded_types() {
 		}
 	}
 
-	protobuf_definition = protobuf_definition.replace(
+	definition = definition.replace(
 		'// modded materials',
 		`// modded materials\n  ${modded_materials}`,
 	);
-	protobuf_definition = protobuf_definition.replace(
+	definition = definition.replace(
 		'// modded shapes',
 		`// modded shapes\n  ${modded_shapes}`,
 	);
 
-	window._root = undefined;
+	return definition;
 }
 
 function unmodded_root() {
 	return vanilla_root;
 }
 
-function materials() {
-	return vanilla_root.COD.Level.LevelNodeMaterial;
-}
-function shapes() {
-	return vanilla_root.COD.Level.LevelNodeShape;
+function materials(): Record<string, number> {
+	return vanilla_root.COD.Level.LevelNodeMaterial as Record<string, number>;
 }
 
-/**
- * @param {ArrayBuffer} buffer - A level as a buffer
- * @returns {Promise<Object>} - A level decoded to json
- */
-async function decodeLevel(buffer) {
+function shapes(): Record<string, number> {
+	return vanilla_root.COD.Level.LevelNodeShape as Record<string, number>;
+}
+
+async function decodeLevel(buffer: Blob): Promise<Level | null> {
 	try {
-		const data = await new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result);
-			reader.onerror = reject;
-			reader.readAsArrayBuffer(buffer);
-		});
+		const data: ArrayBuffer = await new Promise<ArrayBuffer>(
+			(resolve, reject) => {
+				const reader = new FileReader();
+
+				reader.onload = () => {
+					const result = reader.result;
+
+					if (result instanceof ArrayBuffer) {
+						resolve(result);
+					} else {
+						reject(new Error('Unexpected FileReader result type'));
+					}
+				};
+
+				reader.onerror = () => {
+					reject(reader.error ?? new Error('FileReader error'));
+				};
+
+				reader.readAsArrayBuffer(buffer);
+			},
+		);
 
 		const root = load();
+
 		const message = root.lookupType('COD.Level.Level');
 		const decoded = message.decode(new Uint8Array(data));
 
-		return message.toObject(decoded);
+		const level: Level = message.toObject(decoded);
+
+		return level;
 	} catch (e) {
-		e.message = 'Invalid level data: ' + e.message;
-		window.toast(e, 'error');
+		if (e instanceof Error) {
+			e.message = 'Invalid level data: ' + e.message;
+			window.toast(e, 'error');
+		}
 		return null;
 	}
 }
 
-/**
- * @param {Object} level - A level as json
- * @returns {Promise<ArrayBuffer>} - A level encoded as a buffer
- */
-async function encodeLevel(level) {
+async function encodeLevel(level: Level): Promise<ArrayBuffer | null> {
 	const root = load();
 	const message = root.lookupType('COD.Level.Level');
 
@@ -110,42 +142,39 @@ async function encodeLevel(level) {
 	return message.encode(message.fromObject(level)).finish();
 }
 
-/**
- * @param {ArrayBuffer} buffer - A level as a buffer
- */
-function downloadLevel(buffer, name = Date.now().toString().slice(0, -3)) {
-	let blob = new Blob([buffer], {
+function downloadLevel(
+	level: ArrayBuffer,
+	name: string = Date.now().toString().slice(0, -3),
+) {
+	const blob = new Blob([level], {
 		type: 'application/octet-stream',
 	});
 
-	let link = document.createElement('a');
+	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
 	link.download = name + '.level';
 	link.click();
 }
 
-/**
- * @param {JSON} json - A level as json
- */
-function downloadJSON(json, name = Date.now().toString().slice(0, -3)) {
-	let blob = new Blob([JSON.stringify(json, null, 2)], {
+function downloadJSON(
+	json: Level,
+	name: string = Date.now().toString().slice(0, -3),
+) {
+	const blob = new Blob([JSON.stringify(json, null, 2)], {
 		type: 'application/json',
 	});
 
-	let link = document.createElement('a');
+	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
 	link.download = name + '.json';
 	link.click();
 }
 
-/**
- * @returns {Array<Object>} - A level json
- */
 function createLevel(
-	nodes = [],
+	nodes: Array<LevelNode> = [],
 	title = 'New Level',
 	description = 'Made with GRAB Tools',
-	creators = [DOMAIN],
+	creators: Array<string> | string = [DOMAIN],
 	checkpoints = 10,
 	horizon = {
 		a: 1.0,
@@ -163,7 +192,7 @@ function createLevel(
 	sunAzimuth = 315,
 	sunSize = 1,
 	fogDensity = 0,
-) {
+): Level {
 	if (Array.isArray(creators)) {
 		creators = creators.join(', ');
 	}
@@ -190,26 +219,27 @@ function createLevel(
 	};
 }
 
-/**
- * @param object can be a THREE object or node json
- */
-function node_data(object) {
-	if (object?.userData?.node) {
-		const entries = Object.entries(object.userData.node);
-		const node = entries.find((e) => e[0].includes('levelNode'))[1];
-		return node;
-	}
-
-	const entries = Object.entries(object);
-	const node = entries.find((e) => e[0].includes('levelNode'))[1];
-	return node;
+function isObject3D(object: LevelNode | Object3D): object is Object3D {
+	return object && 'userData' in object;
 }
 
-function deepClone(node) {
+function node_data(object: LevelNode | Object3D): LevelNodeTypes {
+	const node: LevelNode = isObject3D(object) ? object.userData.node : object;
+	const entries = Object.entries(node);
+
+	const data: LevelNodeTypes = entries.find((e) =>
+		e[0].includes('levelNode'),
+	)?.[1];
+	return data;
+}
+
+function deepClone<T>(node: T): T {
 	return JSON.parse(JSON.stringify(node));
 }
 
-function levelNode(nodeData) {
+function levelNode<T extends LevelNodeTypes>(
+	nodeData: LevelNodeWith<T>,
+): LevelNodeWith<T> {
 	return {
 		...nodeData,
 		isLocked: false,
@@ -235,12 +265,12 @@ function color(r = 0, g = 0, b = 0, a = 1) {
 }
 
 function ambienceSettings(
-	horizon,
-	zenith,
-	sunAltitude,
-	sunAzimuth,
-	sunSize,
-	fogDensity,
+	horizon: Color,
+	zenith: Color,
+	sunAltitude: number,
+	sunAzimuth: number,
+	sunSize: number,
+	fogDensity: number,
 ) {
 	if (
 		!(
@@ -280,7 +310,7 @@ function ambienceSettings(
 }
 
 function levelNodeStart() {
-	return levelNode({
+	return levelNode<LevelNodeStart>({
 		levelNodeStart: {
 			position: vec3(),
 			rotation: quat(),
@@ -291,7 +321,7 @@ function levelNodeStart() {
 }
 
 function levelNodeFinish() {
-	return levelNode({
+	return levelNode<LevelNodeFinish>({
 		levelNodeFinish: {
 			position: vec3(),
 			radius: 0.5,
@@ -300,7 +330,7 @@ function levelNodeFinish() {
 }
 
 function levelNodeStatic() {
-	return levelNode({
+	return levelNode<LevelNodeStatic>({
 		levelNodeStatic: {
 			shape: 1000,
 			material: 0,
@@ -319,7 +349,7 @@ function levelNodeStatic() {
 }
 
 function levelNodeSign() {
-	return levelNode({
+	return levelNode<LevelNodeSign>({
 		levelNodeSign: {
 			position: vec3(),
 			rotation: quat(),
@@ -333,7 +363,7 @@ function levelNodeSign() {
 }
 
 function levelNodeCrumbling() {
-	return levelNode({
+	return levelNode<LevelNodeCrumbling>({
 		levelNodeCrumbling: {
 			shape: 1000,
 			material: 7,
@@ -347,7 +377,7 @@ function levelNodeCrumbling() {
 }
 
 function levelNodeGroup() {
-	return levelNode({
+	return levelNode<LevelNodeGroup>({
 		levelNodeGroup: {
 			position: vec3(),
 			scale: vec3(1, 1, 1),
@@ -362,7 +392,7 @@ function levelNodeGroup() {
 }
 
 function levelNodeGravity() {
-	return levelNode({
+	return levelNode<LevelNodeGravity>({
 		levelNodeGravity: {
 			mode: 0,
 			position: vec3(),
@@ -374,7 +404,7 @@ function levelNodeGravity() {
 }
 
 function levelNodeLobbyTerminal() {
-	return levelNode({
+	return levelNode<LevelNodeLobbyTerminal>({
 		levelNodeLobbyTerminal: {
 			position: vec3(),
 			rotation: quat(),
@@ -383,7 +413,7 @@ function levelNodeLobbyTerminal() {
 }
 
 function levelNodeTrigger() {
-	return levelNode({
+	return levelNode<LevelNodeTrigger>({
 		levelNodeTrigger: {
 			shape: 1000,
 			position: vec3(),
@@ -397,7 +427,7 @@ function levelNodeTrigger() {
 }
 
 function levelNodeParticleEmitter() {
-	return levelNode({
+	return levelNode<LevelNodeParticleEmitter>({
 		levelNodeParticleEmitter: {
 			position: vec3(),
 			scale: vec3(1, 1, 1),
@@ -418,7 +448,7 @@ function levelNodeParticleEmitter() {
 }
 
 function levelNodeSound() {
-	return levelNode({
+	return levelNode<LevelNodeSound>({
 		levelNodeSound: {
 			position: vec3(),
 			rotation: quat(),
@@ -456,7 +486,7 @@ function levelNodeSound() {
 	});
 }
 
-function animation() {
+function animation(): Animation {
 	return {
 		name: 'idle',
 		speed: 1,
@@ -466,7 +496,7 @@ function animation() {
 	};
 }
 
-function frame() {
+function frame(): AnimationFrame {
 	return {
 		time: 0,
 		position: vec3(),
@@ -474,10 +504,10 @@ function frame() {
 	};
 }
 
-function triggerTarget(target) {
+function triggerTarget(target: TriggerTarget): TriggerTarget {
 	return {
-		mode: 0,
 		...target,
+		mode: 0,
 	};
 }
 
@@ -536,7 +566,7 @@ function triggerTargetAmbience() {
 	});
 }
 
-function triggerSource(source) {
+function triggerSource(source: TriggerSource): TriggerSource {
 	return {
 		...source,
 	};
@@ -557,8 +587,9 @@ function triggerSourceBlockNames() {
 		},
 	});
 }
+
 function levelNodeGASM() {
-	return levelNode({
+	return levelNode<LevelNodeGASM>({
 		levelNodeGASM: {
 			position: vec3(),
 			scale: vec3(1, 1, 1),
@@ -583,23 +614,23 @@ function levelNodeGASM() {
 		},
 	});
 }
-function registerData() {
+function registerData(): RegisterData {
 	return { name: '' };
 }
-function gasmConnection() {
+function gasmConnection(): LevelNodeGASMConnection {
 	return {
 		objectID: 0,
 		name: 'Obj',
 		properties: [],
 	};
 }
-function programmablePropertyData() {
+function programmablePropertyData(): ProgrammablePropertyData {
 	return {
 		objectID: 0,
 		components: [],
 	};
 }
-function programmablePropertyDataComponent() {
+function programmablePropertyDataComponent(): ProgrammablePropertyDataComponent {
 	return {
 		inputRegisterIndex: -1,
 		outputRegisterIndex: -1,
@@ -607,7 +638,7 @@ function programmablePropertyDataComponent() {
 	};
 }
 
-function traverse_node(node, func) {
+function traverse_node(node: LevelNode, func: (node: LevelNode) => void) {
 	if (node.levelNodeGroup?.childNodes?.length) {
 		node.levelNodeGroup.childNodes.forEach((child) =>
 			traverse_node(child, func),
@@ -624,20 +655,24 @@ function random_material() {
 }
 function random_shape() {
 	const length =
-		Object.entries(shapes()).length - shapes().__END_OF_SPECIAL_PARTS__ - 1;
+		Object.entries(shapes()).length -
+		(shapes().__END_OF_SPECIAL_PARTS__ ?? 0) -
+		1;
 	return 1000 + Math.floor(Math.random() * length);
 }
 
-function add_nodes(level, nodes) {
+function add_nodes(level: Level, nodes: LevelNode[]) {
 	(level.levelNodes ??= []).push(...(nodes ?? []));
 }
 
-function json_parse(text) {
+function json_parse(text: string) {
 	try {
 		return JSON.parse(text);
 	} catch (e) {
-		e.message = 'Invalid JSON: ' + e.message;
-		window.toast(e, 'error');
+		if (e instanceof Error) {
+			e.message = 'Invalid JSON: ' + e.message;
+			window.toast(e, 'error');
+		}
 		return null;
 	}
 }
@@ -652,8 +687,13 @@ function special_registers() {
 	];
 }
 
-function get_new_connection_name(object, target) {
-	const names = object.levelNodeGASM.connections.map((conn) => conn.name);
+function get_new_connection_name(
+	object: LevelNodeWith<LevelNodeGASM>,
+	target: LevelNode,
+) {
+	const names = (object.levelNodeGASM.connections ?? []).map(
+		(conn) => conn.name,
+	);
 	let name = target.levelNodeGroup?.name ?? target.levelNodeStart?.name;
 	if (name?.length) {
 		if (!names.includes(name)) {
@@ -675,7 +715,12 @@ function get_new_connection_name(object, target) {
 	return name;
 }
 
-function add_code_connection(object, type, name, objectID) {
+function add_code_connection(
+	object: LevelNode,
+	type: 'position' | 'rotation' | 'active',
+	name: string,
+	objectID: number,
+) {
 	const node = object.levelNodeGASM;
 	if (!node) return false;
 	(node.program ??= {}).inoutRegisters ??= [];
@@ -696,21 +741,23 @@ function add_code_connection(object, type, name, objectID) {
 
 	const prop = programmablePropertyData();
 	prop.objectID = objectID; // redundant??
-	prop[type.replace('active', 'triggerActive')] = {};
+	const key: 'position' | 'rotation' | 'triggerActive' =
+		type === 'active' ? 'triggerActive' : type;
+	prop[key] = {};
 
 	if (type === 'active') {
 		const comp = programmablePropertyDataComponent();
-		comp.inputRegisterIndex = node.program.inputRegisters.length;
+		comp.inputRegisterIndex = (node.program.inputRegisters ?? []).length;
 		prop.components = [comp];
 
 		const act_reg = registerData();
 		act_reg.name = `${connection.name}.Act`;
-		node.program.inputRegisters.push(act_reg);
+		(node.program.inputRegisters ??= []).push(act_reg);
 	} else {
 		const x_comp = programmablePropertyDataComponent();
 		const y_comp = programmablePropertyDataComponent();
 		const z_comp = programmablePropertyDataComponent();
-		x_comp.inoutRegisterIndex = node.program.inoutRegisters.length;
+		x_comp.inoutRegisterIndex = (node.program.inoutRegisters ?? []).length;
 		y_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 1;
 		z_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 2;
 		prop.components = [x_comp, y_comp, z_comp];
@@ -723,10 +770,10 @@ function add_code_connection(object, type, name, objectID) {
 		y_reg.name = `${connection.name}.${type_spec}.Y`;
 		z_reg.name = `${connection.name}.${type_spec}.Z`;
 
-		node.program.inoutRegisters.push(...[x_reg, y_reg, z_reg]);
+		(node.program.inoutRegisters ??= []).push(...[x_reg, y_reg, z_reg]);
 	}
 
-	connection.properties.push(prop);
+	(connection.properties ??= []).push(prop);
 	if (!existing_connection) {
 		node.connections.push(connection);
 		return true;

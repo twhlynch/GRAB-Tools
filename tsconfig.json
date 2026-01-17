@@ -15,7 +15,6 @@
 		"strict": true,
 
 		"noUncheckedIndexedAccess": true,
-		"noPropertyAccessFromIndexSignature": true,
 		"useUnknownInCatchVariables": true,
 		"forceConsistentCasingInFileNames": true,
 		"esModuleInterop": true,
