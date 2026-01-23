@@ -1,4 +1,5 @@
 <script>
+import DownloadsMenu from '@/components/DownloadsMenu.vue';
 import GeneralPopup from '@/components/GeneralPopup.vue';
 import VerifyMenu from '@/components/VerifyMenu.vue';
 import { useUserStore } from '@/stores/user';
@@ -8,6 +9,7 @@ export default {
 	components: {
 		GeneralPopup,
 		VerifyMenu,
+		DownloadsMenu,
 	},
 	methods: {
 		logout() {
@@ -22,6 +24,7 @@ export default {
 	data() {
 		return {
 			show_verify_menu: false,
+			show_downloads_menu: false,
 		};
 	},
 	props: {
@@ -47,7 +50,15 @@ export default {
 		<button class="verify" v-if="!grab_id" @click="show_verify_menu = true">
 			Verify Account
 		</button>
+		<button
+			class="downloads"
+			v-if="grab_id"
+			@click="show_downloads_menu = true"
+		>
+			Manage Downloads
+		</button>
 		<VerifyMenu v-model:visible="show_verify_menu" />
+		<DownloadsMenu v-model:visible="show_downloads_menu" />
 	</GeneralPopup>
 </template>
 
@@ -56,6 +67,9 @@ export default {
 	background-color: var(--red);
 }
 .verify {
+	background-color: var(--blue);
+}
+.downloads {
 	background-color: var(--blue);
 }
 .header {
