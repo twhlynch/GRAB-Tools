@@ -15,6 +15,9 @@ async function can_download_level(level_id) {
 
 	const user_id = level_id.split(':')[0];
 
+	// verifier and above can always download
+	if (user.is_verifier) return true;
+
 	// can always download own levels
 	if (user.grab_id === user_id) return true;
 
