@@ -1,5 +1,4 @@
 import { SERVER_URL } from '@/config';
-import { LogEvent } from '@/requests/LogEvent';
 import { user_info_request } from '@/requests/UserInfoRequest';
 import { useCookiesStore } from '@/stores/cookies';
 import { setUser } from '@sentry/vue';
@@ -68,8 +67,6 @@ export const useUserStore = defineStore('user', {
 			if (this.grab_id) {
 				this.user = await user_info_request(this.grab_id);
 			}
-
-			LogEvent('LOGIN');
 
 			const cookies = useCookiesStore();
 			if (cookies.allow_cookies) {
