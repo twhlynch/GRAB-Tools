@@ -306,6 +306,7 @@ export interface LevelNodeGASM {
 	startActive?: boolean;
 	scale?: Vector;
 	rotation?: Quaternion;
+	isShared?: boolean;
 }
 
 export interface AnimationFrame {
@@ -378,12 +379,33 @@ export interface ProgrammableRotationData {}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ProgrammableTriggerActive {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammablePlayerData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableSignData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableColorData {}
+
 export interface ProgrammablePropertyData {
 	objectID?: number;
 	components?: ProgrammablePropertyDataComponent[];
 	position?: ProgrammablePositionData;
 	triggerActive?: ProgrammableTriggerActive;
 	rotation?: ProgrammableRotationData;
+	player?: ProgrammablePlayerData;
+	sign?: ProgrammableSignData;
+	color?: ProgrammableColorData;
+}
+
+export interface ProgrammableSignUpdateData {
+	text?: string;
+}
+
+export interface ProgrammablePropertyUpdateData {
+	components?: number[];
+	sign?: ProgrammableSignUpdateData;
 }
 
 export enum LevelNodeSignSignFontWeight {
