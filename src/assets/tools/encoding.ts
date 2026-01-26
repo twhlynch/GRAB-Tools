@@ -783,6 +783,51 @@ function add_code_connection(
 	return false;
 }
 
+function add_player_connections(object: LevelNode) {
+	const node = object.levelNodeGASM;
+	if (!node) return false;
+
+	const output_registers = [
+		'Plr.Sel',
+		'Plr.SelId',
+		'Plr.Part',
+		'Plr.NameCtrl',
+	];
+	const input_registers = [
+		'Plr.Count',
+		'Plr.Valid',
+		'Plr.Id',
+		'Plr.Pos.X',
+		'Plr.Pos.Y',
+		'Plr.Pos.Z',
+		'Plr.Rot.X',
+		'Plr.Rot.Y',
+		'Plr.Rot.Z',
+		'Plr.Name',
+	];
+
+	input_registers.forEach((name) => {
+		if (node.program?.inputRegisters?.find((reg) => reg.name === name))
+			return;
+		const register = registerData();
+		register.name = name;
+		((node.program ??= {}).inputRegisters ??= []).push(register);
+	});
+	output_registers.forEach((name) => {
+		if (node.program?.outputRegisters?.find((reg) => reg.name === name))
+			return;
+		const register = registerData();
+		register.name = name;
+		((node.program ??= {}).outputRegisters ??= []).push(register);
+	});
+
+	// const connection = gasmConnection();
+	// connection.name = 'Plr';
+	// connection.type = 1;
+	//
+	// node.connections.push(connection);
+}
+
 export default {
 	load,
 	set_protobuf,
@@ -830,5 +875,6 @@ export default {
 	json_parse,
 	special_registers,
 	add_code_connection,
+	add_player_connections,
 	get_new_connection_name,
 };

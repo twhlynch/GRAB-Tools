@@ -1164,6 +1164,10 @@ export default {
 				this.mini_editor_changed(this.$refs.mini_editor.json);
 			this.show_mini_editor = false;
 		},
+		add_code_player_connection(object) {
+			const object_node = object.userData.node;
+			encoding.add_player_connections(object_node);
+		},
 		add_code_connection(object, target, type) {
 			const object_node = object.userData.node;
 			const target_node = target.userData.node;
@@ -1511,6 +1515,15 @@ export default {
 											selected_object,
 											clicked_object,
 											'active',
+										);
+									},
+								},
+							}),
+							...(clicked_is_selected && {
+								Player: {
+									func: () => {
+										this.add_code_player_connection(
+											selected_object,
 										);
 									},
 								},
