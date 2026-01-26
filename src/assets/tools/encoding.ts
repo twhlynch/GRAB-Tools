@@ -808,6 +808,7 @@ function add_player_connections(object: LevelNode) {
 		'Plr.SelId',
 		'Plr.Part',
 		'Plr.NameCtrl',
+		'Plr.ColIdx',
 	];
 	const input_registers = [
 		'Plr.Count',
@@ -820,6 +821,9 @@ function add_player_connections(object: LevelNode) {
 		'Plr.Rot.Y',
 		'Plr.Rot.Z',
 		'Plr.Name',
+		'Plr.Col.R',
+		'Plr.Col.G',
+		'Plr.Col.B',
 	];
 
 	const connection = gasmConnection();
