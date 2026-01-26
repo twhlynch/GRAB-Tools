@@ -829,6 +829,7 @@ function add_player_connections(object: LevelNode) {
 
 	const prop = programmablePropertyData();
 	prop.components = [];
+	prop.player = {};
 	const components = prop.components;
 	connection.properties.push(prop);
 
