@@ -786,7 +786,22 @@ function add_code_connection(
 
 function add_player_connections(object: LevelNode) {
 	const node = object.levelNodeGASM;
-	if (!node) return false;
+	if (!node) return;
+	if (node.connections?.find((c) => c.name === 'Player')) {
+		window.toast('Object already has Player connection', 'warn');
+		return;
+	}
+
+	node.program ??= {};
+	const program = node.program;
+	node.connections ??= [];
+	const connections = node.connections;
+
+	program.inputRegisters ??= [];
+	program.outputRegisters ??= [];
+	program.inoutRegisters ??= [];
+	const inputRegisters = program.inputRegisters;
+	const outputRegisters = program.outputRegisters;
 
 	const output_registers = [
 		'Plr.Sel',
@@ -807,26 +822,38 @@ function add_player_connections(object: LevelNode) {
 		'Plr.Name',
 	];
 
+	const connection = gasmConnection();
+	connection.name = 'Player';
+	connection.type = 1;
+	connection.properties = [];
+
+	const prop = programmablePropertyData();
+	prop.components = [];
+	const components = prop.components;
+	connection.properties.push(prop);
+
 	input_registers.forEach((name) => {
-		if (node.program?.inputRegisters?.find((reg) => reg.name === name))
-			return;
+		if (inputRegisters.find((reg) => reg.name === name)) return;
+		const comp = programmablePropertyDataComponent();
+		comp.inputRegisterIndex = inputRegisters.length;
+		components.push(comp);
+
 		const register = registerData();
 		register.name = name;
-		((node.program ??= {}).inputRegisters ??= []).push(register);
+		inputRegisters.push(register);
 	});
 	output_registers.forEach((name) => {
-		if (node.program?.outputRegisters?.find((reg) => reg.name === name))
-			return;
+		if (outputRegisters.find((reg) => reg.name === name)) return;
+		const comp = programmablePropertyDataComponent();
+		comp.outputRegisterIndex = outputRegisters.length;
+		components.push(comp);
+
 		const register = registerData();
 		register.name = name;
-		((node.program ??= {}).outputRegisters ??= []).push(register);
+		outputRegisters.push(register);
 	});
 
-	// const connection = gasmConnection();
-	// connection.name = 'Plr';
-	// connection.type = 1;
-	//
-	// node.connections.push(connection);
+	connections.push(connection);
 }
 
 export default {
