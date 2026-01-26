@@ -758,8 +758,10 @@ export default {
 
 					const ids = [];
 					connections.forEach((connection) => {
-						const objectID = connection.objectID;
-						if (objectID) ids.push(objectID);
+						if (!connection.type || connection.type === 0) {
+							const objectID = connection.objectID;
+							if (objectID) ids.push(objectID);
+						}
 					});
 					ids.forEach((id) => {
 						const target = this.level.nodes.all[id - 1];

@@ -122,6 +122,7 @@ export interface LevelNodeStart {
 	rotation?: Quaternion;
 	radius?: number;
 	name?: string;
+	isHidden?: boolean;
 }
 
 export interface LevelNodeFinish {
@@ -449,6 +450,7 @@ export interface LevelNodeGASMConnection {
 	objectID?: number;
 	name?: string;
 	properties?: ProgrammablePropertyData[];
+	type?: ConnectionType;
 }
 
 export enum AnimationDirection {
@@ -504,4 +506,9 @@ export interface ProgrammablePropertyDataComponent {
 	inputRegisterIndex?: number;
 	outputRegisterIndex?: number;
 	inoutRegisterIndex?: number;
+}
+
+export enum ConnectionType {
+	NODE = 0,
+	PLAYER = 1,
 }

@@ -316,6 +316,7 @@ function levelNodeStart() {
 			rotation: quat(),
 			radius: 0.5,
 			name: 'start0',
+			isHidden: false,
 		},
 	});
 }
@@ -622,6 +623,7 @@ function gasmConnection(): LevelNodeGASMConnection {
 		objectID: 0,
 		name: 'Obj',
 		properties: [],
+		type: 0,
 	};
 }
 function programmablePropertyData(): ProgrammablePropertyData {
