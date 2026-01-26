@@ -144,6 +144,7 @@ message LevelNodeStart {
   Quaternion rotation = 2;
   float radius = 3;
   string name = 4;
+  bool isHidden = 5;
 }
 
 message LevelNodeFinish {
@@ -420,6 +421,13 @@ message LevelNodeSound {
 
 message LevelNodeGASM {
   message Connection {
+    enum Type
+    {
+      NODE = 0;
+      PLAYER = 1;
+    }
+
+    Type type = 4;
     uint64 objectID = 1;
     string name = 2;
     repeated ProgrammablePropertyData properties = 3;
@@ -434,6 +442,7 @@ message LevelNodeGASM {
   repeated Connection connections = 3;
 
   bool startActive = 4;
+  bool isShared = 7;
 }
 
 message AnimationFrame {
