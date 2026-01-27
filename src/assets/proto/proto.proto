@@ -421,8 +421,7 @@ message LevelNodeSound {
 
 message LevelNodeGASM {
   message Connection {
-    enum Type
-    {
+    enum Type {
       NODE = 0;
       PLAYER = 1;
     }
@@ -606,4 +605,3 @@ message ProgrammablePropertyUpdateData {
     ProgrammableSignUpdateData sign = 2;
   }
 }
-
