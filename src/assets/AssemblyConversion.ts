@@ -1,11 +1,18 @@
 import encoding from '@/assets/tools/encoding';
+import {
+	InstructionData,
+	InstructionDataType,
+	LevelNodeGASM,
+	OperandData,
+} from '@/generated/proto';
+import { LevelNodeWith } from '@/types/levelNodes';
 
 const instruction_map = encoding.load().COD.Level.InstructionData.Type;
 const operand_map = encoding.load().COD.Level.OperandData.Type;
 
 const special_registers = encoding.special_registers();
 
-const operand_counts = {
+const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InNoop]: 0,
 	[instruction_map.InSet]: 2,
 	[instruction_map.InSwap]: 2,
@@ -34,62 +41,81 @@ const operand_counts = {
 };
 
 // asm to json
-function asm_to_json(asm, old_json) {
+function asm_to_json(asm: string, old_json: LevelNodeWith<LevelNodeGASM>) {
+	old_json.levelNodeGASM.program ??= {};
 	old_json.levelNodeGASM.program.labels = [];
 
 	const lines = asm
 		.split('\n')
-		.map((line) => line.split(';')[0].trim())
+		.map((line) => (line.split(';')[0] ?? '').trim())
 		.filter((line) => line.length);
 
 	const code = preprocess_asm(lines);
 
-	const instructions = code.map((line) =>
-		instruction_asm_to_json(line, old_json),
-	);
+	const instructions = code
+		.map((line) => {
+			const json = instruction_asm_to_json(line, old_json);
+			if (!json) window.toast(`Invalid instruction: ${line}`, 'warn');
+			return json;
+		})
+		.filter((i) => i !== undefined);
 
 	old_json.levelNodeGASM.program.instructions = instructions;
 
 	return old_json;
 }
 
-function preprocess_asm(lines) {
+function preprocess_asm(lines: string[]): string[] {
 	const processed_scopes = preprocess_scopes(lines);
 	return processed_scopes;
 }
 
-function preprocess_scopes(lines, context = {}) {
-	const resolve = (val, ctx) => {
-		const parts = val.split(/[+-/*%]/);
-		if (val.includes('+'))
-			val = resolve(parts[0], context) + resolve(parts[1], context);
-		else if (val.includes('-') && val.charAt(0) !== '-')
-			val = resolve(parts[0], context) - resolve(parts[1], context);
-		else if (val.includes('*'))
-			val = resolve(parts[0], context) * resolve(parts[1], context);
-		else if (val.includes('/'))
-			val = resolve(parts[0], context) / resolve(parts[1], context);
-		else if (val.includes('%'))
-			val = resolve(parts[0], context) % resolve(parts[1], context);
+function preprocess_scopes(
+	lines: string[],
+	context: Record<string, number> = {},
+): string[] {
+	const resolve = (val: string, ctx: Record<string, number>): number => {
+		// an existing variable
+		if (ctx[val] !== undefined) return ctx[val];
+		// a number
 		if (!isNaN(Number(val))) return Number(val);
-		return ctx[val] ?? val;
+
+		// a small equation `a+b`        non start +-/*%
+		const [var_a, var_b] = val.split(/(?<!^)[+-/*%]/);
+
+		if (var_a === undefined || var_b === undefined) {
+			window.toast(`Invalid value: ${val}`, 'error');
+			return NaN;
+		}
+
+		const a = resolve(var_a, context);
+		const b = resolve(var_b, context);
+
+		if (val.includes('+')) return a + b;
+		else if (val.includes('*')) return a * b;
+		else if (val.includes('/')) return a / b;
+		else if (val.includes('%')) return a % b;
+		else if (val.includes('-')) return a - b;
+
+		window.toast(`Invalid value: ${val}`, 'error');
+		return NaN;
 	};
-	const substitute = (line, ctx) => {
+	const substitute = (line: string, ctx: Record<string, number>): string => {
 		let result = line;
 
 		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
 
 		for (const key of sorted) {
 			const value = ctx[key];
-			result = result.replaceAll(`#${key}`, value);
+			result = result.replaceAll(`#${key}`, String(value));
 		}
 
 		return result;
 	};
-	const find_end = (lines, start) => {
+	const find_end = (lines: string[], start: number): number => {
 		let depth = 1;
 		for (let i = start + 1; i < lines.length; i++) {
-			const parts = lines[i].trim().split(/\s+/);
+			const parts = lines[i]!.trim().split(/\s+/);
 			const directive = parts[0];
 
 			if (directive === '#FOR' || directive === '#IF') {
@@ -105,33 +131,45 @@ function preprocess_scopes(lines, context = {}) {
 		throw new Error(`Missing #END for block at line ${start}`);
 	};
 
-	let output = [];
+	const output: string[] = [];
 
 	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		const trimmed = line.trim();
-		const parts = trimmed.split(/\s+/);
-		const directive = parts[0];
+		const line = lines[i]!;
+		const [directive, ...parts] = line.trim().split(/\s+/);
 
 		if (directive === '#DEFINE') {
-			const [_, variable, ...rest] = parts;
+			const [variable, ...rest] = parts;
+			if (variable === undefined) {
+				window.toast(`Invalid directive: ${line}`, 'error');
+				continue;
+			}
+
 			const setup = Object.keys(context)
 				.map((v) => `let ${v} = ${context[v]};`)
 				.join('');
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
 			context[variable] = eval(expr);
 		} else if (directive === '#FOR') {
-			const varName = parts[1];
+			const [var_name, start_arg, stop_arg, step_arg] = parts;
+			if (
+				var_name === undefined ||
+				start_arg === undefined ||
+				stop_arg === undefined
+			) {
+				window.toast(`Invalid directive: ${line}`, 'error');
+				continue;
+			}
 
-			const start = resolve(parts[2], context);
-			const stop = resolve(parts[3], context);
-			const step = parts[4] ? resolve(parts[4], context) : 1;
+			const start = resolve(start_arg, context);
+			const stop = resolve(stop_arg, context);
+			const step =
+				step_arg !== undefined ? resolve(step_arg, context) : 1;
 
 			const end = find_end(lines, i);
 			const block = lines.slice(i + 1, end);
 
 			for (let val = start; val <= stop; val += step) {
-				const ctx = { ...context, [varName]: val };
+				const ctx = { ...context, [var_name]: val };
 
 				const block_output = preprocess_scopes(block, ctx);
 				output.push(...block_output);
@@ -139,9 +177,14 @@ function preprocess_scopes(lines, context = {}) {
 
 			i = end;
 		} else if (directive === '#IF') {
-			const lhs = resolve(parts[1], context);
-			const op = parts[2];
-			const rhs = resolve(parts[3], context);
+			const [left, op, right] = parts;
+			if (left === undefined || op === undefined || right === undefined) {
+				window.toast(`Invalid directive: ${line}`, 'error');
+				continue;
+			}
+
+			const lhs = resolve(left, context);
+			const rhs = resolve(right, context);
 
 			const end = find_end(lines, i);
 
@@ -170,13 +213,22 @@ function preprocess_scopes(lines, context = {}) {
 	return output;
 }
 
-function instruction_asm_to_json(instruction, old_json) {
+function instruction_asm_to_json(
+	instruction: string,
+	old_json: LevelNodeWith<LevelNodeGASM>,
+): InstructionData | undefined {
 	const parts = instruction.split(/\s+/);
-	const operator = parts[0];
+	const operator = parts[0]!;
 	const operands = parts.slice(1);
 
-	const type = instruction_map[dirty_instruction(operator)];
-	const count = operand_counts[type];
+	const dirty = dirty_instruction(operator);
+	const type = instruction_map[dirty] as InstructionDataType;
+	if (type === undefined) {
+		window.toast(`Invalid instruction: ${instruction}`, 'error');
+		return undefined;
+	}
+
+	const count = operand_counts[type]!;
 	// handle labels with spaces (they must be the last operand)
 	operands.push(operands.splice(count - 1, operands.length).join(' '));
 
@@ -186,12 +238,19 @@ function instruction_asm_to_json(instruction, old_json) {
 			.map((operand, i) =>
 				operand_asm_to_json(operand, type, i, old_json),
 			)
-			.filter(Boolean),
+			.filter((o) => o !== undefined),
 	};
 }
 
-function operand_asm_to_json(operand, instruction, index, old_json) {
+function operand_asm_to_json(
+	operand: string,
+	instruction: number,
+	index: number,
+	old_json: LevelNodeWith<LevelNodeGASM>,
+): OperandData | undefined {
+	old_json.levelNodeGASM.program ??= {};
 	const program = old_json.levelNodeGASM.program;
+	program.labels ??= [];
 	const labels = program.labels;
 	const inoutRegisters = (program.inoutRegisters ?? []).map((r) => r.name);
 	const inRegisters = (program.inputRegisters ?? []).map((r) => r.name);
@@ -262,8 +321,12 @@ function operand_asm_to_json(operand, instruction, index, old_json) {
 }
 
 // json to asm
-function json_to_asm(json) {
-	const instructions = json.levelNodeGASM.program.instructions;
+function json_to_asm(json: LevelNodeWith<LevelNodeGASM>): string {
+	json.levelNodeGASM.program ??= {};
+	const program = json.levelNodeGASM.program;
+
+	program.instructions ??= [];
+	const instructions = program.instructions;
 
 	const code = instructions.map((instruction) =>
 		instruction_json_to_asm(instruction, json),
@@ -272,16 +335,24 @@ function json_to_asm(json) {
 	return `${code.join('\n')}`;
 }
 
-function instruction_json_to_asm(instruction, json) {
+function instruction_json_to_asm(
+	instruction: InstructionData,
+	json: LevelNodeWith<LevelNodeGASM>,
+): string {
 	const operator = instruction_map[instruction.type ?? 0];
-	const operands = instruction.operands.map((operand) =>
+	const operands = (instruction.operands ?? []).map((operand) =>
 		operand_json_to_asm(operand, json),
 	);
 	return `${clean_instruction(operator)} ${operands.join(' ')}`;
 }
 
-function operand_json_to_asm(operand, json) {
+function operand_json_to_asm(
+	operand: OperandData,
+	json: LevelNodeWith<LevelNodeGASM>,
+): string | undefined {
+	json.levelNodeGASM.program ??= {};
 	const program = json.levelNodeGASM.program;
+	program.labels ??= [];
 	const labels = program.labels;
 	const inoutRegisters = program.inoutRegisters ?? [];
 	const inRegisters = program.inputRegisters ?? [];
@@ -296,19 +367,19 @@ function operand_json_to_asm(operand, json) {
 		return `${value}`;
 	}
 	if (type === ops.OpLabel) {
-		return `${labels[index].name}`;
+		return labels[index]?.name;
 	}
 	if (type === ops.OpSpecialRegister) {
 		return `${special_registers[index]}`;
 	}
 	if (type === ops.OpInOutRegister) {
-		return inoutRegisters[index].name;
+		return inoutRegisters[index]?.name;
 	}
 	if (type === ops.OpInputRegister) {
-		return inRegisters[index].name;
+		return inRegisters[index]?.name;
 	}
 	if (type === ops.OpOutputRegister) {
-		return outRegisters[index].name;
+		return outRegisters[index]?.name;
 	}
 	if (type === ops.OpWorkingRegister) {
 		return `R${index}`;
@@ -317,11 +388,11 @@ function operand_json_to_asm(operand, json) {
 	return '';
 }
 
-function clean_instruction(name) {
+function clean_instruction(name: string): string {
 	return name.replace('In', '').toUpperCase();
 }
 
-function dirty_instruction(name) {
+function dirty_instruction(name: string): string {
 	return `In${name.charAt(0)}${name.toLowerCase().slice(1)}`;
 }
 
