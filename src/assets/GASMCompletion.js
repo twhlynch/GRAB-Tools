@@ -21,8 +21,10 @@ let json_completions = [];
 
 export function update_json_completions(node) {
 	const labels = node.levelNodeGASM.program.labels;
-	const registers = node.levelNodeGASM.program.inoutRegisters;
-	json_completions = [...labels, ...registers]
+	const iregisters = node.levelNodeGASM.program.inputRegisters;
+	const oregisters = node.levelNodeGASM.program.outputRegisters;
+	const ioregisters = node.levelNodeGASM.program.inoutRegisters;
+	json_completions = [...labels, ...iregisters, ...oregisters, ...ioregisters]
 		.map((e) => e.name)
 		.map((label) => ({
 			label,

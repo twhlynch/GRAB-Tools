@@ -1167,6 +1167,7 @@ export default {
 		add_code_player_connection(object) {
 			const object_node = object.userData.node;
 			encoding.add_player_connections(object_node);
+			this.changed();
 		},
 		add_code_connection(object, target, type) {
 			const object_node = object.userData.node;

@@ -3,15 +3,15 @@ import {
 	InstructionData,
 	InstructionDataType,
 	LevelNodeGASM,
+	LevelNodeGASMConnection,
 	OperandData,
+	ProgramData,
 } from '@/generated/proto';
 import { LevelNodeWith } from '@/types/levelNodes';
 
 const instruction_map = encoding.load().COD.Level.InstructionData.Type;
 const operand_map = encoding.load().COD.Level.OperandData.Type;
-
 const special_registers = encoding.special_registers();
-
 const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InNoop]: 0,
 	[instruction_map.InSet]: 2,
@@ -40,10 +40,47 @@ const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InAtan2]: 3,
 };
 
+// helper
+type SafeNode = {
+	program: Required<ProgramData>;
+	connections: LevelNodeGASMConnection[];
+};
+function safe_node(object: LevelNodeWith<LevelNodeGASM>): SafeNode {
+	const node = object.levelNodeGASM;
+
+	const program = (node.program ??= {});
+	const connections = (node.connections ??= []);
+	const instructions = (program.instructions ??= []);
+	const labels = (program.labels ??= []);
+	const workingRegisters = (program.workingRegisters ??= []);
+	const inoutRegisters = (program.inoutRegisters ??= []);
+	const inputRegisters = (program.inputRegisters ??= []);
+	const outputRegisters = (program.outputRegisters ??= []);
+
+	return {
+		program: {
+			instructions,
+			labels,
+			workingRegisters,
+			inoutRegisters,
+			inputRegisters,
+			outputRegisters,
+		},
+		connections,
+	};
+}
+
+function panic(message: string) {
+	window.toast(message, 'err');
+	return undefined;
+}
+
 // asm to json
-function asm_to_json(asm: string, old_json: LevelNodeWith<LevelNodeGASM>) {
-	old_json.levelNodeGASM.program ??= {};
-	old_json.levelNodeGASM.program.labels = [];
+export function asm_to_json(
+	asm: string,
+	old_json: LevelNodeWith<LevelNodeGASM>,
+) {
+	const node = safe_node(old_json);
 
 	const lines = asm
 		.split('\n')
@@ -54,13 +91,14 @@ function asm_to_json(asm: string, old_json: LevelNodeWith<LevelNodeGASM>) {
 
 	const instructions = code
 		.map((line) => {
-			const json = instruction_asm_to_json(line, old_json);
+			const json = instruction_asm_to_json(line, node);
 			if (!json) window.toast(`Invalid instruction: ${line}`, 'warn');
 			return json;
 		})
 		.filter((i) => i !== undefined);
 
-	old_json.levelNodeGASM.program.instructions = instructions;
+	node.program.instructions.length = 0;
+	node.program.instructions.push(...instructions);
 
 	return old_json;
 }
@@ -215,7 +253,7 @@ function preprocess_scopes(
 
 function instruction_asm_to_json(
 	instruction: string,
-	old_json: LevelNodeWith<LevelNodeGASM>,
+	node: SafeNode,
 ): InstructionData | undefined {
 	const parts = instruction.split(/\s+/);
 	const operator = parts[0]!;
@@ -223,10 +261,7 @@ function instruction_asm_to_json(
 
 	const dirty = dirty_instruction(operator);
 	const type = instruction_map[dirty] as InstructionDataType;
-	if (type === undefined) {
-		window.toast(`Invalid instruction: ${instruction}`, 'error');
-		return undefined;
-	}
+	if (type === undefined) return panic(`Invalid instruction: ${instruction}`);
 
 	const count = operand_counts[type]!;
 	// handle labels with spaces (they must be the last operand)
@@ -235,10 +270,11 @@ function instruction_asm_to_json(
 	return {
 		type,
 		operands: operands
-			.map((operand, i) =>
-				operand_asm_to_json(operand, type, i, old_json),
-			)
-			.filter((o) => o !== undefined),
+			.map((operand, i) => operand_asm_to_json(operand, type, i, node))
+			.filter((operand) => {
+				if (operand === undefined) panic(`Invalid operand: ${operand}`);
+				return operand !== undefined;
+			}),
 	};
 }
 
@@ -246,15 +282,13 @@ function operand_asm_to_json(
 	operand: string,
 	instruction: number,
 	index: number,
-	old_json: LevelNodeWith<LevelNodeGASM>,
+	node: SafeNode,
 ): OperandData | undefined {
-	old_json.levelNodeGASM.program ??= {};
-	const program = old_json.levelNodeGASM.program;
-	program.labels ??= [];
+	const program = node.program;
 	const labels = program.labels;
-	const inoutRegisters = (program.inoutRegisters ?? []).map((r) => r.name);
-	const inRegisters = (program.inputRegisters ?? []).map((r) => r.name);
-	const outRegisters = (program.outputRegisters ?? []).map((r) => r.name);
+	const inoutRegisters = program.inoutRegisters.map((r) => r.name);
+	const inRegisters = program.inputRegisters.map((r) => r.name);
+	const outRegisters = program.outputRegisters.map((r) => r.name);
 
 	const is_label =
 		(instruction === instruction_map.InLabel ||
@@ -316,20 +350,17 @@ function operand_asm_to_json(
 		};
 	}
 
-	window.toast(`Failed to parse ${operand}`, 'warn');
-	return undefined;
+	return panic(`Failed to parse operand: ${operand}`);
 }
 
 // json to asm
-function json_to_asm(json: LevelNodeWith<LevelNodeGASM>): string {
-	json.levelNodeGASM.program ??= {};
-	const program = json.levelNodeGASM.program;
+export function json_to_asm(json: LevelNodeWith<LevelNodeGASM>): string {
+	const node = safe_node(json);
 
-	program.instructions ??= [];
-	const instructions = program.instructions;
+	const { instructions } = node.program;
 
 	const code = instructions.map((instruction) =>
-		instruction_json_to_asm(instruction, json),
+		instruction_json_to_asm(instruction, node),
 	);
 
 	return `${code.join('\n')}`;
@@ -337,55 +368,48 @@ function json_to_asm(json: LevelNodeWith<LevelNodeGASM>): string {
 
 function instruction_json_to_asm(
 	instruction: InstructionData,
-	json: LevelNodeWith<LevelNodeGASM>,
+	node: SafeNode,
 ): string {
-	const operator = instruction_map[instruction.type ?? 0];
-	const operands = (instruction.operands ?? []).map((operand) =>
-		operand_json_to_asm(operand, json),
+	instruction.operands ??= [];
+
+	const mapped = instruction_map[instruction.type ?? 0];
+	const operator = clean_instruction(mapped);
+	const operands = instruction.operands.map(
+		(operand) => operand_json_to_asm(operand, node) ?? '',
 	);
-	return `${clean_instruction(operator)} ${operands.join(' ')}`;
+
+	const errors = [];
+	if (mapped === undefined) errors.push('; ERROR: Invalid operator');
+	if (operands.includes('')) errors.push('; ERROR: Invalid operand');
+
+	const comment = errors.length ? ';' : '';
+
+	return comment + [operator, ...operands, ...errors].join(' ');
 }
 
 function operand_json_to_asm(
 	operand: OperandData,
-	json: LevelNodeWith<LevelNodeGASM>,
+	node: SafeNode,
 ): string | undefined {
-	json.levelNodeGASM.program ??= {};
-	const program = json.levelNodeGASM.program;
-	program.labels ??= [];
-	const labels = program.labels;
-	const inoutRegisters = program.inoutRegisters ?? [];
-	const inRegisters = program.inputRegisters ?? [];
-	const outRegisters = program.outputRegisters ?? [];
+	const { labels, inoutRegisters, inputRegisters, outputRegisters } =
+		node.program;
 
 	const type = operand.type ?? 0;
 	const index = operand.index ?? 0;
 	const value = operand.value ?? 0;
-	const ops = operand_map;
 
-	if (type === ops.OpConstant) {
-		return `${value}`;
-	}
-	if (type === ops.OpLabel) {
-		return labels[index]?.name;
-	}
-	if (type === ops.OpSpecialRegister) {
-		return `${special_registers[index]}`;
-	}
-	if (type === ops.OpInOutRegister) {
-		return inoutRegisters[index]?.name;
-	}
-	if (type === ops.OpInputRegister) {
-		return inRegisters[index]?.name;
-	}
-	if (type === ops.OpOutputRegister) {
-		return outRegisters[index]?.name;
-	}
-	if (type === ops.OpWorkingRegister) {
-		return `R${index}`;
+	// prettier-ignore
+	switch (type) {
+		case operand_map.OpConstant:        return `${value}`;
+		case operand_map.OpLabel:           return labels[index]?.name;
+		case operand_map.OpSpecialRegister: return special_registers[index]
+		case operand_map.OpInOutRegister:   return inoutRegisters[index]?.name;
+		case operand_map.OpInputRegister:   return inputRegisters[index]?.name;
+		case operand_map.OpOutputRegister:  return outputRegisters[index]?.name;
+		case operand_map.OpWorkingRegister: return `R${index}`;
 	}
 
-	return '';
+	return panic(`Invalid operand type: ${type}`);
 }
 
 function clean_instruction(name: string): string {
@@ -395,8 +419,3 @@ function clean_instruction(name: string): string {
 function dirty_instruction(name: string): string {
 	return `In${name.charAt(0)}${name.toLowerCase().slice(1)}`;
 }
-
-export default {
-	asm_to_json,
-	json_to_asm,
-};

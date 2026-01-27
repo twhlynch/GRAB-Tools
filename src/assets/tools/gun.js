@@ -1,4 +1,4 @@
-import AssemblyConversion from '@/assets/AssemblyConversion';
+import { asm_to_json } from '@/assets/AssemblyConversion';
 import encoding from '@/assets/tools/encoding';
 import group from '@/assets/tools/group';
 
@@ -62,7 +62,7 @@ async function makeGun(nodes) {
 	encoding.add_code_connection(code_node, 'position', 'Laz', bullet_id);
 	encoding.add_code_connection(code_node, 'rotation', 'Laz', bullet_id);
 
-	AssemblyConversion.asm_to_json(asm, code_node);
+	asm_to_json(asm, code_node);
 
 	// connect trigger
 	const target = encoding.triggerTargetGASM();
