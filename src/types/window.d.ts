@@ -9,7 +9,7 @@ declare global {
 		toast: (
 			message: string | Error,
 			severity?: Severity,
-			persistent?: bool,
+			persistent?: boolean,
 		) => void | {
 			remove: () => void;
 			message: Reactive<{
