@@ -54,37 +54,8 @@ function asm_to_json(asm, old_json) {
 }
 
 function preprocess_asm(lines) {
-	const processed_characters = preprocess_characters(lines);
-	const processed_scopes = preprocess_scopes(processed_characters);
+	const processed_scopes = preprocess_scopes(lines);
 	return processed_scopes;
-}
-
-function preprocess_characters(lines) {
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		const trimmed = line.trim();
-		const parts = trimmed.split(/\s+/);
-		const instruction = parts[0];
-
-		for (let j = 1; j < parts.length; j++) {
-			const is_label =
-				(instruction === instruction_map.InLabel ||
-					instruction === instruction_map.InGoto ||
-					instruction === instruction_map.InIf) &&
-				j === operand_counts[instruction] - 1;
-
-			if (is_label) continue;
-
-			const p = parts[j];
-			if (p.length === 3 && p.charAt(0) === "'" && p.charAt(2) === "'") {
-				parts[j] = String(p.charCodeAt(1));
-			}
-		}
-
-		lines[i] = parts.join(' ');
-	}
-
-	return lines;
 }
 
 function preprocess_scopes(lines, context = {}) {
@@ -277,6 +248,12 @@ function operand_asm_to_json(operand, instruction, index, old_json) {
 		return {
 			type: operand_map.OpConstant,
 			value: parseFloat(operand),
+		};
+	}
+	if (/^'.'$/.test(operand)) {
+		return {
+			type: operand_map.OpConstant,
+			value: operand.charCodeAt(1),
 		};
 	}
 
