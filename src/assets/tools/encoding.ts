@@ -720,18 +720,23 @@ function get_new_connection_name(
 
 function add_code_connection(
 	object: LevelNode,
-	type: 'position' | 'rotation' | 'active' | 'color',
+	type: 'position' | 'rotation' | 'active' | 'color' | 'sign',
 	name: string,
 	objectID: number,
 ) {
 	const node = object.levelNodeGASM;
 	if (!node) return false;
-	(node.program ??= {}).inoutRegisters ??= [];
-	(node.program ??= {}).inputRegisters ??= [];
-	(node.program ??= {}).outputRegisters ??= [];
-	node.connections ??= [];
 
-	const existing_connection = node.connections.find(
+	node.program ??= {};
+	node.connections ??= [];
+	const program = node.program;
+	program.inoutRegisters ??= [];
+	program.inputRegisters ??= [];
+	program.outputRegisters ??= [];
+	const { inoutRegisters, inputRegisters, outputRegisters } = program;
+	const connections = node.connections;
+
+	const existing_connection = connections.find(
 		(conn) => conn.objectID === objectID,
 	);
 
@@ -744,24 +749,24 @@ function add_code_connection(
 
 	const prop = programmablePropertyData();
 	prop.objectID = objectID; // redundant??
-	const key: 'position' | 'rotation' | 'triggerActive' | 'color' =
+	const key: 'position' | 'rotation' | 'triggerActive' | 'color' | 'sign' =
 		type === 'active' ? 'triggerActive' : type;
 	prop[key] = {};
 
 	if (type === 'active') {
 		const comp = programmablePropertyDataComponent();
-		comp.inputRegisterIndex = (node.program.inputRegisters ?? []).length;
+		comp.inputRegisterIndex = inputRegisters.length;
 		prop.components = [comp];
 
 		const act_reg = registerData();
 		act_reg.name = `${connection.name}.Act`;
-		(node.program.inputRegisters ??= []).push(act_reg);
+		inputRegisters.push(act_reg);
 	} else if (type === 'color') {
 		const r_comp = programmablePropertyDataComponent();
 		const g_comp = programmablePropertyDataComponent();
 		const b_comp = programmablePropertyDataComponent();
 		const mode_comp = programmablePropertyDataComponent();
-		r_comp.inoutRegisterIndex = (node.program.inoutRegisters ?? []).length;
+		r_comp.inoutRegisterIndex = inoutRegisters.length;
 		g_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 1;
 		b_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 2;
 		mode_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 3;
@@ -776,14 +781,30 @@ function add_code_connection(
 		b_reg.name = `${connection.name}.B`;
 		mode_reg.name = `${connection.name}.Mode`;
 
-		(node.program.inoutRegisters ??= []).push(
-			...[r_reg, g_reg, b_reg, mode_reg],
-		);
+		inoutRegisters.push(r_reg, g_reg, b_reg, mode_reg);
+	} else if (type === 'sign') {
+		const output_registers = [
+			'SIGN.Write',
+			'SIGN.Mode',
+			'SIGN.TextCtrl',
+			'SIGN.Number',
+		];
+
+		prop.components = [];
+		const components = prop.components;
+		output_registers.forEach((name) => {
+			const comp = programmablePropertyDataComponent();
+			comp.inoutRegisterIndex = outputRegisters.length;
+			components.push(comp);
+			const reg = registerData();
+			reg.name = `${connection.name}.${name}`;
+			outputRegisters.push(reg);
+		});
 	} else {
 		const x_comp = programmablePropertyDataComponent();
 		const y_comp = programmablePropertyDataComponent();
 		const z_comp = programmablePropertyDataComponent();
-		x_comp.inoutRegisterIndex = (node.program.inoutRegisters ?? []).length;
+		x_comp.inoutRegisterIndex = inoutRegisters.length;
 		y_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 1;
 		z_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 2;
 		prop.components = [x_comp, y_comp, z_comp];
@@ -796,7 +817,7 @@ function add_code_connection(
 		y_reg.name = `${connection.name}.${type_spec}.Y`;
 		z_reg.name = `${connection.name}.${type_spec}.Z`;
 
-		(node.program.inoutRegisters ??= []).push(...[x_reg, y_reg, z_reg]);
+		inoutRegisters.push(x_reg, y_reg, z_reg);
 	}
 
 	(connection.properties ??= []).push(prop);

@@ -1339,6 +1339,7 @@ export default {
 			const clicked_has_color =
 				clicked_node.levelNodeStatic?.material === 8 ||
 				clicked_node.levelNodeStatic?.material === 3;
+			const clicked_is_sign = clicked_node.levelNodeSign;
 
 			this.contextmenu = {
 				...(clicked_is_selected && {
@@ -1511,6 +1512,17 @@ export default {
 									);
 								},
 							},
+							...(clicked_is_sign && {
+								Sign: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'sign',
+										);
+									},
+								},
+							}),
 							...(clicked_has_color && {
 								Color: {
 									func: () => {
