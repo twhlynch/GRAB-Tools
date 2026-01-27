@@ -720,7 +720,7 @@ function get_new_connection_name(
 
 function add_code_connection(
 	object: LevelNode,
-	type: 'position' | 'rotation' | 'active',
+	type: 'position' | 'rotation' | 'active' | 'color',
 	name: string,
 	objectID: number,
 ) {
@@ -744,7 +744,7 @@ function add_code_connection(
 
 	const prop = programmablePropertyData();
 	prop.objectID = objectID; // redundant??
-	const key: 'position' | 'rotation' | 'triggerActive' =
+	const key: 'position' | 'rotation' | 'triggerActive' | 'color' =
 		type === 'active' ? 'triggerActive' : type;
 	prop[key] = {};
 
@@ -756,6 +756,29 @@ function add_code_connection(
 		const act_reg = registerData();
 		act_reg.name = `${connection.name}.Act`;
 		(node.program.inputRegisters ??= []).push(act_reg);
+	} else if (type === 'color') {
+		const r_comp = programmablePropertyDataComponent();
+		const g_comp = programmablePropertyDataComponent();
+		const b_comp = programmablePropertyDataComponent();
+		const mode_comp = programmablePropertyDataComponent();
+		r_comp.inoutRegisterIndex = (node.program.inoutRegisters ?? []).length;
+		g_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 1;
+		b_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 2;
+		mode_comp.inoutRegisterIndex = r_comp.inoutRegisterIndex + 3;
+		prop.components = [r_comp, g_comp, b_comp, mode_comp];
+
+		const r_reg = registerData();
+		const g_reg = registerData();
+		const b_reg = registerData();
+		const mode_reg = registerData();
+		r_reg.name = `${connection.name}.R`;
+		g_reg.name = `${connection.name}.G`;
+		b_reg.name = `${connection.name}.B`;
+		mode_reg.name = `${connection.name}.Mode`;
+
+		(node.program.inoutRegisters ??= []).push(
+			...[r_reg, g_reg, b_reg, mode_reg],
+		);
 	} else {
 		const x_comp = programmablePropertyDataComponent();
 		const y_comp = programmablePropertyDataComponent();

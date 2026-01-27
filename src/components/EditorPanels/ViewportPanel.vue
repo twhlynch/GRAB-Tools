@@ -1336,6 +1336,9 @@ export default {
 			const clicked_has_material = clicked_node.levelNodeStatic;
 			const clicked_can_target =
 				!clicked_node.levelNodeStart && !clicked_node.levelNodeFinish;
+			const clicked_has_color =
+				clicked_node.levelNodeStatic?.material === 8 ||
+				clicked_node.levelNodeStatic?.material === 3;
 
 			this.contextmenu = {
 				...(clicked_is_selected && {
@@ -1508,6 +1511,17 @@ export default {
 									);
 								},
 							},
+							...(clicked_has_color && {
+								Color: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'color',
+										);
+									},
+								},
+							}),
 							...(clicked_is_trigger && {
 								Active: {
 									func: () => {
