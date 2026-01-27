@@ -1,19 +1,24 @@
 import encoding from '@/assets/tools/encoding';
 import { PYTHON_SERVER_URL } from '@/config';
+import {
+	Animation,
+	AnimationFrame,
+	LevelNode,
+	LevelNodeStatic,
+} from '@/generated/proto';
+import { LevelNodeWith } from '@/types/levelNodes';
 
 const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
 
-/**
- * @param {File} file - A video file
- * @param {Number} width - Output width
- * @param {Number} height - Output height
- * @param {Function} callback - Progress callback
- * @returns {Promise<Array<Object>>} - A list of level nodes
- */
-async function video(file, width, height, callback = (_) => {}) {
+async function video(
+	file: File,
+	width: number,
+	height: number,
+	callback = (_: number) => {},
+): Promise<Array<LevelNode> | null> {
 	if (!window.MediaStreamTrackProcessor) {
 		window.toast(
-			'MediaStreamTrackProcessor not available on firefox, using server fallback',
+			'MediaStreamTrackProcessor not available on this browser, using server fallback',
 			'warning',
 		);
 		return fallback_video(file);
@@ -27,27 +32,29 @@ async function video(file, width, height, callback = (_) => {}) {
 	return level_nodes;
 }
 
-async function read_video(file, callback) {
+async function read_video(file: File, callback: (percent: number) => void) {
 	console.log(file);
 	if (file.size === 0) {
 		window.toast('Invalid Video: Size is 0', 'error');
 		return null;
 	}
 
-	let buffer;
+	let buffer: Uint8Array<ArrayBuffer>;
 	try {
 		buffer = await new Promise((resolve, reject) => {
 			const reader = new FileReader();
 			reader.onload = async () => {
-				const buffer = new Uint8Array(reader.result);
+				const buffer = new Uint8Array(reader.result as ArrayBuffer);
 				resolve(buffer);
 			};
 			reader.onerror = reject;
 			reader.readAsArrayBuffer(file);
 		});
 	} catch (e) {
-		e.message = 'Invalid Video: ' + e.message;
-		window.toast(e, 'error');
+		if (e instanceof Error) {
+			e.message = 'Invalid Video: ' + e.message;
+			window.toast(e, 'error');
+		}
 		return null;
 	}
 
@@ -61,18 +68,22 @@ async function read_video(file, callback) {
 	try {
 		await video.play();
 	} catch (e) {
-		window.toast(e, 'error');
+		if (e instanceof Error) window.toast(e, 'error');
 		return null;
 	}
 	const [track] = video.captureStream().getVideoTracks();
-	video.onended = () => track.stop();
+	video.onended = () => track!.stop();
 
-	// eslint-disable-next-line no-undef
+	// @ts-expect-error not baseline
 	const processor = new MediaStreamTrackProcessor(track); // fuck firefox
 	const video_reader = processor.readable.getReader();
 
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
+	if (!ctx) {
+		window.toast('Failed to initialize rendering context', 'error');
+		return null;
+	}
 
 	const frames = [];
 
@@ -99,13 +110,28 @@ async function read_video(file, callback) {
 	return frames;
 }
 
-async function build_video(frames, width, height, callback) {
+type SafeNode = LevelNodeWith<LevelNodeStatic> & {
+	animations: (Animation & {
+		frames: AnimationFrame[];
+	})[];
+};
+
+async function build_video(
+	frames: ImageBitmap[],
+	width: number,
+	height: number,
+	callback: (percent: number) => void,
+): Promise<LevelNode[] | null> {
 	const canvas = document.createElement('canvas');
 	canvas.width = width;
 	canvas.height = height;
 	const ctx = canvas.getContext('2d', { willReadFrequently: true });
+	if (!ctx) {
+		window.toast('Failed to initialize rendering context', 'error');
+		return null;
+	}
 
-	const level_nodes = [];
+	const level_nodes: SafeNode[] = [];
 	for (let y = 0; y < height; y++) {
 		for (let x = 0; x < width; x++) {
 			level_nodes.push({
@@ -133,7 +159,7 @@ async function build_video(frames, width, height, callback) {
 			});
 		}
 	}
-	level_nodes.push({
+	const wall_node = {
 		levelNodeStatic: {
 			material: 8,
 			shape: 1000,
@@ -142,12 +168,13 @@ async function build_video(frames, width, height, callback) {
 			scale: { x: width, y: height, z: 0.01 },
 			position: { x: width / 2 - 0.5, y: -(height / 2 - 0.5) },
 		},
-	});
+	};
 
-	for (let i in frames) {
-		callback(90 + 10 * (i / frames.length));
+	for (const i in frames) {
+		const frame = frames[i]!;
 
-		const frame = frames[i];
+		callback(90 + 10 * (Number(i) / frames.length));
+
 		// these may be redundant
 		ctx.drawImage(frame, 0, 0, width, height);
 		const imageData = ctx.getImageData(0, 0, width, height);
@@ -156,36 +183,36 @@ async function build_video(frames, width, height, callback) {
 			for (let y = 0; y < height; y++) {
 				const index = x + y * width;
 				const data_index = index * 4;
-				const r = imageData.data[data_index] / 255;
-				const g = imageData.data[data_index + 1] / 255;
-				const b = imageData.data[data_index + 2] / 255;
+				const r = imageData.data[data_index]! / 255;
+				const g = imageData.data[data_index + 1]! / 255;
+				const b = imageData.data[data_index + 2]! / 255;
 				const brightness = Math.sqrt(
 					0.299 * Math.pow(r, 2) +
 						0.587 * Math.pow(g, 2) +
 						0.114 * Math.pow(b, 2),
 				);
 				const z = Math.round(brightness * 0.5 * 1000) / 1000;
-				const pixel_frames = level_nodes[index].animations[0].frames;
-				let last_frame = pixel_frames[pixel_frames.length - 1];
+				const pixel_frames = level_nodes[index]!.animations[0]!.frames; // always [index] and always has an animation
+				let last_frame = pixel_frames[pixel_frames.length - 1]!; // always 1 or more frames
 				const is_dupe =
-					pixel_frames.length >= 1 && z === last_frame.position.z;
+					pixel_frames.length >= 1 && z === last_frame.position?.z;
 				const has_dedupe =
 					pixel_frames.length >= 2 &&
-					z === pixel_frames[pixel_frames.length - 2].position.z;
+					z === pixel_frames[pixel_frames.length - 2]!.position?.z; // i did >= 2
 
 				if (is_dupe) {
 					if (!has_dedupe) {
 						pixel_frames.push({
 							time: last_frame.time,
-							position: { z: last_frame.position.z },
+							position: { z: last_frame.position?.z ?? 0 },
 							rotation: { w: 1 },
 						});
-						last_frame = pixel_frames[pixel_frames.length - 1];
+						last_frame = pixel_frames[pixel_frames.length - 1]!; // always 1 frame
 					}
-					last_frame.time = i * (1 / 24);
+					last_frame.time = Number(i) * (1 / 24);
 				} else {
 					pixel_frames.push({
-						time: i * (1 / 24),
+						time: Number(i) * (1 / 24),
 						position: { z },
 						rotation: { w: 1 },
 					});
@@ -194,14 +221,10 @@ async function build_video(frames, width, height, callback) {
 		}
 	}
 
-	return level_nodes;
+	return [...level_nodes, wall_node];
 }
 
-/**
- * @param {File} file - A video file
- * @returns {Promise<Array<Object>>} - A list of level nodes
- */
-async function fallback_video(file) {
+async function fallback_video(file: File): Promise<Array<LevelNode> | null> {
 	const formData = new FormData();
 	formData.append('file', file);
 
@@ -212,8 +235,10 @@ async function fallback_video(file) {
 			body: formData,
 		});
 	} catch (e) {
-		e.message = 'Error making request: ' + e.message;
-		window.toast(e, 'error');
+		if (e instanceof Error) {
+			e.message = 'Error making request: ' + e.message;
+			window.toast(e, 'error');
+		}
 		return null;
 	}
 

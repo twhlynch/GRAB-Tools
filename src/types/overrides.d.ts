@@ -19,5 +19,14 @@ declare global {
 				severity: Severity;
 			}>;
 		};
+		MediaStreamTrackProcessor: unknown;
+	}
+
+	interface HTMLVideoElement {
+		captureStream: () => {
+			getVideoTracks: () => {
+				stop: () => void;
+			}[];
+		};
 	}
 }
