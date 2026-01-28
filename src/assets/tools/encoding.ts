@@ -754,13 +754,18 @@ function add_code_connection(
 	prop[key] = {};
 
 	if (type === 'active') {
-		const comp = programmablePropertyDataComponent();
-		comp.inputRegisterIndex = inputRegisters.length;
-		prop.components = [comp];
+		const act_comp = programmablePropertyDataComponent();
+		const pla_comp = programmablePropertyDataComponent();
+		act_comp.inputRegisterIndex = inputRegisters.length;
+		pla_comp.inputRegisterIndex = inputRegisters.length + 1;
+		prop.components = [act_comp, pla_comp];
 
 		const act_reg = registerData();
+		const pla_reg = registerData();
 		act_reg.name = `${connection.name}.Act`;
+		pla_reg.name = `${connection.name}.Pla`;
 		inputRegisters.push(act_reg);
+		inputRegisters.push(pla_reg);
 	} else if (type === 'color') {
 		const r_comp = programmablePropertyDataComponent();
 		const g_comp = programmablePropertyDataComponent();
