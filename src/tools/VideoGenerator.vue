@@ -27,6 +27,7 @@ export default {
 
 			const width = parseInt(getByID(`${toolID}-width`).value) || 40;
 			const height = parseInt(getByID(`${toolID}-height`).value) || 30;
+			const mode = getByID(`${toolID}-mode`).value;
 
 			const file = files[0];
 
@@ -37,6 +38,7 @@ export default {
 				file,
 				width,
 				height,
+				mode,
 				progress_callback,
 			);
 			this.progress = 100;
@@ -79,6 +81,10 @@ export default {
 			id="video-generator-tool-height"
 			placeholder="height (30)"
 		/>
+		<select id="video-generator-tool-mode">
+			<option value="animations" selected>animations</option>
+			<option value="code">code</option>
+		</select>
 		<input type="file" id="video-generator-tool-file" />
 		<ProgressBar :progress="progress" />
 		<button class="button" id="video-generator-tool-btn" @click="generate">

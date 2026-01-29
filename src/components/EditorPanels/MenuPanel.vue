@@ -613,11 +613,15 @@ export default {
 						text: 'height (30)',
 					},
 					{
+						type: 'option',
+						options: ['animations', 'code'],
+					},
+					{
 						type: 'file',
 						accept: '.mp4',
 					},
 				],
-				async (width, height, files) => {
+				async (width, height, mode, files) => {
 					if (!files.length) {
 						window.toast('No video file chosen', 'error');
 						return;
@@ -625,7 +629,7 @@ export default {
 
 					const file = files[0];
 					width = parseInt(width) || 40;
-					height = parseInt(height.value) || 30;
+					height = parseInt(height) || 30;
 
 					const { remove, message } = window.toast(
 						'Video progress: 0%',
@@ -636,6 +640,7 @@ export default {
 						file,
 						width,
 						height,
+						mode,
 						(progress) => {
 							message.value = `Video progress: ${Math.ceil(
 								progress,

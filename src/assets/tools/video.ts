@@ -7,6 +7,7 @@ import {
 	LevelNodeStatic,
 } from '@/generated/proto';
 import { LevelNodeWith } from '@/types/levelNodes';
+import { asm_to_json } from '../AssemblyConversion';
 
 const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
 
@@ -14,6 +15,7 @@ async function video(
 	file: File,
 	width: number,
 	height: number,
+	mode: 'animations' | 'code',
 	callback = (_: number) => {},
 ): Promise<Array<LevelNode> | null> {
 	if (!window.MediaStreamTrackProcessor) {
@@ -27,7 +29,8 @@ async function video(
 	const video_data = await read_video(file, callback);
 	if (video_data === null) return null;
 
-	const level_nodes = await build_video(video_data, width, height, callback);
+	const func = mode === 'animations' ? build_video : build_code_video;
+	const level_nodes = func(video_data, width, height, callback);
 
 	return level_nodes;
 }
@@ -116,12 +119,12 @@ type SafeNode = LevelNodeWith<LevelNodeStatic> & {
 	})[];
 };
 
-async function build_video(
+function build_video(
 	frames: ImageBitmap[],
 	width: number,
 	height: number,
 	callback: (percent: number) => void,
-): Promise<LevelNode[] | null> {
+): LevelNode[] | null {
 	const canvas = document.createElement('canvas');
 	canvas.width = width;
 	canvas.height = height;
@@ -222,6 +225,143 @@ async function build_video(
 	}
 
 	return [...level_nodes, wall_node];
+}
+
+function build_code_video(
+	bitmaps: ImageBitmap[],
+	width: number,
+	height: number,
+	callback: (percent: number) => void,
+): LevelNode[] | null {
+	const nodes: LevelNodeWith<LevelNodeStatic>[] = [];
+
+	const { DEFAULT_COLORED } = encoding.materials();
+
+	const code = encoding.levelNodeGASM();
+	const { levelNodeGASM: code_node } = code;
+
+	code_node.startActive = true;
+	(code_node.position ??= {}).z = -10;
+
+	for (let x = 0; x < width; x++) {
+		for (let y = 0; y < height; y++) {
+			nodes.push(encoding.levelNodeStatic());
+			const { levelNodeStatic: pixel_node } = nodes[nodes.length - 1]!;
+			pixel_node.material = DEFAULT_COLORED;
+			pixel_node.position = { x, y: -y };
+
+			encoding.add_code_connection(
+				code,
+				'color',
+				`Pixel_${x}_${y}`,
+				y + x * height + 1,
+			);
+		}
+	}
+
+	const video = bitmaps_to_frames(bitmaps, width, height);
+	if (!video) return null;
+
+	callback(95);
+
+	const last: Record<string, { r: number; g: number; b: number }> = {};
+
+	const asm =
+		'LABEL loop\n' +
+		video
+			.map((frame) =>
+				frame
+					.map((p) => {
+						// update rgb values that change
+						let lines = ``;
+
+						const key = `${p.x}_${p.y}`;
+						const l = (last[key] ??= { r: 0, g: 0, b: 0 });
+
+						if (l.r !== p.r) {
+							lines += `SET Pixel_${key}.R ${p.r}\n`;
+							l.r = p.r;
+						}
+						if (l.g !== p.g) {
+							lines += `SET Pixel_${key}.G ${p.g}\n`;
+							l.g = p.g;
+						}
+						if (l.b !== p.b) {
+							lines += `SET Pixel_${key}.B ${p.b}\n`;
+							l.b = p.b;
+						}
+
+						return lines;
+					})
+					.join(''),
+			)
+			.join('SLEEP 0\n') +
+		// reset to zero
+		Array.from({ length: width * height }, (_, i) => {
+			const x = Math.floor(i / height);
+			const y = i % height;
+			return (
+				`SET Pixel_${x}_${y}.R 0\n` +
+				`SET Pixel_${x}_${y}.G 0\n` +
+				`SET Pixel_${x}_${y}.B 0\n`
+			);
+		}).join('') +
+		// loop forever
+		'SLEEP 0\nGOTO loop\n';
+
+	asm_to_json(asm, code);
+
+	return [...nodes, code];
+}
+
+type Pixel = {
+	x: number;
+	y: number;
+	r: number;
+	g: number;
+	b: number;
+};
+
+type Frame = Pixel[];
+
+function bitmaps_to_frames(
+	bitmaps: ImageBitmap[],
+	width: number,
+	height: number,
+): Frame[] | null {
+	if (bitmaps.length === 0) return [];
+	if (bitmaps[0] === undefined) return [];
+
+	const canvas = new OffscreenCanvas(width, height);
+	const ctx = canvas.getContext('2d', { willReadFrequently: true });
+	if (!ctx) return null;
+
+	const video: Frame[] = [];
+
+	for (const bitmap of bitmaps) {
+		ctx.clearRect(0, 0, width, height);
+		ctx.drawImage(bitmap, 0, 0, width, height);
+
+		const { data } = ctx.getImageData(0, 0, width, height);
+		const frame: Frame = [];
+
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const i = (y * width + x) * 4;
+				frame.push({
+					x,
+					y,
+					r: data[i]!,
+					g: data[i + 1]!,
+					b: data[i + 2]!,
+				});
+			}
+		}
+
+		video.push(frame);
+	}
+
+	return video;
 }
 
 async function fallback_video(file: File): Promise<Array<LevelNode> | null> {
