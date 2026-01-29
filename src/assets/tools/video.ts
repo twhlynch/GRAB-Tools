@@ -264,50 +264,42 @@ function build_code_video(
 
 	callback(95);
 
+	const sleep = `\nSLEEP 0\n`;
+
 	const last: Record<string, { r: number; g: number; b: number }> = {};
+
+	const video_asm = video.flatMap((frame) => [
+		// update rgb values that change
+		...frame.flatMap((p) => {
+			const key = `${p.x}_${p.y}`;
+			const prev = (last[key] ??= { r: 0, g: 0, b: 0 });
+			const pixel = `Pixel_${key}`;
+
+			return (['r', 'g', 'b'] as const).flatMap((c) => {
+				if (prev[c] === p[c]) return [];
+				prev[c] = p[c];
+				return [`SET ${pixel}.${c.toUpperCase()} ${p[c]}`];
+			});
+		}),
+		// then sleep
+		sleep,
+	]);
+
+	const reset_asm = [...Array(width)].flatMap((_, x) =>
+		[...Array(height)].flatMap((_, y) =>
+			['R', 'G', 'B'].map((c) => `SET Pixel_${x}_${y}.${c} 0`),
+		),
+	);
 
 	const asm =
 		'LABEL loop\n' +
-		video
-			.map((frame) =>
-				frame
-					.map((p) => {
-						// update rgb values that change
-						let lines = ``;
-
-						const key = `${p.x}_${p.y}`;
-						const l = (last[key] ??= { r: 0, g: 0, b: 0 });
-
-						if (l.r !== p.r) {
-							lines += `SET Pixel_${key}.R ${p.r}\n`;
-							l.r = p.r;
-						}
-						if (l.g !== p.g) {
-							lines += `SET Pixel_${key}.G ${p.g}\n`;
-							l.g = p.g;
-						}
-						if (l.b !== p.b) {
-							lines += `SET Pixel_${key}.B ${p.b}\n`;
-							l.b = p.b;
-						}
-
-						return lines;
-					})
-					.join(''),
-			)
-			.join('SLEEP 0\n') +
+		// display video
+		video_asm.join('\n') +
 		// reset to zero
-		Array.from({ length: width * height }, (_, i) => {
-			const x = Math.floor(i / height);
-			const y = i % height;
-			return (
-				`SET Pixel_${x}_${y}.R 0\n` +
-				`SET Pixel_${x}_${y}.G 0\n` +
-				`SET Pixel_${x}_${y}.B 0\n`
-			);
-		}).join('') +
+		reset_asm.join('\n') +
+		sleep +
 		// loop forever
-		'SLEEP 0\nGOTO loop\n';
+		'GOTO loop\n';
 
 	asm_to_json(asm, code);
 
@@ -324,44 +316,47 @@ type Pixel = {
 
 type Frame = Pixel[];
 
+function bitmap_to_frame(
+	bitmap: ImageBitmap,
+	width: number,
+	height: number,
+	ctx: OffscreenCanvasRenderingContext2D,
+): Frame {
+	ctx.clearRect(0, 0, width, height);
+	ctx.drawImage(bitmap, 0, 0, width, height);
+
+	const { data } = ctx.getImageData(0, 0, width, height);
+	const frame: Frame = [];
+
+	for (let y = 0; y < height; y++) {
+		for (let x = 0; x < width; x++) {
+			const i = (y * width + x) * 4;
+			frame.push({
+				x,
+				y,
+				r: data[i]!,
+				g: data[i + 1]!,
+				b: data[i + 2]!,
+			});
+		}
+	}
+
+	return frame;
+}
+
 function bitmaps_to_frames(
 	bitmaps: ImageBitmap[],
 	width: number,
 	height: number,
-): Frame[] | null {
+): Frame[] {
 	if (bitmaps.length === 0) return [];
 	if (bitmaps[0] === undefined) return [];
 
 	const canvas = new OffscreenCanvas(width, height);
 	const ctx = canvas.getContext('2d', { willReadFrequently: true });
-	if (!ctx) return null;
+	if (!ctx) return [];
 
-	const video: Frame[] = [];
-
-	for (const bitmap of bitmaps) {
-		ctx.clearRect(0, 0, width, height);
-		ctx.drawImage(bitmap, 0, 0, width, height);
-
-		const { data } = ctx.getImageData(0, 0, width, height);
-		const frame: Frame = [];
-
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
-				const i = (y * width + x) * 4;
-				frame.push({
-					x,
-					y,
-					r: data[i]!,
-					g: data[i + 1]!,
-					b: data[i + 2]!,
-				});
-			}
-		}
-
-		video.push(frame);
-	}
-
-	return video;
+	return bitmaps.map((bitmap) => bitmap_to_frame(bitmap, width, height, ctx));
 }
 
 async function fallback_video(file: File): Promise<Array<LevelNode> | null> {
