@@ -242,7 +242,10 @@ function build_code_video(
 ): LevelNode[] | null {
 	const { DEFAULT_COLORED } = encoding.materials();
 	const MAX_INSTRUCTIONS_PER_FRAME = 80;
-
+	const PIXELS_PER_CODE_BLOCK = Math.floor(
+		// (LIMIT - (sleep, goto, label) - 1) / |{r, g, b}|
+		(MAX_INSTRUCTIONS_PER_FRAME - 3 - 1) / 3,
+	);
 	const static_nodes: LevelNodeWith<LevelNodeStatic>[] = [];
 	const code_nodes: LevelNodeWith<LevelNodeGASM>[] = [];
 
@@ -271,7 +274,7 @@ function build_code_video(
 		frame.flatMap((p) => {
 			const key = `${p.x}_${p.y}`;
 			const prev = (last[key] ??= { r: 0, g: 0, b: 0 });
-			const pixel = `Pixel_${key}`;
+			const pixel = `P_${key}`;
 
 			return (['r', 'g', 'b'] as const).flatMap((c) => {
 				if (prev[c] === p[c]) return [];
@@ -291,7 +294,7 @@ function build_code_video(
 	const reset_asm: Instruction[] = [...Array(width)].flatMap((_, x) =>
 		[...Array(height)].flatMap((_, y) =>
 			['R', 'G', 'B'].map((c) => ({
-				line: `SET Pixel_${x}_${y}.${c} 0`,
+				line: `SET P_${x}_${y}.${c} 0`,
 				x,
 				y,
 			})),
@@ -301,24 +304,23 @@ function build_code_video(
 	// all the frames
 	const frames_asm = [...video_asm, reset_asm];
 
-	// max lines will be w * h * |{r, g, b}|
-	const max_lines_per_frame = width * height * 3;
-
 	// number of code blocks to stay under the frame limit
 	const code_block_count = Math.ceil(
-		// 4: small offset for sleeps and loops + 1 so we dont hit the limit
-		max_lines_per_frame / (MAX_INSTRUCTIONS_PER_FRAME - 4),
+		(width * height) / PIXELS_PER_CODE_BLOCK,
 	);
 
 	// build code blocks
-	let y = 0;
 	for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
 		const code = encoding.levelNodeGASM();
 		const { levelNodeGASM: code_node } = code;
 
+		const x = Math.floor((blk_index * 25) / height);
+		const y = (blk_index * 25) % height;
+
 		code_node.startActive = true;
-		(code_node.position ??= {}).z = -10;
-		code_node.position.y = y++;
+		(code_node.position ??= {}).z = -2;
+		code_node.position.x = x;
+		code_node.position.y = -y;
 
 		code_nodes.push(code);
 	}
@@ -330,11 +332,12 @@ function build_code_video(
 		const block = code_nodes[block_index]!;
 		const pixel_index = y + x * height;
 		if (connection_map[pixel_index]) return;
+		connection_map[pixel_index] = true;
 
 		encoding.add_code_connection(
 			block,
 			'color',
-			`Pixel_${x}_${y}`,
+			`P_${x}_${y}`,
 			y + x * height + 1,
 		);
 	};
@@ -343,18 +346,18 @@ function build_code_video(
 	const asm: string[][] = [];
 
 	// distribute code somewhat evenly
-	let block_index = 0;
 	for (let frame_index = 0; frame_index < frames_asm.length; frame_index++) {
 		const frame_asm = frames_asm[frame_index]!;
 
-		// distribute pixel change lines
+		// distribute pixel change lines to their assigned block
 		for (let line_index = 0; line_index < frame_asm.length; line_index++) {
 			const line = frame_asm[line_index]!;
 
+			const block_index = Math.floor(
+				(line.y + line.x * height) / PIXELS_PER_CODE_BLOCK,
+			);
 			(asm[block_index] ??= []).push(line.line);
 			connect(block_index, line.x, line.y);
-
-			block_index = (block_index + 1) % code_block_count;
 		}
 
 		// add sleep to ALL blocks every frame
