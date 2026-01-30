@@ -4,6 +4,7 @@ import {
 	Animation,
 	AnimationFrame,
 	LevelNode,
+	LevelNodeGASM,
 	LevelNodeStatic,
 } from '@/generated/proto';
 import { LevelNodeWith } from '@/types/levelNodes';
@@ -233,29 +234,18 @@ function build_code_video(
 	height: number,
 	callback: (percent: number) => void,
 ): LevelNode[] | null {
-	const nodes: LevelNodeWith<LevelNodeStatic>[] = [];
+	const static_nodes: LevelNodeWith<LevelNodeStatic>[] = [];
+	const code_nodes: LevelNodeWith<LevelNodeGASM>[] = [];
 
 	const { DEFAULT_COLORED } = encoding.materials();
 
-	const code = encoding.levelNodeGASM();
-	const { levelNodeGASM: code_node } = code;
-
-	code_node.startActive = true;
-	(code_node.position ??= {}).z = -10;
-
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
-			nodes.push(encoding.levelNodeStatic());
-			const { levelNodeStatic: pixel_node } = nodes[nodes.length - 1]!;
+			static_nodes.push(encoding.levelNodeStatic());
+			const { levelNodeStatic: pixel_node } =
+				static_nodes[static_nodes.length - 1]!;
 			pixel_node.material = DEFAULT_COLORED;
 			pixel_node.position = { x, y: -y };
-
-			encoding.add_code_connection(
-				code,
-				'color',
-				`Pixel_${x}_${y}`,
-				y + x * height + 1,
-			);
 		}
 	}
 
@@ -264,13 +254,16 @@ function build_code_video(
 
 	callback(95);
 
+	const MAX_INSTRUCTIONS_PER_FRAME = 80;
+
 	const sleep = `\nSLEEP 0\n`;
 
 	const last: Record<string, { r: number; g: number; b: number }> = {};
 
-	const video_asm = video.flatMap((frame) => [
+	// assembly for lines to run each frame
+	const video_asm = video.map((frame) =>
 		// update rgb values that change
-		...frame.flatMap((p) => {
+		frame.flatMap((p) => {
 			const key = `${p.x}_${p.y}`;
 			const prev = (last[key] ??= { r: 0, g: 0, b: 0 });
 			const pixel = `Pixel_${key}`;
@@ -281,29 +274,83 @@ function build_code_video(
 				return [`SET ${pixel}.${c.toUpperCase()} ${p[c]}`];
 			});
 		}),
-		// then sleep
-		sleep,
-	]);
+	);
 
+	// a final frame to reset to black
 	const reset_asm = [...Array(width)].flatMap((_, x) =>
 		[...Array(height)].flatMap((_, y) =>
 			['R', 'G', 'B'].map((c) => `SET Pixel_${x}_${y}.${c} 0`),
 		),
 	);
 
-	const asm =
-		'LABEL loop\n' +
-		// display video
-		video_asm.join('\n') +
-		// reset to zero
-		reset_asm.join('\n') +
-		sleep +
-		// loop forever
-		'GOTO loop\n';
+	// all the frames
+	const frames_asm = [...video_asm, reset_asm];
 
-	asm_to_json(asm, code);
+	// max lines will be w * h * |{r, g, b}|
+	const max_lines_per_frame = width * height * 3;
 
-	return [...nodes, code];
+	// number of code blocks to stay under the frame limit
+	const code_block_count = Math.ceil(
+		// 4: small offset for sleeps and loops (we dont want to *hit* the limit)
+		max_lines_per_frame / (MAX_INSTRUCTIONS_PER_FRAME - 4),
+	);
+
+	// per code block assembly
+	const asm: string[][] = [];
+
+	// distribute code somewhat evenly
+	let block_index = 0;
+	for (let frame_index = 0; frame_index < frames_asm.length; frame_index++) {
+		const frame_asm = frames_asm[frame_index]!;
+
+		// distribute pixel change lines
+		for (let line_index = 0; line_index < frame_asm.length; line_index++) {
+			const line = frame_asm[line_index]!;
+
+			(asm[block_index] ??= []).push(line);
+
+			block_index = (block_index + 1) % code_block_count;
+		}
+
+		// add sleep to ALL blocks
+		for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
+			(asm[blk_index] ??= []).push(sleep);
+		}
+	}
+
+	let y = 0;
+	asm.forEach((block_asm) => {
+		const code = encoding.levelNodeGASM();
+		const { levelNodeGASM: code_node } = code;
+
+		code_node.startActive = true;
+		(code_node.position ??= {}).z = -10;
+		code_node.position.y = y++;
+
+		for (let x = 0; x < width; x++) {
+			for (let y = 0; y < height; y++) {
+				encoding.add_code_connection(
+					code,
+					'color',
+					`Pixel_${x}_${y}`,
+					y + x * height + 1,
+				);
+			}
+		}
+		const asm =
+			'LABEL loop\n' +
+			// display video
+			block_asm.join('\n') +
+			// reset to zero
+			sleep +
+			// loop forever
+			'GOTO loop\n';
+		asm_to_json(asm, code);
+
+		code_nodes.push(code);
+	});
+
+	return [...static_nodes, ...code_nodes];
 }
 
 type Pixel = {
