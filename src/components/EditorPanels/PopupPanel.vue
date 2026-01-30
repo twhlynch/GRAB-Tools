@@ -62,6 +62,7 @@ export default {
 <template>
 	<section v-if="visible" ref="container">
 		<div v-for="(input, i) in inputs" :key="i">
+			<label v-if="input.label">{{ input.label }}</label>
 			<select v-if="input.type === 'option'" :ref="`input-${i}`">
 				<option
 					v-for="(option, j) in input.options"
@@ -86,6 +87,7 @@ export default {
 				:min="input.min"
 				:value="input.value"
 				:max="input.max"
+				:step="input.step ?? 1"
 				@input="
 					(e) => {
 						input.value = e.target.value;

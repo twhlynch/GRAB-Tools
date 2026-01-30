@@ -118,6 +118,10 @@ export default {
 						Colors: { func: this.randomize_colors },
 					},
 					Ambience: {
+						Sliders: { func: this.ambience_sliders },
+						'Modded Sliders': {
+							func: () => this.ambience_sliders(true),
+						},
 						Min: { func: this.ambience_min },
 						Max: { func: this.ambience_max },
 						Random: { func: this.ambience_random },
@@ -1153,6 +1157,71 @@ export default {
 			this.$emit('modifier', (json) => {
 				json.ambienceSettings = encoding.ambienceSettings();
 				return json;
+			});
+		},
+		ambience_sliders(modded = false) {
+			this.$emit('modifier', async (json) => {
+				const m_range = (name, min, max, value) => ({
+					label: name,
+					type: 'range',
+					min: modded ? -1e10 : min,
+					max: modded ? 1e10 : max,
+					value: value,
+					step: 0.001,
+				});
+
+				const amb = json.ambienceSettings;
+				const hor = amb.skyHorizonColor;
+				const zen = amb.skyZenithColor;
+
+				return await new Promise((resolve) => {
+					this.$emit(
+						'popup',
+						[
+							m_range('Fog Density', 0, 1, amb.fogDensity),
+							m_range('Sun Size', 0, 1, amb.sunSize),
+							m_range('Sun Altitude', -90, 90, amb.sunAltitude),
+							m_range('Sun Azimuth', 0, 360, amb.sunAzimuth),
+							m_range('Sky Horizon R', 0, 1, hor.r),
+							m_range('Sky Horizon G', 0, 1, hor.g),
+							m_range('Sky Horizon B', 0, 1, hor.b),
+							m_range('Sky Zenith R', 0, 1, zen.r),
+							m_range('Sky Zenith G', 0, 1, zen.g),
+							m_range('Sky Zenith B', 0, 1, zen.b),
+						],
+						(
+							fogDensity,
+							sunSize,
+							sunAltitude,
+							sunAzimuth,
+							skyHorizonR,
+							skyHorizonG,
+							skyHorizonB,
+							skyZenithR,
+							skyZenithG,
+							skyZenithB,
+						) => {
+							json.ambienceSettings = encoding.ambienceSettings(
+								{
+									r: Number(skyHorizonR),
+									g: Number(skyHorizonG),
+									b: Number(skyHorizonB),
+								},
+								{
+									r: Number(skyZenithR),
+									g: Number(skyZenithG),
+									b: Number(skyZenithB),
+								},
+								Number(sunAltitude),
+								Number(sunAzimuth),
+								Number(sunSize),
+								Number(fogDensity),
+							);
+
+							resolve(json);
+						},
+					);
+				});
 			});
 		},
 		toggle_huge_far() {
