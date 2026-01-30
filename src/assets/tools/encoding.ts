@@ -720,7 +720,7 @@ function get_new_connection_name(
 
 function add_code_connection(
 	object: LevelNode,
-	type: 'position' | 'rotation' | 'active' | 'color' | 'sign',
+	type: 'position' | 'rotation' | 'active' | 'color' | 'sign' | 'scale',
 	name: string,
 	objectID: number,
 ) {
@@ -749,8 +749,13 @@ function add_code_connection(
 
 	const prop = programmablePropertyData();
 	prop.objectID = objectID; // redundant??
-	const key: 'position' | 'rotation' | 'triggerActive' | 'color' | 'sign' =
-		type === 'active' ? 'triggerActive' : type;
+	const key:
+		| 'position'
+		| 'rotation'
+		| 'triggerActive'
+		| 'color'
+		| 'sign'
+		| 'scale' = type === 'active' ? 'triggerActive' : type;
 	prop[key] = {};
 
 	if (type === 'active') {
@@ -809,9 +814,15 @@ function add_code_connection(
 		const x_comp = programmablePropertyDataComponent();
 		const y_comp = programmablePropertyDataComponent();
 		const z_comp = programmablePropertyDataComponent();
-		x_comp.inoutRegisterIndex = inoutRegisters.length;
-		y_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 1;
-		z_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 2;
+		if (type === 'scale') {
+			x_comp.inputRegisterIndex = inputRegisters.length;
+			y_comp.inputRegisterIndex = x_comp.inputRegisterIndex + 1;
+			z_comp.inputRegisterIndex = x_comp.inputRegisterIndex + 2;
+		} else {
+			x_comp.inoutRegisterIndex = inoutRegisters.length;
+			y_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 1;
+			z_comp.inoutRegisterIndex = x_comp.inoutRegisterIndex + 2;
+		}
 		prop.components = [x_comp, y_comp, z_comp];
 
 		const x_reg = registerData();
@@ -822,7 +833,11 @@ function add_code_connection(
 		y_reg.name = `${connection.name}.${type_spec}.Y`;
 		z_reg.name = `${connection.name}.${type_spec}.Z`;
 
-		inoutRegisters.push(x_reg, y_reg, z_reg);
+		(type === 'scale' ? inputRegisters : inoutRegisters).push(
+			x_reg,
+			y_reg,
+			z_reg,
+		);
 	}
 
 	(connection.properties ??= []).push(prop);

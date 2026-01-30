@@ -377,6 +377,9 @@ export interface ProgrammablePositionData {}
 export interface ProgrammableRotationData {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableScaleData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ProgrammableTriggerActive {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -397,6 +400,7 @@ export interface ProgrammablePropertyData {
 	player?: ProgrammablePlayerData;
 	sign?: ProgrammableSignData;
 	color?: ProgrammableColorData;
+	scale?: ProgrammableScaleData;
 }
 
 export interface ProgrammableSignUpdateData {

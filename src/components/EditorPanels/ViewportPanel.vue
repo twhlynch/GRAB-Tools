@@ -1513,6 +1513,15 @@ export default {
 									);
 								},
 							},
+							Scale: {
+								func: () => {
+									this.add_code_connection(
+										selected_object,
+										clicked_object,
+										'scale',
+									);
+								},
+							},
 							...(clicked_is_sign && {
 								Sign: {
 									func: () => {

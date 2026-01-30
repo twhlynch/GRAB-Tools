@@ -566,6 +566,8 @@ message ProgrammablePositionData {}
 
 message ProgrammableRotationData {}
 
+message ProgrammableScaleData {}
+
 message ProgrammableTriggerActive {}
 
 message ProgrammablePlayerData {}
@@ -591,6 +593,7 @@ message ProgrammablePropertyData {
     ProgrammablePlayerData player = 6;
     ProgrammableSignData sign = 7;
     ProgrammableColorData color = 8;
+    ProgrammableScaleData scale = 9;
   }
 }
 
