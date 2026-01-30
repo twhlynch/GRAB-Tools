@@ -228,17 +228,31 @@ function build_video(
 	return [...level_nodes, wall_node];
 }
 
+type Instruction = {
+	line: string;
+	x: number;
+	y: number;
+};
+
 function build_code_video(
 	bitmaps: ImageBitmap[],
 	width: number,
 	height: number,
 	callback: (percent: number) => void,
 ): LevelNode[] | null {
+	const { DEFAULT_COLORED } = encoding.materials();
+	const MAX_INSTRUCTIONS_PER_FRAME = 80;
+
 	const static_nodes: LevelNodeWith<LevelNodeStatic>[] = [];
 	const code_nodes: LevelNodeWith<LevelNodeGASM>[] = [];
 
-	const { DEFAULT_COLORED } = encoding.materials();
+	// parse video data
+	const video = bitmaps_to_frames(bitmaps, width, height);
+	if (!video) return null;
 
+	callback(95);
+
+	// create pixels
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
 			static_nodes.push(encoding.levelNodeStatic());
@@ -249,19 +263,10 @@ function build_code_video(
 		}
 	}
 
-	const video = bitmaps_to_frames(bitmaps, width, height);
-	if (!video) return null;
-
-	callback(95);
-
-	const MAX_INSTRUCTIONS_PER_FRAME = 80;
-
-	const sleep = `\nSLEEP 0\n`;
-
 	const last: Record<string, { r: number; g: number; b: number }> = {};
 
 	// assembly for lines to run each frame
-	const video_asm = video.map((frame) =>
+	const video_asm: Instruction[][] = video.map((frame) =>
 		// update rgb values that change
 		frame.flatMap((p) => {
 			const key = `${p.x}_${p.y}`;
@@ -271,15 +276,25 @@ function build_code_video(
 			return (['r', 'g', 'b'] as const).flatMap((c) => {
 				if (prev[c] === p[c]) return [];
 				prev[c] = p[c];
-				return [`SET ${pixel}.${c.toUpperCase()} ${p[c]}`];
+				return [
+					{
+						line: `SET ${pixel}.${c.toUpperCase()} ${p[c]}`,
+						x: p.x,
+						y: p.y,
+					},
+				];
 			});
 		}),
 	);
 
 	// a final frame to reset to black
-	const reset_asm = [...Array(width)].flatMap((_, x) =>
+	const reset_asm: Instruction[] = [...Array(width)].flatMap((_, x) =>
 		[...Array(height)].flatMap((_, y) =>
-			['R', 'G', 'B'].map((c) => `SET Pixel_${x}_${y}.${c} 0`),
+			['R', 'G', 'B'].map((c) => ({
+				line: `SET Pixel_${x}_${y}.${c} 0`,
+				x,
+				y,
+			})),
 		),
 	);
 
@@ -291,9 +306,38 @@ function build_code_video(
 
 	// number of code blocks to stay under the frame limit
 	const code_block_count = Math.ceil(
-		// 4: small offset for sleeps and loops (we dont want to *hit* the limit)
+		// 4: small offset for sleeps and loops + 1 so we dont hit the limit
 		max_lines_per_frame / (MAX_INSTRUCTIONS_PER_FRAME - 4),
 	);
+
+	// build code blocks
+	let y = 0;
+	for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
+		const code = encoding.levelNodeGASM();
+		const { levelNodeGASM: code_node } = code;
+
+		code_node.startActive = true;
+		(code_node.position ??= {}).z = -10;
+		code_node.position.y = y++;
+
+		code_nodes.push(code);
+	}
+
+	const sleep = `\nSLEEP 0\n`;
+
+	const connection_map: Record<number, true> = {};
+	const connect = (block_index: number, x: number, y: number) => {
+		const block = code_nodes[block_index]!;
+		const pixel_index = y + x * height;
+		if (connection_map[pixel_index]) return;
+
+		encoding.add_code_connection(
+			block,
+			'color',
+			`Pixel_${x}_${y}`,
+			y + x * height + 1,
+		);
+	};
 
 	// per code block assembly
 	const asm: string[][] = [];
@@ -307,48 +351,33 @@ function build_code_video(
 		for (let line_index = 0; line_index < frame_asm.length; line_index++) {
 			const line = frame_asm[line_index]!;
 
-			(asm[block_index] ??= []).push(line);
+			(asm[block_index] ??= []).push(line.line);
+			connect(block_index, line.x, line.y);
 
 			block_index = (block_index + 1) % code_block_count;
 		}
 
-		// add sleep to ALL blocks
+		// add sleep to ALL blocks every frame
 		for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
 			(asm[blk_index] ??= []).push(sleep);
 		}
 	}
 
-	let y = 0;
-	asm.forEach((block_asm) => {
-		const code = encoding.levelNodeGASM();
-		const { levelNodeGASM: code_node } = code;
+	for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
+		const block_asm = asm[blk_index]!;
+		const code_block = code_nodes[blk_index]!;
 
-		code_node.startActive = true;
-		(code_node.position ??= {}).z = -10;
-		code_node.position.y = y++;
-
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				encoding.add_code_connection(
-					code,
-					'color',
-					`Pixel_${x}_${y}`,
-					y + x * height + 1,
-				);
-			}
-		}
-		const asm =
-			'LABEL loop\n' +
-			// display video
-			block_asm.join('\n') +
-			// reset to zero
-			sleep +
-			// loop forever
-			'GOTO loop\n';
-		asm_to_json(asm, code);
-
-		code_nodes.push(code);
-	});
+		asm_to_json(
+			'LABEL l\n' +
+				// display video
+				block_asm.join('\n') +
+				// reset to zero
+				sleep +
+				// loop forever
+				'GOTO l\n',
+			code_block,
+		);
+	}
 
 	return [...static_nodes, ...code_nodes];
 }
