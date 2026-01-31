@@ -9,3 +9,6 @@
 
 # build output
 /dist
+
+# env
+/.env
