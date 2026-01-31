@@ -804,7 +804,7 @@ function add_code_connection(
 		const components = prop.components;
 		output_registers.forEach((name) => {
 			const comp = programmablePropertyDataComponent();
-			comp.inoutRegisterIndex = outputRegisters.length;
+			comp.outputRegisterIndex = outputRegisters.length;
 			components.push(comp);
 			const reg = registerData();
 			reg.name = `${connection.name}.${name}`;
