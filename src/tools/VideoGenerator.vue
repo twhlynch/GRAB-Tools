@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import video from '@/assets/tools/video';
 import ProgressBar from '@/components/ProgressBar.vue';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
@@ -47,17 +51,17 @@ export default {
 				return;
 			}
 
-			const obj = encoding.createLevel(
+			const obj = createLevel(
 				video_nodes,
 				'Video',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
-			const encoded = await encoding.encodeLevel(obj);
+			const encoded = await encodeLevel(obj);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 			this.progress = 0;
 		},
 	},

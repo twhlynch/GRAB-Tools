@@ -1,6 +1,7 @@
-import encoding from '@/assets/tools/encoding';
 import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 import { EditorView } from '@codemirror/view';
+import { unmodded_root } from './encoding/root';
+import { materials } from './encoding/utils';
 
 function get_field_name(doc, pos) {
 	const text = doc.sliceString(0, pos);
@@ -50,13 +51,10 @@ function collect_completions(enums) {
 		Object.entries(values).forEach(([name, num]) => {
 			if (
 				type === 'LevelNodeShape' &&
-				num <= encoding.materials().__END_OF_SPECIAL_PARTS__
+				num <= materials().__END_OF_SPECIAL_PARTS__
 			)
 				return;
-			if (
-				type === 'LevelNodeMaterial' &&
-				num === encoding.materials().TRIGGER
-			)
+			if (type === 'LevelNodeMaterial' && num === materials().TRIGGER)
 				return;
 			completions[field.name] ??= [];
 			if (
@@ -104,7 +102,7 @@ function get_completions(completions, doc, pos) {
 }
 
 export function grabCompletion() {
-	const root = encoding.unmodded_root();
+	const root = unmodded_root();
 	root.resolveAll();
 	const enums = collect_enums(root);
 	const completions = collect_completions(enums);

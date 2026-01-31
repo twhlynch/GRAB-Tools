@@ -1,6 +1,6 @@
-import encoding from '@/assets/tools/encoding';
 import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls';
+import { node_data } from './encoding/utils';
 
 class GizmoControls {
 	constructor(camera, domElement, scene, changing_event, changed_event) {
@@ -104,7 +104,7 @@ class GizmoControls {
 		this.selection.forEach((object) => {
 			object.updateMatrixWorld(true);
 
-			const node = encoding.node_data(object);
+			const node = node_data(object);
 			if (!node) return;
 
 			if (node.position) {

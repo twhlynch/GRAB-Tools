@@ -1,5 +1,5 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import { materials, shapes } from '@/assets/encoding/utils';
 import StatsIcon from '@/icons/StatsIcon.vue';
 
 export default {
@@ -51,8 +51,8 @@ export default {
 
 			for (const shape in level.nodes.shape) {
 				if (shape >= 1000) {
-					let name = Object.keys(encoding.shapes()).find(
-						(k) => encoding.shapes()[k] == shape,
+					let name = Object.keys(shapes()).find(
+						(k) => shapes()[k] == shape,
 					);
 					if (!name) continue;
 					name = name.charAt(0) + name.toLowerCase().slice(1);
@@ -62,10 +62,10 @@ export default {
 			}
 
 			for (const material in level.nodes.material) {
-				let name = Object.keys(encoding.materials()).find(
-					(k) => encoding.materials()[k] == material,
+				let name = Object.keys(materials()).find(
+					(k) => materials()[k] == material,
 				);
-				if (!name || material == encoding.materials().TRIGGER) continue;
+				if (!name || material == materials().TRIGGER) continue;
 				name = name.charAt(0) + name.toLowerCase().slice(1);
 				this.extra_statistics[`${name} (${material})`] =
 					level.nodes.material[material].length;

@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import signs from '@/assets/tools/signs';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
@@ -17,17 +21,17 @@ export default {
 
 			const level_nodes = signs.signs(text, mode === 'animated');
 
-			const level = encoding.createLevel(
+			const level = createLevel(
 				level_nodes,
 				'Signs',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
-			const encoded = await encoding.encodeLevel(level);
+			const encoded = await encodeLevel(level);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 		},
 	},
 };

@@ -1,13 +1,14 @@
-import encoding from '@/assets/tools/encoding';
 import { StreamLanguage } from '@codemirror/language';
+import { SPECIAL_REGISTERS } from './encoding/gasm/registers';
+import { load } from './encoding/root';
 
-const instruction_map = encoding.load().COD.Level.InstructionData.Type;
+const instruction_map = load().COD.Level.InstructionData.Type;
 const instructions_list = Object.keys(instruction_map).map((ins) =>
 	ins.replace('In', '').toUpperCase(),
 );
 const instructions_regex = new RegExp(`(?:${instructions_list.join('|')})\\b`);
 
-const special_reg_list = encoding.special_registers();
+const special_reg_list = SPECIAL_REGISTERS;
 const special_reg_regex = new RegExp(`(${special_reg_list.join('|')})\\b`);
 
 export const gasm = StreamLanguage.define({

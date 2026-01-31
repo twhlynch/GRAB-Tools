@@ -1,4 +1,5 @@
-import encoding from '@/assets/tools/encoding';
+import { SPECIAL_REGISTERS } from '@/assets/encoding/gasm/registers';
+import { load } from '@/assets/encoding/root';
 import {
 	InstructionData,
 	InstructionDataType,
@@ -9,9 +10,8 @@ import {
 } from '@/generated/proto';
 import { LevelNodeWith } from '@/types/levelNodes';
 
-const instruction_map = encoding.load().COD.Level.InstructionData.Type;
-const operand_map = encoding.load().COD.Level.OperandData.Type;
-const special_registers = encoding.special_registers();
+const instruction_map = load().COD.Level.InstructionData.Type;
+const operand_map = load().COD.Level.OperandData.Type;
 const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InNoop]: 0,
 	[instruction_map.InSet]: 2,
@@ -150,7 +150,7 @@ function preprocess_scopes(
 
 		return result;
 	};
-	const find_end = (lines: string[], start: number): number => {
+	const find_end = (start: number): number => {
 		let depth = 1;
 		for (let i = start + 1; i < lines.length; i++) {
 			const parts = lines[i]!.trim().split(/\s+/);
@@ -203,7 +203,7 @@ function preprocess_scopes(
 			const step =
 				step_arg !== undefined ? resolve(step_arg, context) : 1;
 
-			const end = find_end(lines, i);
+			const end = find_end(i);
 			const block = lines.slice(i + 1, end);
 
 			for (let val = start; val <= stop; val += step) {
@@ -224,7 +224,7 @@ function preprocess_scopes(
 			const lhs = resolve(left, context);
 			const rhs = resolve(right, context);
 
-			const end = find_end(lines, i);
+			const end = find_end(i);
 
 			const cond =
 				(op === '==' && lhs == rhs) ||
@@ -297,20 +297,20 @@ function operand_asm_to_json(
 		index === operand_counts[instruction] - 1;
 
 	if (is_label) {
-		let index = labels.findIndex((label) => label.name === operand);
-		if (index === -1) {
+		let idx = labels.findIndex((label) => label.name === operand);
+		if (idx === -1) {
 			labels.push({ name: operand });
-			index = labels.length - 1;
+			idx = labels.length - 1;
 		}
 		return {
 			type: operand_map.OpLabel,
-			index: index,
+			index: idx,
 		};
 	}
-	if (special_registers.includes(operand)) {
+	if (SPECIAL_REGISTERS.includes(operand)) {
 		return {
 			type: operand_map.OpSpecialRegister,
-			index: special_registers.indexOf(operand),
+			index: SPECIAL_REGISTERS.indexOf(operand),
 		};
 	}
 	if (inoutRegisters.includes(operand)) {
@@ -402,7 +402,7 @@ function operand_json_to_asm(
 	switch (type) {
 		case operand_map.OpConstant:        return `${value}`;
 		case operand_map.OpLabel:           return labels[index]?.name;
-		case operand_map.OpSpecialRegister: return special_registers[index]
+		case operand_map.OpSpecialRegister: return SPECIAL_REGISTERS[index]
 		case operand_map.OpInOutRegister:   return inoutRegisters[index]?.name;
 		case operand_map.OpInputRegister:   return inputRegisters[index]?.name;
 		case operand_map.OpOutputRegister:  return outputRegisters[index]?.name;

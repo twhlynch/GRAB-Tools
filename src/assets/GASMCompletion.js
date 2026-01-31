@@ -1,9 +1,10 @@
-import encoding from '@/assets/tools/encoding';
 import { acceptCompletion, autocompletion } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { EditorView } from 'codemirror';
+import { SPECIAL_REGISTERS } from './encoding/gasm/registers';
+import { load } from './encoding/root';
 
-const instruction_map = encoding.load().COD.Level.InstructionData.Type;
+const instruction_map = load().COD.Level.InstructionData.Type;
 const instructions_list = Object.keys(instruction_map)
 	.map((ins) => ins.replace('In', '').toUpperCase())
 	.map((label) => ({
@@ -11,7 +12,7 @@ const instructions_list = Object.keys(instruction_map)
 		type: 'function',
 	}));
 
-const special_registers = encoding.special_registers().map((label) => ({
+const special_registers = SPECIAL_REGISTERS.map((label) => ({
 	label,
 	type: 'class',
 }));
@@ -58,9 +59,9 @@ function completion(context) {
 	];
 
 	const options = completions_list.filter(
-		(completion) =>
-			completion.label.toLowerCase().includes(word.text.toLowerCase()) &&
-			completion.label.toLowerCase() !== word.text.toLowerCase(),
+		(comp) =>
+			comp.label.toLowerCase().includes(word.text.toLowerCase()) &&
+			comp.label.toLowerCase() !== word.text.toLowerCase(),
 	);
 
 	return {

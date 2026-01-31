@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import svg from '@/assets/tools/svg';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
@@ -22,17 +26,15 @@ export default {
 
 			let nodes = await svg.svg(file, 600);
 
-			const obj = encoding.createLevel(
-				nodes,
-				'SVG',
-				'Generated with GRAB Tools',
-				['.index', 'GRAB Tools'],
-			);
+			const obj = createLevel(nodes, 'SVG', 'Generated with GRAB Tools', [
+				'.index',
+				'GRAB Tools',
+			]);
 
-			const encoded = await encoding.encodeLevel(obj);
+			const encoded = await encodeLevel(obj);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 		},
 	},
 };

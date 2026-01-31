@@ -1,4 +1,3 @@
-import encoding from '@/assets/tools/encoding';
 import { PYTHON_SERVER_URL } from '@/config';
 import {
 	Animation,
@@ -9,6 +8,10 @@ import {
 } from '@/generated/proto';
 import { LevelNodeWith } from '@/types/levelNodes';
 import { asm_to_json } from '../AssemblyConversion';
+import { create_connection } from '../encoding/gasm/connections';
+import { levelNodeGASM, levelNodeStatic } from '../encoding/level_nodes';
+import { decodeLevel } from '../encoding/levels';
+import { materials } from '../encoding/utils';
 
 const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
 
@@ -48,8 +51,8 @@ async function read_video(file: File, callback: (percent: number) => void) {
 		buffer = await new Promise((resolve, reject) => {
 			const reader = new FileReader();
 			reader.onload = async () => {
-				const buffer = new Uint8Array(reader.result as ArrayBuffer);
-				resolve(buffer);
+				const buf = new Uint8Array(reader.result as ArrayBuffer);
+				resolve(buf);
 			};
 			reader.onerror = reject;
 			reader.readAsArrayBuffer(file);
@@ -65,18 +68,18 @@ async function read_video(file: File, callback: (percent: number) => void) {
 	const blob = new Blob([buffer], {
 		type: 'video/mp4',
 	});
-	const video = document.createElement('video');
-	video.src = window.URL.createObjectURL(blob);
-	video.muted = true;
+	const vid = document.createElement('video');
+	vid.src = window.URL.createObjectURL(blob);
+	vid.muted = true;
 
 	try {
-		await video.play();
+		await vid.play();
 	} catch (e) {
 		if (e instanceof Error) window.toast(e, 'error');
 		return null;
 	}
-	const [track] = video.captureStream().getVideoTracks();
-	video.onended = () => track!.stop();
+	const [track] = vid.captureStream().getVideoTracks();
+	vid.onended = () => track!.stop();
 
 	// @ts-expect-error not baseline
 	const processor = new MediaStreamTrackProcessor(track); // fuck firefox
@@ -106,7 +109,7 @@ async function read_video(file: File, callback: (percent: number) => void) {
 		const bitmap = await createImageBitmap(canvas);
 		frames.push(bitmap);
 
-		callback((video.currentTime / video.duration) * 90);
+		callback((vid.currentTime / vid.duration) * 90);
 
 		value.close();
 	}
@@ -240,7 +243,7 @@ function build_code_video(
 	height: number,
 	callback: (percent: number) => void,
 ): LevelNode[] | null {
-	const { DEFAULT_COLORED } = encoding.materials();
+	const { DEFAULT_COLORED } = materials();
 	const MAX_INSTRUCTIONS_PER_FRAME = 80;
 	const PIXELS_PER_CODE_BLOCK = Math.floor(
 		// (LIMIT - (sleep, goto, label) - 1) / |{r, g, b}|
@@ -250,15 +253,15 @@ function build_code_video(
 	const code_nodes: LevelNodeWith<LevelNodeGASM>[] = [];
 
 	// parse video data
-	const video = bitmaps_to_frames(bitmaps, width, height);
-	if (!video) return null;
+	const vid = bitmaps_to_frames(bitmaps, width, height);
+	if (!vid) return null;
 
 	callback(95);
 
 	// create pixels
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
-			static_nodes.push(encoding.levelNodeStatic());
+			static_nodes.push(levelNodeStatic());
 			const { levelNodeStatic: pixel_node } =
 				static_nodes[static_nodes.length - 1]!;
 			pixel_node.material = DEFAULT_COLORED;
@@ -269,7 +272,7 @@ function build_code_video(
 	const last: Record<string, { r: number; g: number; b: number }> = {};
 
 	// assembly for lines to run each frame
-	const video_asm: Instruction[][] = video.map((frame) =>
+	const video_asm: Instruction[][] = vid.map((frame) =>
 		// update rgb values that change
 		frame.flatMap((p) => {
 			const key = `${p.x}_${p.y}`;
@@ -292,7 +295,7 @@ function build_code_video(
 
 	// a final frame to reset to black
 	const reset_asm: Instruction[] = [...Array(width)].flatMap((_, x) =>
-		[...Array(height)].flatMap((_, y) =>
+		[...Array(height)].flatMap((__, y) =>
 			['R', 'G', 'B'].map((c) => ({
 				line: `SET P_${x}_${y}.${c} 0`,
 				x,
@@ -311,7 +314,7 @@ function build_code_video(
 
 	// build code blocks
 	for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
-		const code = encoding.levelNodeGASM();
+		const code = levelNodeGASM();
 		const { levelNodeGASM: code_node } = code;
 
 		const x = Math.floor((blk_index * 25) / height);
@@ -334,11 +337,12 @@ function build_code_video(
 		if (connection_map[pixel_index]) return;
 		connection_map[pixel_index] = true;
 
-		encoding.add_code_connection(
+		create_connection(
 			block,
+			static_nodes[pixel_index]!,
+			pixel_index + 1,
 			'color',
 			`P_${x}_${y}`,
-			y + x * height + 1,
 		);
 	};
 
@@ -463,7 +467,7 @@ async function fallback_video(file: File): Promise<Array<LevelNode> | null> {
 	}
 
 	const result = await response.blob();
-	const level = await encoding.decodeLevel(result);
+	const level = await decodeLevel(result);
 	if (!level) {
 		window.toast('Invalid level', 'error');
 		return null;

@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import obj from '@/assets/tools/obj';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
@@ -23,17 +27,17 @@ export default {
 
 			let nodes = await obj.obj(file, mode);
 
-			const level = encoding.createLevel(
+			const level = createLevel(
 				nodes,
 				'Point Cloud',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
-			const encoded = await encoding.encodeLevel(level);
+			const encoded = await encodeLevel(level);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 		},
 	},
 };

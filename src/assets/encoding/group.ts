@@ -1,4 +1,3 @@
-import encoding from '@/assets/tools/encoding';
 import {
 	LevelNode,
 	LevelNodeFinish,
@@ -14,10 +13,14 @@ import {
 import { Box3 } from 'three/src/math/Box3.js';
 import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
+import { levelNodeGroup } from './level_nodes';
+import { node_data } from './utils';
 
-function groupNodes(nodes: Array<LevelNode>): LevelNodeWith<LevelNodeGroup> {
+export function groupNodes(
+	nodes: Array<LevelNode>,
+): LevelNodeWith<LevelNodeGroup> {
 	const positions = nodes.map((node) => {
-		const data = encoding.node_data(node);
+		const data = node_data(node);
 
 		return new Vector3(
 			data.position?.x ?? 0,
@@ -31,7 +34,7 @@ function groupNodes(nodes: Array<LevelNode>): LevelNodeWith<LevelNodeGroup> {
 	box.getCenter(center);
 
 	nodes.forEach((node) => {
-		const data = encoding.node_data(node);
+		const data = node_data(node);
 
 		data.position ??= {};
 		data.position.x = (data.position.x ?? 0) - center.x;
@@ -39,13 +42,15 @@ function groupNodes(nodes: Array<LevelNode>): LevelNodeWith<LevelNodeGroup> {
 		data.position.z = (data.position.z ?? 0) - center.z;
 	});
 
-	const group = encoding.levelNodeGroup();
+	const group = levelNodeGroup();
 	group.levelNodeGroup.position = { x: center.x, y: center.y, z: center.z };
 	group.levelNodeGroup.childNodes = nodes;
 	return group;
 }
 
-function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): Array<LevelNode> {
+export function ungroupNode(
+	group: LevelNodeWith<LevelNodeGroup>,
+): Array<LevelNode> {
 	const group_position = new Vector3(
 		group.levelNodeGroup.position?.x ?? 0,
 		group.levelNodeGroup.position?.y ?? 0,
@@ -69,7 +74,7 @@ function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): Array<LevelNode> {
 		if (isLevelNode<LevelNodeStart>(node, 'levelNodeStart')) return;
 		if (isLevelNode<LevelNodeFinish>(node, 'levelNodeFinish')) return;
 
-		const data = encoding.node_data(node) as LevelNodeTypesExcepts<
+		const data = node_data(node) as LevelNodeTypesExcepts<
 			[LevelNodeStart, LevelNodeFinish, LevelNodeLobbyTerminal]
 		>;
 
@@ -136,7 +141,7 @@ function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): Array<LevelNode> {
 	return child_nodes;
 }
 
-function recursiveUngroup(nodes: Array<LevelNode>): Array<LevelNode> {
+export function recursiveUngroup(nodes: Array<LevelNode>): Array<LevelNode> {
 	if (!nodes || nodes.length === 0) return [];
 
 	let index = nodes.findIndex((node) =>
@@ -149,16 +154,10 @@ function recursiveUngroup(nodes: Array<LevelNode>): Array<LevelNode> {
 			nodes.push(...ungroupNode(node));
 		}
 
-		index = nodes.findIndex((node) =>
-			isLevelNode<LevelNodeGroup>(node, 'levelNodeGroup'),
+		index = nodes.findIndex((levelnode) =>
+			isLevelNode<LevelNodeGroup>(levelnode, 'levelNodeGroup'),
 		);
 	}
 
 	return nodes;
 }
-
-export default {
-	groupNodes,
-	ungroupNode,
-	recursiveUngroup,
-};

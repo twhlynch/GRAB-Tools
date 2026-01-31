@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import image from '@/assets/tools/image';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
@@ -26,17 +30,17 @@ export default {
 
 			const node = await image.image(file, width, height, mode, shape);
 
-			const obj = encoding.createLevel(
+			const obj = createLevel(
 				[node],
 				'Image',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
-			const encoded = await encoding.encodeLevel(obj);
+			const encoded = await encodeLevel(obj);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 		},
 	},
 };

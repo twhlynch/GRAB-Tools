@@ -1,4 +1,4 @@
-import group from '@/assets/tools/group';
+import { groupNodes } from '../encoding/group';
 
 function traverseNode(node, func, parent = null) {
 	func(node, parent);
@@ -17,7 +17,7 @@ function compile(levels) {
 	const values = levels
 		.filter((level) => level.levelNodes?.length)
 		.map((level) => {
-			return group.groupNodes(level.levelNodes);
+			return groupNodes(level.levelNodes);
 		});
 
 	let finalNodes = [];

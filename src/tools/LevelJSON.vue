@@ -1,5 +1,10 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	decodeLevel,
+	downloadJSON,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
@@ -18,8 +23,8 @@ export default {
 				.filter((file) => file.name.endsWith('.json'))
 				.forEach(async (file) => {
 					const json = JSON.parse(await file.text());
-					const level = await encoding.encodeLevel(json);
-					encoding.downloadLevel(
+					const level = await encodeLevel(json);
+					downloadLevel(
 						level,
 						file.name.replace(/\.(json|level)/, ''),
 					);
@@ -27,12 +32,9 @@ export default {
 			files
 				.filter((file) => file.name.endsWith('.level'))
 				.forEach(async (file) => {
-					const json = await encoding.decodeLevel(file);
+					const json = await decodeLevel(file);
 					if (!json) return;
-					encoding.downloadJSON(
-						json,
-						file.name.replace(/\.(json|level)/, ''),
-					);
+					downloadJSON(json, file.name.replace(/\.(json|level)/, ''));
 				});
 		},
 	},

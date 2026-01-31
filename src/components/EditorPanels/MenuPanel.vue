@@ -1,8 +1,45 @@
 <script>
+import { groupNodes, recursiveUngroup } from '@/assets/encoding/group';
+import {
+	animation,
+	frame,
+	levelNodeCrumbling,
+	levelNodeFinish,
+	levelNodeGASM,
+	levelNodeGravity,
+	levelNodeParticleEmitter,
+	levelNodeSign,
+	levelNodeSound,
+	levelNodeStart,
+	levelNodeStatic,
+	levelNodeTrigger,
+	triggerSourceBasic,
+	triggerTargetAmbience,
+	triggerTargetAnimation,
+	triggerTargetSound,
+	triggerTargetSubLevel,
+} from '@/assets/encoding/level_nodes';
+import {
+	ambienceSettings,
+	createLevel,
+	decodeLevel,
+	downloadJSON,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
+import { load } from '@/assets/encoding/root';
+import {
+	deepClone,
+	json_parse,
+	materials,
+	node_data,
+	random_material,
+	random_shape,
+	shapes,
+	traverse_node,
+} from '@/assets/encoding/utils';
 import audio from '@/assets/tools/audio';
 import car from '@/assets/tools/car';
-import encoding from '@/assets/tools/encoding';
-import group from '@/assets/tools/group';
 import gun from '@/assets/tools/gun';
 import image from '@/assets/tools/image';
 import monochrome from '@/assets/tools/monochrome';
@@ -151,17 +188,13 @@ export default {
 							Array.from(
 								{
 									length:
-										Object.entries(encoding.shapes())
-											.length -
-										encoding.shapes()
-											.__END_OF_SPECIAL_PARTS__ -
+										Object.entries(shapes()).length -
+										shapes().__END_OF_SPECIAL_PARTS__ -
 										1,
 								},
 								(_, i) => {
 									return [
-										this.format_type(
-											encoding.shapes()[1000 + i],
-										),
+										this.format_type(shapes()[1000 + i]),
 										{
 											func: () => {
 												this.select_by_shape(1000 + i);
@@ -176,14 +209,11 @@ export default {
 						...Object.fromEntries(
 							Array.from(
 								{
-									length: Object.entries(encoding.materials())
-										.length,
+									length: Object.entries(materials()).length,
 								},
 								(_, i) => {
 									return [
-										this.format_type(
-											encoding.materials()[i],
-										),
+										this.format_type(materials()[i]),
 										{
 											func: () => {
 												this.select_by_material(i);
@@ -193,9 +223,7 @@ export default {
 									];
 								},
 							).filter(
-								(item) =>
-									item[1].num !==
-									encoding.materials().TRIGGER,
+								(item) => item[1].num !== materials().TRIGGER,
 							),
 						),
 					},
@@ -203,19 +231,20 @@ export default {
 						...Object.fromEntries(
 							Array.from(
 								{
-									length: encoding.load().COD.Level.LevelNode
-										.oneofs.content.oneof.length,
+									length: load().COD.Level.LevelNode.oneofs
+										.content.oneof.length,
 								},
 								(_, i) => {
 									return [
-										encoding.load().COD.Level.LevelNode
-											.oneofs.content.oneof[i],
+										load().COD.Level.LevelNode.oneofs
+											.content.oneof[i],
 										{
 											func: () => {
 												this.select_by_type(
-													encoding.load().COD.Level
-														.LevelNode.oneofs
-														.content.oneof[i],
+													load().COD.Level.LevelNode
+														.oneofs.content.oneof[
+														i
+													],
 												);
 											},
 										},
@@ -348,7 +377,7 @@ export default {
 		},
 		load_new_level() {
 			this.$emit('modifier', (_) => {
-				return encoding.createLevel();
+				return createLevel();
 			});
 		},
 		async open_level_file(e) {
@@ -356,7 +385,7 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = await encoding.decodeLevel(file);
+			const json = await decodeLevel(file);
 			if (!json) return;
 
 			this.$emit('modifier', (_) => {
@@ -368,7 +397,7 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = encoding.json_parse(await file.text());
+			const json = json_parse(await file.text());
 			if (!json) return;
 
 			this.$emit('modifier', (_) => {
@@ -377,31 +406,31 @@ export default {
 		},
 		save_level() {
 			this.$emit('function', async (json) => {
-				const level = await encoding.encodeLevel(json);
+				const level = await encodeLevel(json);
 				if (!level) {
 					window.toast('Invalid level data', 'error');
 					return;
 				}
-				encoding.downloadLevel(level);
+				downloadLevel(level);
 			});
 		},
 		save_json() {
 			this.$emit('function', (json) => {
-				encoding.downloadJSON(json);
+				downloadJSON(json);
 			});
 		},
 		set_default_level() {
 			this.$emit('function', (json) => {
 				const configStore = useConfigStore();
-				configStore.default_level = encoding.deepClone(json);
+				configStore.default_level = deepClone(json);
 			});
 		},
 		load_default_level() {
 			this.$emit('modifier', (_) => {
 				const configStore = useConfigStore();
 				return configStore.default_level
-					? encoding.deepClone(configStore.default_level)
-					: encoding.createLevel();
+					? deepClone(configStore.default_level)
+					: createLevel();
 			});
 		},
 		open_templates() {
@@ -419,26 +448,21 @@ export default {
 			this.$emit('modifier', (_) => {
 				const modded_shapes = [
 					null,
-					...Object.values(encoding.shapes()),
-					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 1,
-					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 2,
-					encoding.shapes().__END_OF_SPECIAL_PARTS__ + 3,
+					...Object.values(shapes()),
+					shapes().__END_OF_SPECIAL_PARTS__ + 1,
+					shapes().__END_OF_SPECIAL_PARTS__ + 2,
+					shapes().__END_OF_SPECIAL_PARTS__ + 3,
 				];
 				const modded_materials = [
 					null,
-					...Object.values(encoding.materials()),
+					...Object.values(materials()),
 					...Array.from(
 						{
 							length:
-								Object.values(encoding.materials()).length * 2 -
-								1 -
-								1,
+								Object.values(materials()).length * 2 - 1 - 1,
 						},
-						(_, i) =>
-							i -
-							Object.values(encoding.materials()).length +
-							1 +
-							1,
+						(__, i) =>
+							i - Object.values(materials()).length + 1 + 1,
 					),
 				];
 
@@ -446,7 +470,7 @@ export default {
 
 				for (let i in modded_shapes) {
 					for (let j in modded_materials) {
-						const node = encoding.levelNodeStatic();
+						const node = levelNodeStatic();
 						const data = node.levelNodeStatic;
 						data.shape = modded_shapes[i];
 						data.material = modded_materials[j];
@@ -458,7 +482,7 @@ export default {
 						nodes.push(node);
 					}
 				}
-				const level = encoding.createLevel(
+				const level = createLevel(
 					nodes,
 					'The Cheat Sheet',
 					`All possible types for v${this.$config.FORMAT_VERSION} All objects are neon and transparent`,
@@ -496,7 +520,7 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = await encoding.decodeLevel(file);
+			const json = await decodeLevel(file);
 			this.insert_selection_nodes(json?.levelNodes);
 		},
 		async insert_json(e) {
@@ -504,7 +528,7 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = encoding.json_parse(await file.text());
+			const json = json_parse(await file.text());
 			this.insert_selection_nodes(json?.levelNodes);
 		},
 		insert_selection_nodes(nodes) {
@@ -524,7 +548,7 @@ export default {
 			if (!files.length) return;
 
 			const file = files[0];
-			const json = encoding.json_parse(await file.text());
+			const json = json_parse(await file.text());
 			this.insert_selection_nodes(json?.levelNodes ?? json);
 		},
 		insert_audio() {
@@ -730,100 +754,84 @@ export default {
 			);
 		},
 		insert_static() {
-			const node = encoding.levelNodeStatic();
+			const node = levelNodeStatic();
 			delete node.levelNodeStatic.color1;
 			delete node.levelNodeStatic.color2;
 			this.insert_selection_nodes([node]);
 		},
 		insert_crumbling() {
-			const node = encoding.levelNodeCrumbling();
+			const node = levelNodeCrumbling();
 			this.insert_selection_nodes([node]);
 		},
 		insert_animated() {
-			const node = encoding.levelNodeStatic();
-			const animation = encoding.animation();
-			animation.frames.push(encoding.frame());
-			const frame = encoding.frame();
-			frame.time = 1;
-			frame.position.y = 1;
-			animation.frames.push(frame);
-			node.animations.push(animation);
+			const node = levelNodeStatic();
+			const anim = animation();
+			anim.frames.push(frame());
+			const frm = frame();
+			frm.time = 1;
+			frm.position.y = 1;
+			anim.frames.push(frm);
+			node.animations.push(anim);
 			this.insert_selection_nodes([node]);
 		},
 		insert_colored() {
-			const node = encoding.levelNodeStatic();
+			const node = levelNodeStatic();
 			node.levelNodeStatic.material = 8;
 			this.insert_selection_nodes([node]);
 		},
 		insert_sign() {
-			this.insert_selection_nodes([encoding.levelNodeSign()]);
+			this.insert_selection_nodes([levelNodeSign()]);
 		},
 		insert_start() {
-			this.insert_selection_nodes([encoding.levelNodeStart()]);
+			this.insert_selection_nodes([levelNodeStart()]);
 		},
 		insert_finish() {
-			this.insert_selection_nodes([encoding.levelNodeFinish()]);
+			this.insert_selection_nodes([levelNodeFinish()]);
 		},
 		insert_gravity() {
-			this.insert_selection_nodes([encoding.levelNodeGravity()]);
+			this.insert_selection_nodes([levelNodeGravity()]);
 		},
 		insert_particle() {
-			this.insert_selection_nodes([encoding.levelNodeParticleEmitter()]);
+			this.insert_selection_nodes([levelNodeParticleEmitter()]);
 		},
 		insert_trigger() {
-			this.insert_selection_nodes([encoding.levelNodeTrigger()]);
+			this.insert_selection_nodes([levelNodeTrigger()]);
 		},
 		insert_sound() {
-			this.insert_selection_nodes([encoding.levelNodeSound()]);
+			this.insert_selection_nodes([levelNodeSound()]);
 		},
 		insert_gasm() {
-			this.insert_selection_nodes([encoding.levelNodeGASM()]);
+			this.insert_selection_nodes([levelNodeGASM()]);
 		},
 		insert_colored_lava() {
-			const node = encoding.levelNodeStatic();
+			const node = levelNodeStatic();
 			node.levelNodeStatic.material = 3;
 			node.levelNodeStatic.color1.r = 1;
 			node.levelNodeStatic.color2.b = 1;
 			this.insert_selection_nodes([node]);
 		},
 		insert_ambience_trigger() {
-			const node = encoding.levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(
-				encoding.triggerSourceBasic(),
-			);
-			node.levelNodeTrigger.triggerTargets.push(
-				encoding.triggerTargetAmbience(),
-			);
+			const node = levelNodeTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetAmbience());
 			this.insert_selection_nodes([node]);
 		},
 		insert_animation_trigger() {
-			const node = encoding.levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(
-				encoding.triggerSourceBasic(),
-			);
-			node.levelNodeTrigger.triggerTargets.push(
-				encoding.triggerTargetAnimation(),
-			);
+			const node = levelNodeTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetAnimation());
 			this.insert_selection_nodes([node]);
 		},
 		insert_sound_trigger() {
-			const node = encoding.levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(
-				encoding.triggerSourceBasic(),
-			);
-			node.levelNodeTrigger.triggerTargets.push(
-				encoding.triggerTargetSound(),
-			);
+			const node = levelNodeTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetSound());
 			this.insert_selection_nodes([node]);
 		},
 		insert_sublevel_trigger() {
-			const node = encoding.levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(
-				encoding.triggerSourceBasic(),
-			);
-			node.levelNodeTrigger.triggerTargets.push(
-				encoding.triggerTargetSubLevel(),
-			);
+			const node = levelNodeTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetSubLevel());
 			this.insert_selection_nodes([node]);
 		},
 		teleport_start() {
@@ -860,7 +868,7 @@ export default {
 			this.set_selectable_nodes((nodes) => {
 				if (!nodes?.length) return;
 
-				const node = group.groupNodes([...nodes]);
+				const node = groupNodes([...nodes]);
 				nodes.length = 0;
 				nodes.push(node);
 
@@ -869,30 +877,30 @@ export default {
 					y: 900000,
 					z: 900000,
 				};
-				const animation = encoding.animation();
-				animation.frames.push(encoding.frame());
-				animation.frames[0].position = {
+				const anim = animation();
+				anim.frames.push(frame());
+				anim.frames[0].position = {
 					x: -900000,
 					y: -900000,
 					z: -900000,
 				};
-				node.animations.push(animation);
+				node.animations.push(anim);
 			});
 		},
 		open_material_convert_menu() {
-			const materials = Object.values(encoding.materials()).filter(
-				(m) => m !== encoding.materials().TRIGGER,
+			const convertable_materials = Object.values(materials()).filter(
+				(m) => m !== materials().TRIGGER,
 			);
 			this.$emit(
 				'popup',
 				[
 					{
 						type: 'option',
-						options: ['from', ...materials],
+						options: ['from', ...convertable_materials],
 					},
 					{
 						type: 'option',
-						options: ['to', ...materials],
+						options: ['to', ...convertable_materials],
 					},
 				],
 				async (from, to) => {
@@ -905,7 +913,7 @@ export default {
 					to = parseInt(to);
 
 					this.modify_selectable_nodes((node) => {
-						const data = encoding.node_data(node);
+						const data = node_data(node);
 						if (
 							node.levelNodeStatic &&
 							(data.material ?? 0) === from
@@ -923,8 +931,8 @@ export default {
 						type: 'option',
 						options: [
 							'from',
-							...Object.values(encoding.shapes()).slice(
-								encoding.shapes().__END_OF_SPECIAL_PARTS__ + 1,
+							...Object.values(shapes()).slice(
+								shapes().__END_OF_SPECIAL_PARTS__ + 1,
 							),
 						],
 					},
@@ -932,8 +940,8 @@ export default {
 						type: 'option',
 						options: [
 							'to',
-							...Object.values(encoding.shapes()).slice(
-								encoding.shapes().__END_OF_SPECIAL_PARTS__ + 1,
+							...Object.values(shapes()).slice(
+								shapes().__END_OF_SPECIAL_PARTS__ + 1,
 							),
 						],
 					},
@@ -948,7 +956,7 @@ export default {
 					to = parseInt(to);
 
 					this.modify_selectable_nodes((node) => {
-						const data = encoding.node_data(node);
+						const data = node_data(node);
 						if (data.shape === from) data.shape = to;
 					});
 				},
@@ -974,9 +982,7 @@ export default {
 						},
 					],
 					async (value) => {
-						this.$emit('viewport', (scope) => {
-							scope.controls.movementSpeed = value;
-						});
+						scope.controls.movementSpeed = value;
 					},
 				);
 			});
@@ -993,19 +999,19 @@ export default {
 		},
 		group_level() {
 			this.set_selectable_nodes((nodes) => {
-				const node = group.groupNodes([...nodes]);
+				const node = groupNodes([...nodes]);
 				nodes.length = 0;
 				nodes.push(node);
 			});
 		},
 		ungroup_all() {
 			this.set_selectable_nodes((nodes) => {
-				group.recursiveUngroup(nodes);
+				recursiveUngroup(nodes);
 			});
 		},
 		duplicate_level() {
 			this.set_selectable_nodes((nodes) => {
-				nodes.push(...encoding.deepClone(nodes));
+				nodes.push(...deepClone(nodes));
 			});
 		},
 		monochrome_level() {
@@ -1016,21 +1022,21 @@ export default {
 		randomize_materials() {
 			this.modify_selectable_nodes((node) => {
 				if (node.levelNodeStatic) {
-					node.levelNodeStatic.material = encoding.random_material();
+					node.levelNodeStatic.material = random_material();
 				}
 			});
 		},
 		randomize_shapes() {
 			this.modify_selectable_nodes((node) => {
-				const data = encoding.node_data(node);
+				const data = node_data(node);
 				if (data.shape) {
-					data.shape = encoding.random_shape();
+					data.shape = random_shape();
 				}
 			});
 		},
 		randomize_positions() {
 			this.modify_selectable_nodes((node) => {
-				const data = encoding.node_data(node);
+				const data = node_data(node);
 				data.position.x = Math.random() - 0.5 + (data.position?.x ?? 0);
 				data.position.y = Math.random() - 0.5 + (data.position?.y ?? 0);
 				data.position.z = Math.random() - 0.5 + (data.position?.z ?? 0);
@@ -1038,7 +1044,7 @@ export default {
 		},
 		randomize_rotations() {
 			this.modify_selectable_nodes((node) => {
-				const data = encoding.node_data(node);
+				const data = node_data(node);
 				if (data.rotation) {
 					const quat = new THREE.Quaternion(
 						Math.random(),
@@ -1056,7 +1062,7 @@ export default {
 		},
 		randomize_scales() {
 			this.modify_selectable_nodes((node) => {
-				const data = encoding.node_data(node);
+				const data = node_data(node);
 				if (data.scale && typeof data.scale === 'object') {
 					data.scale.x = Math.random() - 0.5 + (data.scale?.x ?? 0);
 					data.scale.y = Math.random() - 0.5 + (data.scale?.y ?? 0);
@@ -1072,7 +1078,7 @@ export default {
 		},
 		randomize_colors() {
 			this.modify_selectable_nodes((node) => {
-				const data = encoding.node_data(node);
+				const data = node_data(node);
 				if (data.color1) {
 					data.color1.r = Math.random();
 					data.color1.g = Math.random();
@@ -1092,7 +1098,7 @@ export default {
 						scope.editing_parent.userData?.node?.levelNodeGroup
 							?.childNodes ?? (json.levelNodes ??= []);
 					node_list.forEach((node) => {
-						encoding.traverse_node(node, func);
+						traverse_node(node, func);
 					});
 					return json;
 				});
@@ -1112,13 +1118,13 @@ export default {
 		},
 		ambience_min() {
 			this.$emit('modifier', (json) => {
-				json.ambienceSettings = encoding.ambienceSettings({});
+				json.ambienceSettings = ambienceSettings({});
 				return json;
 			});
 		},
 		ambience_max() {
 			this.$emit('modifier', (json) => {
-				json.ambienceSettings = encoding.ambienceSettings(
+				json.ambienceSettings = ambienceSettings(
 					{ r: 1, g: 1, b: 1 },
 					{ r: 1, g: 1, b: 1 },
 					360,
@@ -1134,7 +1140,7 @@ export default {
 				return 2000 * Math.random() - 1000;
 			};
 			this.$emit('modifier', (json) => {
-				json.ambienceSettings = encoding.ambienceSettings(
+				json.ambienceSettings = ambienceSettings(
 					{
 						r: random_float(),
 						g: random_float(),
@@ -1155,7 +1161,7 @@ export default {
 		},
 		ambience_default() {
 			this.$emit('modifier', (json) => {
-				json.ambienceSettings = encoding.ambienceSettings();
+				json.ambienceSettings = ambienceSettings();
 				return json;
 			});
 		},
@@ -1201,7 +1207,7 @@ export default {
 							skyZenithG,
 							skyZenithB,
 						) => {
-							json.ambienceSettings = encoding.ambienceSettings(
+							json.ambienceSettings = ambienceSettings(
 								{
 									r: Number(skyHorizonR),
 									g: Number(skyHorizonG),

@@ -1,9 +1,24 @@
 <script>
+import { create_connection } from '@/assets/encoding/gasm/connections';
+import { groupNodes, ungroupNode } from '@/assets/encoding/group';
+import {
+	animation,
+	triggerSourceBasic,
+	triggerSourceBlockNames,
+	triggerTargetAmbience,
+	triggerTargetAnimation,
+	triggerTargetSound,
+	triggerTargetSubLevel,
+} from '@/assets/encoding/level_nodes';
+import {
+	deepClone,
+	materials,
+	node_data,
+	shapes,
+} from '@/assets/encoding/utils';
 import { FreeControls } from '@/assets/FreeControls';
 import GizmoControls from '@/assets/GizmoControls';
 import { LevelLoader } from '@/assets/LevelLoader';
-import encoding from '@/assets/tools/encoding';
-import group from '@/assets/tools/group';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -799,9 +814,9 @@ export default {
 			const position = new THREE.Vector3();
 			object.getWorldPosition(position);
 
-			object.userData.node.animations.forEach((animation, i) => {
-				if (!animation.frames) return;
-				const points = animation.frames.map(
+			object.userData.node.animations.forEach((anim, i) => {
+				if (!anim.frames) return;
+				const points = anim.frames.map(
 					(frame) =>
 						new THREE.Vector3(
 							frame.position?.x ?? 0,
@@ -980,7 +995,7 @@ export default {
 			this.modify_selection((node_list) => [
 				...node_list,
 				...this.gizmo.selection.map((object) => {
-					return encoding.deepClone(object.userData.node);
+					return deepClone(object.userData.node);
 				}),
 			]);
 		},
@@ -1002,9 +1017,7 @@ export default {
 							(o) => n === o.userData.node,
 						),
 				),
-				group.groupNodes(
-					this.gizmo.selection.map((o) => o.userData.node),
-				),
+				groupNodes(this.gizmo.selection.map((o) => o.userData.node)),
 			]);
 		},
 		ungroup_selection() {
@@ -1016,7 +1029,7 @@ export default {
 							(o) => n === o.userData.node,
 						),
 				),
-				...group.ungroupNode(this.gizmo.selection[0].userData.node),
+				...ungroupNode(this.gizmo.selection[0].userData.node),
 			]);
 		},
 		keyup(e) {
@@ -1166,24 +1179,19 @@ export default {
 		},
 		add_code_player_connection(object) {
 			const object_node = object.userData.node;
-			encoding.add_player_connections(object_node);
+			create_connection(object_node, undefined, 0, 'player', 'Player');
 			this.changed();
 		},
 		add_code_connection(object, target, type) {
 			const object_node = object.userData.node;
 			const target_node = target.userData.node;
-			const name = encoding.get_new_connection_name(
+			const id = target?.userData?.id ?? 0;
+			const is_new = create_connection(
 				object_node,
 				target_node,
-			);
-			const id = target?.userData?.id ?? 0;
-			const is_new = encoding.add_code_connection(
-				object_node,
-				type,
-				name,
 				id,
+				type === 'active' ? 'triggerActive' : type,
 			);
-
 			if (is_new) this.add_gasm_path(object, target);
 
 			this.changed();
@@ -1192,7 +1200,7 @@ export default {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			const target = encoding.triggerTargetAnimation();
+			const target = triggerTargetAnimation();
 			const id = target_object?.userData?.id ?? 0;
 			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
@@ -1203,41 +1211,41 @@ export default {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(encoding.triggerTargetSubLevel());
+			trigger.triggerTargets.push(triggerTargetSubLevel());
 			this.changed();
 		},
 		add_ambience_target(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(encoding.triggerTargetAmbience());
+			trigger.triggerTargets.push(triggerTargetAmbience());
 			this.changed();
 		},
 		add_sound_target(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(encoding.triggerTargetSound());
+			trigger.triggerTargets.push(triggerTargetSound());
 			this.changed();
 		},
 		add_trigger_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(encoding.triggerSourceBasic());
+			trigger.triggerSources.push(triggerSourceBasic());
 			this.changed(object);
 		},
 		add_trigger_blocks_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(encoding.triggerSourceBlockNames());
+			trigger.triggerSources.push(triggerSourceBlockNames());
 			this.changed();
 		},
 		add_animation(object) {
 			if (!object?.userData?.node) return;
 			const node = object.userData.node;
-			(node.animations ??= []).push(encoding.animation());
+			(node.animations ??= []).push(animation());
 			this.changed();
 		},
 		edit_object_json(object) {
@@ -1273,14 +1281,14 @@ export default {
 		},
 		set_material(material) {
 			this.gizmo.selection.forEach((object) => {
-				const node = encoding.node_data(object);
+				const node = node_data(object);
 				node.material = material;
 			});
 			this.modifier((json) => json);
 		},
 		set_shape(shape) {
 			this.gizmo.selection.forEach((object) => {
-				const node = encoding.node_data(object);
+				const node = node_data(object);
 				node.shape = shape;
 			});
 			this.modifier((json) => json);
@@ -1381,16 +1389,14 @@ export default {
 								Array.from(
 									{
 										length:
-											Object.entries(encoding.shapes())
-												.length -
-											encoding.shapes()
-												.__END_OF_SPECIAL_PARTS__ -
+											Object.entries(shapes()).length -
+											shapes().__END_OF_SPECIAL_PARTS__ -
 											1,
 									},
 									(_, i) => {
 										return [
 											this.format_type(
-												encoding.shapes()[1000 + i],
+												shapes()[1000 + i],
 											),
 											{
 												func: () => {
@@ -1408,15 +1414,12 @@ export default {
 							...Object.fromEntries(
 								Array.from(
 									{
-										length: Object.entries(
-											encoding.materials(),
-										).length,
+										length: Object.entries(materials())
+											.length,
 									},
 									(_, i) => {
 										return [
-											this.format_type(
-												encoding.materials()[i],
-											),
+											this.format_type(materials()[i]),
 											{
 												func: () => {
 													this.set_material(i);
@@ -1427,8 +1430,7 @@ export default {
 									},
 								).filter(
 									(item) =>
-										item[1].num !==
-										encoding.materials().TRIGGER,
+										item[1].num !== materials().TRIGGER,
 								),
 							),
 						},
@@ -1665,16 +1667,16 @@ export default {
 					.filter((obj) => node_list.includes(obj.userData.node))
 					.forEach((object) => {
 						const node = object.userData.node;
-						const data = encoding.node_data(node);
+						const data = node_data(node);
 
 						const x = -object.initialPosition?.x ?? 0;
 						object.position.x = x;
 						object.initialPosition.x = x;
 						data.position.x = x;
 						if (node.animations) {
-							node.animations.forEach((animation) => {
-								if (animation.frames?.length) {
-									animation.frames.forEach((frame) => {
+							node.animations.forEach((anim) => {
+								if (anim.frames?.length) {
+									anim.frames.forEach((frame) => {
 										if (frame.position?.x) {
 											frame.position.x =
 												-frame.position.x;
@@ -1698,16 +1700,16 @@ export default {
 					.filter((obj) => node_list.includes(obj.userData.node))
 					.forEach((object) => {
 						const node = object.userData.node;
-						const data = encoding.node_data(node);
+						const data = node_data(node);
 
 						const y = -object.initialPosition?.y ?? 0;
 						object.position.y = y;
 						object.initialPosition.y = y;
 						data.position.y = y;
 						if (node.animations) {
-							node.animations.forEach((animation) => {
-								if (animation.frames?.length) {
-									animation.frames.forEach((frame) => {
+							node.animations.forEach((anim) => {
+								if (anim.frames?.length) {
+									anim.frames.forEach((frame) => {
 										if (frame.position?.y) {
 											frame.position.y =
 												-frame.position.y;
@@ -1731,16 +1733,16 @@ export default {
 					.filter((obj) => node_list.includes(obj.userData.node))
 					.forEach((object) => {
 						const node = object.userData.node;
-						const data = encoding.node_data(node);
+						const data = node_data(node);
 
 						const z = -object.initialPosition?.z ?? 0;
 						object.position.z = z;
 						object.initialPosition.z = z;
 						data.position.z = z;
 						if (node.animations) {
-							node.animations.forEach((animation) => {
-								if (animation.frames?.length) {
-									animation.frames.forEach((frame) => {
+							node.animations.forEach((anim) => {
+								if (anim.frames?.length) {
+									anim.frames.forEach((frame) => {
 										if (frame.position?.z) {
 											frame.position.z =
 												-frame.position.z;
