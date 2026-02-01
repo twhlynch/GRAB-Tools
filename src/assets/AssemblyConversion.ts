@@ -110,9 +110,9 @@ function preprocess_asm(lines: string[]): string[] {
 
 function preprocess_scopes(
 	lines: string[],
-	context: Record<string, number> = {},
+	context: Record<string, unknown> = {},
 ): string[] {
-	const resolve = (val: string, ctx: Record<string, number>): number => {
+	const resolve = (val: string, ctx: Record<string, unknown>): unknown => {
 		// an existing variable
 		if (ctx[val] !== undefined) return ctx[val];
 		// a number
@@ -129,16 +129,18 @@ function preprocess_scopes(
 		const a = resolve(var_a, context);
 		const b = resolve(var_b, context);
 
-		if (val.includes('+')) return a + b;
-		else if (val.includes('*')) return a * b;
-		else if (val.includes('/')) return a / b;
-		else if (val.includes('%')) return a % b;
-		else if (val.includes('-')) return a - b;
+		if (typeof a === 'number' && typeof b === 'number') {
+			if (val.includes('+')) return a + b;
+			else if (val.includes('*')) return a * b;
+			else if (val.includes('/')) return a / b;
+			else if (val.includes('%')) return a % b;
+			else if (val.includes('-')) return a - b;
+		}
 
 		window.toast(`Invalid value: ${val}`, 'error');
-		return NaN;
+		return undefined;
 	};
-	const substitute = (line: string, ctx: Record<string, number>): string => {
+	const substitute = (line: string, ctx: Record<string, unknown>): string => {
 		let result = line;
 
 		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
@@ -183,9 +185,10 @@ function preprocess_scopes(
 			}
 
 			const setup = Object.keys(context)
-				.map((v) => `let ${v} = ${context[v]};`)
+				.map((v) => `let ${v} = ${JSON.stringify(context[v])};`)
 				.join('');
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
+			console.log(expr);
 			context[variable] = eval(expr);
 		} else if (directive === '#FOR') {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
@@ -202,6 +205,15 @@ function preprocess_scopes(
 			const stop = resolve(stop_arg, context);
 			const step =
 				step_arg !== undefined ? resolve(step_arg, context) : 1;
+
+			if (
+				typeof start !== 'number' ||
+				typeof stop !== 'number' ||
+				typeof step !== 'number'
+			) {
+				window.toast('Expected number at ' + line, 'error');
+				continue;
+			}
 
 			const end = find_end(i);
 			const block = lines.slice(i + 1, end);
@@ -223,6 +235,11 @@ function preprocess_scopes(
 
 			const lhs = resolve(left, context);
 			const rhs = resolve(right, context);
+
+			if (typeof lhs !== 'number' || typeof rhs !== 'number') {
+				window.toast('Expected number at ' + line, 'error');
+				continue;
+			}
 
 			const end = find_end(i);
 
