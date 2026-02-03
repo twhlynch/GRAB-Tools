@@ -105,20 +105,20 @@ function get_registers_for_property(
 			{ name: `${name}.Sca.Z`, type: input},
 		];
 		case 'color': return [
-			{ name: `${name}.R`,    type: inout},
-			{ name: `${name}.G`,    type: inout},
-			{ name: `${name}.B`,    type: inout},
-			{ name: `${name}.Mode`, type: inout},
+			{ name: `${name}.Col.R`,   type: inout},
+			{ name: `${name}.Col.G`,   type: inout},
+			{ name: `${name}.Col.B`,   type: inout},
+			{ name: `${name}.Col.Mod`, type: inout},
 		];
 		case 'triggerActive': return [
-			{ name: `${name}.Act`, type: input},
-			{ name: `${name}.Pla`, type: input},
+			{ name: `${name}.Tri.Act`, type: input},
+			{ name: `${name}.Tri.Pla`, type: input},
 		];
 		case 'sign': return [
-			{ name: `${name}.SIGN.Write`,    type: inout},
-			{ name: `${name}.SIGN.Mode`,     type: inout},
-			{ name: `${name}.SIGN.TextCtrl`, type: inout},
-			{ name: `${name}.SIGN.Number`,   type: inout},
+			{ name: `${name}.SIG.Write`,    type: output},
+			{ name: `${name}.SIG.Mode`,     type: output},
+			{ name: `${name}.SIG.TextCtrl`, type: output},
+			{ name: `${name}.SIG.Number`,   type: output},
 		];
 		case 'player': return [
 			{ name: `Plr.Sel`,      type: output},
