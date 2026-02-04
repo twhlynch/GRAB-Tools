@@ -10,7 +10,8 @@
 		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore",
 		"format": "prettier --write src/",
 		"tauri": "tauri",
-		"proto": "npx pbts -i src/assets/proto/proto.proto -o src/generated/proto.ts && echo 'You will have to manually clean up the file as it may have errors'"
+		"proto": "npx pbts -i src/assets/proto/proto.proto -o src/generated/proto.ts && echo 'You will have to manually clean up the file as it may have errors'",
+		"helpers": "node meta/scripts/generate-helpers.mjs && npx prettier --write src/generated/helpers.ts"
 	},
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.4",
@@ -43,6 +44,7 @@
 		"prettier": "^2.8.4",
 		"prettier-plugin-organize-imports": "^4.3.0",
 		"terser": "^5.44.0",
+		"typescript": "^5.9.3",
 		"vite": "^4.1.4",
 		"vite-plugin-mkcert": "^1.14.0",
 		"vue-tsc": "^3.2.2"
