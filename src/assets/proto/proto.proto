@@ -181,6 +181,8 @@ message LevelNodeCrumbling {
 
   float stableTime = 6;
   float respawnTime = 7;
+
+  bool isLocal = 8;
 }
 
 message LevelNodeSign {
@@ -442,6 +444,7 @@ message LevelNodeGASM {
 
   bool startActive = 4;
   bool isShared = 7;
+  bool lateUpdate = 8;
 }
 
 message AnimationFrame {

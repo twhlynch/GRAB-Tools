@@ -153,6 +153,7 @@ export interface LevelNodeCrumbling {
 	rotation?: Quaternion;
 	stableTime?: number;
 	respawnTime?: number;
+	isLocal?: boolean;
 }
 
 export interface LevelNodeSign {
@@ -307,6 +308,7 @@ export interface LevelNodeGASM {
 	scale?: Vector;
 	rotation?: Quaternion;
 	isShared?: boolean;
+	lateUpdate?: boolean;
 }
 
 export interface AnimationFrame {
