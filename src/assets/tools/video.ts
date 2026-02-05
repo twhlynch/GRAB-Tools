@@ -14,6 +14,7 @@ import { decodeLevel } from '../encoding/levels';
 import { materials } from '../encoding/utils';
 
 const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
+const FRAME_INTERVAL = Math.round(1000 / 24);
 
 async function video(
 	file: File,
@@ -94,6 +95,7 @@ async function read_video(file: File, callback: (percent: number) => void) {
 
 	const frames = [];
 
+	let nextFrameTime = 0;
 	let finished = false;
 	while (!finished) {
 		const { done, value } = await video_reader.read();
@@ -101,15 +103,19 @@ async function read_video(file: File, callback: (percent: number) => void) {
 
 		if (!value) continue;
 
-		canvas.width = value.displayWidth;
-		canvas.height = value.displayHeight;
+		// try to capture at right fps
+		if (vid.currentTime >= nextFrameTime) {
+			canvas.width = value.displayWidth;
+			canvas.height = value.displayHeight;
 
-		ctx.drawImage(value, 0, 0);
+			ctx.drawImage(value, 0, 0);
 
-		const bitmap = await createImageBitmap(canvas);
-		frames.push(bitmap);
+			const bitmap = await createImageBitmap(canvas);
+			frames.push(bitmap);
 
-		callback((vid.currentTime / vid.duration) * 90);
+			nextFrameTime += FRAME_INTERVAL / 1000;
+			callback((vid.currentTime / vid.duration) * 90);
+		}
 
 		value.close();
 	}
@@ -328,7 +334,7 @@ function build_code_video(
 		code_nodes.push(code);
 	}
 
-	const sleep = `\nSLEEP 0\n`;
+	const sleep = `\nSLEEP ${FRAME_INTERVAL}\n`;
 
 	const connection_map: Record<number, true> = {};
 	const connect = (block_index: number, x: number, y: number) => {
