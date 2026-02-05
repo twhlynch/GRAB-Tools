@@ -1,8 +1,19 @@
 // SFX2GL Tool by TheTrueFax (https://github.com/thetruefax/)
 
-import encoding from '@/assets/tools/encoding';
-import group from '@/assets/tools/group';
 import { ComplexArray } from 'jsfft';
+import { groupNodes } from '../encoding/group';
+import {
+	animation,
+	frame,
+	levelNodeGroup,
+	levelNodeSound,
+	levelNodeStatic,
+	levelNodeTrigger,
+	triggerSourceBasic,
+	triggerTargetSound,
+} from '../encoding/level_nodes';
+import { load } from '../encoding/root';
+import { deepClone } from '../encoding/utils';
 
 /**
  * @param {File} file - An image file
@@ -15,7 +26,7 @@ async function audio(file, samples) {
 	const volume_samples = 2;
 	try {
 		const level_nodes = await generate(samples, volume_samples, file);
-		return group.groupNodes(level_nodes);
+		return groupNodes(level_nodes);
 	} catch (e) {
 		window.toast(e, 'error');
 		return null;
@@ -255,7 +266,7 @@ function getVolumes(notes, samples, cull, round) {
 
 // node helpers
 function getSoundBlock(pitch, amplitude) {
-	const node = encoding.levelNodeSound();
+	const node = levelNodeSound();
 	node.levelNodeSound.position.z = -2;
 	node.levelNodeSound.name = uniqueSoundName();
 	node.levelNodeSound.volume = amplitude;
@@ -276,24 +287,24 @@ function getSoundBlock(pitch, amplitude) {
 	return node;
 }
 function getSoundTriggerBlock(x, y, isStop, targetID) {
-	const targetSoundModes = encoding.load().COD.Level.TriggerTargetSound.Mode;
-	const sourceBasicTypes = encoding.load().COD.Level.TriggerSourceBasic.Type;
+	const targetSoundModes = load().COD.Level.TriggerTargetSound.Mode;
+	const sourceBasicTypes = load().COD.Level.TriggerSourceBasic.Type;
 
-	const node = encoding.levelNodeTrigger();
+	const node = levelNodeTrigger();
 	node.levelNodeTrigger.position.x = x;
 	node.levelNodeTrigger.scale.x = 0.03;
 
-	const source = encoding.triggerSourceBasic();
+	const source = triggerSourceBasic();
 	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	node.levelNodeTrigger.triggerSources.push(source);
 
-	const target = encoding.triggerTargetSound();
+	const target = triggerTargetSound();
 	target.triggerTargetSound.objectID = targetID;
 	node.levelNodeTrigger.triggerTargets.push(target);
 
-	const animation = encoding.animation();
-	animation.frames.push(encoding.frame());
-	node.animations = [animation];
+	const anim = animation();
+	anim.frames.push(frame());
+	node.animations = [anim];
 
 	if (isStop) {
 		node.levelNodeTrigger.position.y = -y - 1;
@@ -305,7 +316,7 @@ function getSoundTriggerBlock(x, y, isStop, targetID) {
 	return node;
 }
 function soundTarget(mode, object_id) {
-	const target = encoding.triggerTargetSound();
+	const target = triggerTargetSound();
 	target.triggerTargetSound.objectID = object_id;
 	target.triggerTargetSound.mode = mode;
 	return target;
@@ -328,7 +339,7 @@ async function generate(pitchSamps, volumeSamps, file) {
 	let pitches = getPitches(notes, pitchSamps, true, 2);
 	let volumes = getVolumes(notes, volumeSamps, false, 0.01);
 
-	let triggerGroup = encoding.levelNodeGroup();
+	let triggerGroup = levelNodeGroup();
 
 	const soundBlocks = volumes.flatMap((v) =>
 		pitches.map((p) => getSoundBlock(p, v)),
@@ -350,17 +361,17 @@ async function generate(pitchSamps, volumeSamps, file) {
 		return trigger;
 	};
 
-	const sourceBasicTypes = encoding.load().COD.Level.TriggerSourceBasic.Type;
-	const trig1 = encoding.levelNodeTrigger();
+	const sourceBasicTypes = load().COD.Level.TriggerSourceBasic.Type;
+	const trig1 = levelNodeTrigger();
 	trig1.levelNodeTrigger.position.x = -5;
-	const source = encoding.triggerSourceBasic();
+	const source = triggerSourceBasic();
 	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	trig1.levelNodeTrigger.triggerSources.push(source);
 
-	let trig2 = encoding.deepClone(trig1);
-	let trig3 = encoding.deepClone(trig1);
+	let trig2 = deepClone(trig1);
+	let trig3 = deepClone(trig1);
 
-	const targetSoundModes = encoding.load().COD.Level.TriggerTargetSound.Mode;
+	const targetSoundModes = load().COD.Level.TriggerTargetSound.Mode;
 
 	for (let i = soundBlocks.length + 2; i < soundBlocks.length * 2 + 2; i++) {
 		trig1.levelNodeTrigger.triggerTargets.push(
@@ -411,21 +422,21 @@ async function generate(pitchSamps, volumeSamps, file) {
 			}
 		}
 
-		const preframe = encoding.frame();
+		const preframe = frame();
 		preframe.time = startPos - 0.01;
 		preframe.position.x = -1;
 		trigs[index1].animations[0].frames.push(preframe);
 
-		const frame = encoding.frame();
-		frame.time = startPos;
-		trigs[index1].animations[0].frames.push(frame);
+		const frm = frame();
+		frm.time = startPos;
+		trigs[index1].animations[0].frames.push(frm);
 
-		const postframe = encoding.frame();
+		const postframe = frame();
 		postframe.time = endPos - 0.01;
 		postframe.position.x = -1;
 		trigs[index2].animations[0].frames.push(postframe);
 
-		const endframe = encoding.frame();
+		const endframe = frame();
 		endframe.time = endPos;
 		trigs[index2].animations[0].frames.push(endframe);
 	};
@@ -445,9 +456,9 @@ async function generate(pitchSamps, volumeSamps, file) {
 		if (trigs[i].animations[0].frames.length > best) {
 			best = trigs[i].animations[0].frames.length;
 		}
-		const frame = encoding.frame();
-		frame.time = last;
-		trigs[i].animations[0].frames.push(frame);
+		const frm = frame();
+		frm.time = last;
+		trigs[i].animations[0].frames.push(frm);
 	}
 
 	const max = Math.max(
@@ -456,7 +467,7 @@ async function generate(pitchSamps, volumeSamps, file) {
 		),
 	);
 
-	const wall = encoding.levelNodeStatic();
+	const wall = levelNodeStatic();
 	wall.levelNodeStatic.position.x = -1;
 	wall.levelNodeStatic.position.y = -0.5;
 	wall.levelNodeStatic.scale.y = max * 2 + 2;

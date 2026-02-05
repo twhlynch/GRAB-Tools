@@ -1,6 +1,8 @@
 <script>
+import { createLevel, decodeLevel } from '@/assets/encoding/levels';
+import { get_protobuf, set_protobuf } from '@/assets/encoding/root';
+import { deepClone, json_parse } from '@/assets/encoding/utils';
 import downloads from '@/assets/tools/downloads';
-import encoding from '@/assets/tools/encoding';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
 import PopupPanel from '@/components/EditorPanels/PopupPanel.vue';
@@ -61,13 +63,13 @@ export default {
 					const blob = new Blob([level], {
 						type: 'application/octet-stream',
 					});
-					const data = await encoding.decodeLevel(blob);
-					this.json = data ?? encoding.createLevel();
+					const data = await decodeLevel(blob);
+					this.json = data ?? createLevel();
 				}
 			} else {
 				this.json = this.default_level
-					? encoding.deepClone(this.default_level)
-					: encoding.createLevel();
+					? deepClone(this.default_level)
+					: createLevel();
 			}
 
 			this.set_json(this.json);
@@ -107,10 +109,10 @@ export default {
 		set_protobuf(protobuf) {
 			window.toast('protobuf');
 			console.log(protobuf);
-			encoding.set_protobuf(protobuf);
+			set_protobuf(protobuf);
 		},
 		open_protobuf() {
-			this.$refs.protobuf_panel.set(encoding.get_protobuf());
+			this.$refs.protobuf_panel.set(get_protobuf());
 			this.show_protobuf_panel = true;
 		},
 		close_protobuf() {
@@ -130,10 +132,10 @@ export default {
 				e.preventDefault();
 				const file = files[0];
 				if (file.name.endsWith('.level')) {
-					const data = await encoding.decodeLevel(file);
+					const data = await decodeLevel(file);
 					if (data) this.set_json(data);
 				} else if (file.name.endsWith('.json')) {
-					const json = encoding.json_parse(await file.text());
+					const json = json_parse(await file.text());
 					if (json) this.set_json(json);
 				}
 			}
@@ -148,7 +150,7 @@ export default {
 				const blob = new Blob([level], {
 					type: 'application/octet-stream',
 				});
-				const json = await encoding.decodeLevel(blob);
+				const json = await decodeLevel(blob);
 				if (json) this.set_json(json);
 			}
 		},

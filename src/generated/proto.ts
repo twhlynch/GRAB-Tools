@@ -10,7 +10,7 @@ export interface Level {
 	tags?: string[];
 	defaultSpawnPointID?: number;
 	unlisted?: boolean;
-	showReplays?: boolean;
+	showReplays?: boolean; // true
 }
 
 export interface Vector {
@@ -57,7 +57,7 @@ export enum LevelNodeShape {
 	SOUND = 6,
 	GASM = 7,
 	__END_OF_SPECIAL_PARTS__ = 8,
-	CUBE = 1000,
+	CUBE = 1000, // default
 	SPHERE = 1001,
 	CYLINDER = 1002,
 	PYRAMID = 1003,
@@ -122,6 +122,7 @@ export interface LevelNodeStart {
 	rotation?: Quaternion;
 	radius?: number;
 	name?: string;
+	isHidden?: boolean;
 }
 
 export interface LevelNodeFinish {
@@ -152,6 +153,7 @@ export interface LevelNodeCrumbling {
 	rotation?: Quaternion;
 	stableTime?: number;
 	respawnTime?: number;
+	isLocal?: boolean;
 }
 
 export interface LevelNodeSign {
@@ -203,8 +205,8 @@ export interface TriggerSourceBlockNames {
 }
 
 export interface TriggerSource {
-	triggerSourceBasic?: TriggerSourceBasic;
-	triggerSourceBlockNames?: TriggerSourceBlockNames;
+	triggerSourceBasic?: TriggerSourceBasic; // undefined
+	triggerSourceBlockNames?: TriggerSourceBlockNames; // undefined
 }
 
 export interface TriggerTargetAnimation {
@@ -243,12 +245,12 @@ export interface TriggerTargetAmbience {
 }
 
 export interface TriggerTarget {
-	triggerTargetAnimation?: TriggerTargetAnimation;
-	triggerTargetSubLevel?: TriggerTargetSubLevel;
-	triggerTargetSound?: TriggerTargetSound;
+	triggerTargetAnimation?: TriggerTargetAnimation; // undefined
+	triggerTargetSubLevel?: TriggerTargetSubLevel; // undefined
+	triggerTargetSound?: TriggerTargetSound; // undefined
 	mode?: TriggerTargetMode;
-	triggerTargetAmbience?: TriggerTargetAmbience;
-	triggerTargetGASM?: TriggerTargetGASM;
+	triggerTargetAmbience?: TriggerTargetAmbience; // undefined
+	triggerTargetGASM?: TriggerTargetGASM; // undefined
 }
 
 export interface LevelNodeTrigger {
@@ -305,6 +307,8 @@ export interface LevelNodeGASM {
 	startActive?: boolean;
 	scale?: Vector;
 	rotation?: Quaternion;
+	isShared?: boolean;
+	lateUpdate?: boolean;
 }
 
 export interface AnimationFrame {
@@ -322,28 +326,28 @@ export interface Animation {
 }
 
 export interface LevelNode {
-	levelNodeStart?: LevelNodeStart;
-	levelNodeFinish?: LevelNodeFinish;
-	levelNodeStatic?: LevelNodeStatic;
-	levelNodeSign?: LevelNodeSign;
-	levelNodeCrumbling?: LevelNodeCrumbling;
+	levelNodeStart?: LevelNodeStart; // undefined
+	levelNodeFinish?: LevelNodeFinish; // undefined
+	levelNodeStatic?: LevelNodeStatic; // undefined
+	levelNodeSign?: LevelNodeSign; // undefined
+	levelNodeCrumbling?: LevelNodeCrumbling; // undefined
 	isLocked?: boolean;
-	levelNodeGroup?: LevelNodeGroup;
-	levelNodeGravity?: LevelNodeGravity;
-	levelNodeLobbyTerminal?: LevelNodeLobbyTerminal;
-	levelNodeTrigger?: LevelNodeTrigger;
-	levelNodeParticleEmitter?: LevelNodeParticleEmitter;
-	levelNodeSound?: LevelNodeSound;
-	levelNodeGASM?: LevelNodeGASM;
+	levelNodeGroup?: LevelNodeGroup; // undefined
+	levelNodeGravity?: LevelNodeGravity; // undefined
+	levelNodeLobbyTerminal?: LevelNodeLobbyTerminal; // undefined
+	levelNodeTrigger?: LevelNodeTrigger; // undefined
+	levelNodeParticleEmitter?: LevelNodeParticleEmitter; // undefined
+	levelNodeSound?: LevelNodeSound; // undefined
+	levelNodeGASM?: LevelNodeGASM; // undefined
 	animations?: Animation[];
 	activeAnimation?: number;
-	wantsCreationHistory?: boolean;
+	wantsCreationHistory?: boolean; // undefined
 }
 
 export interface OperandData {
 	type?: OperandDataType;
-	index?: number;
-	value?: number;
+	index?: number; // undefined
+	value?: number; // undefined
 }
 
 export interface InstructionData {
@@ -375,14 +379,39 @@ export interface ProgrammablePositionData {}
 export interface ProgrammableRotationData {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableScaleData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ProgrammableTriggerActive {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammablePlayerData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableSignData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableColorData {}
 
 export interface ProgrammablePropertyData {
 	objectID?: number;
 	components?: ProgrammablePropertyDataComponent[];
-	position?: ProgrammablePositionData;
-	triggerActive?: ProgrammableTriggerActive;
-	rotation?: ProgrammableRotationData;
+	position?: ProgrammablePositionData; // undefined
+	triggerActive?: ProgrammableTriggerActive; // undefined
+	rotation?: ProgrammableRotationData; // undefined
+	player?: ProgrammablePlayerData; // undefined
+	sign?: ProgrammableSignData; // undefined
+	color?: ProgrammableColorData; // undefined
+	scale?: ProgrammableScaleData; // undefined
+}
+
+export interface ProgrammableSignUpdateData {
+	text?: string;
+}
+
+export interface ProgrammablePropertyUpdateData {
+	components?: number[];
+	sign?: ProgrammableSignUpdateData; // undefined
 }
 
 export enum LevelNodeSignSignFontWeight {
@@ -410,7 +439,7 @@ export enum TriggerTargetAnimationMode {
 	STOP = 0,
 	START = 1,
 	TOGGLE = 2,
-	TOGGLE_REVERSE = 3,
+	TOGGLE_REVERSE = 3, // default
 	RESTART = 4,
 	RESET = 5,
 }
@@ -419,7 +448,7 @@ export enum TriggerTargetSoundMode {
 	STOP = 0,
 	START = 1,
 	TOGGLE = 2,
-	RESTART = 3,
+	RESTART = 3, // default
 	RESET = 4,
 }
 
@@ -427,7 +456,7 @@ export enum TriggerTargetGASMMode {
 	STOP = 0,
 	START = 1,
 	TOGGLE = 2,
-	RESTART = 3,
+	RESTART = 3, // default
 	RESET = 4,
 }
 
@@ -449,6 +478,7 @@ export interface LevelNodeGASMConnection {
 	objectID?: number;
 	name?: string;
 	properties?: ProgrammablePropertyData[];
+	type?: ConnectionType;
 }
 
 export enum AnimationDirection {
@@ -501,7 +531,12 @@ export enum InstructionDataType {
 }
 
 export interface ProgrammablePropertyDataComponent {
-	inputRegisterIndex?: number;
-	outputRegisterIndex?: number;
-	inoutRegisterIndex?: number;
+	inputRegisterIndex?: number; // -1
+	outputRegisterIndex?: number; // -1
+	inoutRegisterIndex?: number; // -1
+}
+
+export enum ConnectionType {
+	NODE = 0,
+	PLAYER = 1,
 }

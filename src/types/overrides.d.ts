@@ -9,7 +9,7 @@ declare global {
 		toast: (
 			message: string | Error,
 			severity?: Severity,
-			persistent?: bool,
+			persistent?: boolean,
 		) => void | {
 			remove: () => void;
 			message: Reactive<{
@@ -18,6 +18,15 @@ declare global {
 				id: string;
 				severity: Severity;
 			}>;
+		};
+		MediaStreamTrackProcessor: unknown;
+	}
+
+	interface HTMLVideoElement {
+		captureStream: () => {
+			getVideoTracks: () => {
+				stop: () => void;
+			}[];
 		};
 	}
 }

@@ -1,6 +1,6 @@
 <script>
+import { downloadLevel } from '@/assets/encoding/levels';
 import downloads from '@/assets/tools/downloads';
-import encoding from '@/assets/tools/encoding';
 import { useUserStore } from '@/stores/user';
 import { mapState } from 'pinia';
 
@@ -10,13 +10,13 @@ export default {
 	},
 	mounted() {
 		const url_params = new URLSearchParams(window.location.search);
-		const level = url_params.get('level');
-		if (!level) return;
+		const level_ids = url_params.get('level');
+		if (!level_ids) return;
 
-		level.split(' ').forEach(async (level_id) => {
+		level_ids.split(' ').forEach(async (level_id) => {
 			const level = await downloads.try_download_level(level_id);
 			if (level === null) return;
-			encoding.downloadLevel(level, level_id);
+			downloadLevel(level, level_id);
 		});
 	},
 	created() {

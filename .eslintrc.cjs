@@ -20,5 +20,8 @@ module.exports = {
 	rules: {
 		'no-unused-vars': 'off',
 		'vue/multi-word-component-names': 'off',
+		'@typescript-eslint/no-unused-vars': 'off',
+		'no-shadow': 'error',
+		'@typescript-eslint/no-shadow': 'error',
 	},
 };

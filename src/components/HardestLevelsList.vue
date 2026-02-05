@@ -1,6 +1,6 @@
 <script>
+import { downloadLevel } from '@/assets/encoding/levels';
 import downloads from '@/assets/tools/downloads';
-import encoding from '@/assets/tools/encoding';
 import CheckmarkIcon from '@/icons/CheckmarkIcon.vue';
 import CrossIcon from '@/icons/CrossIcon.vue';
 import DownloadIcon from '@/icons/DownloadIcon.vue';
@@ -74,7 +74,7 @@ export default {
 				window.toast('Download failed');
 				return null;
 			}
-			encoding.downloadLevel(level, level_id);
+			downloadLevel(level, level_id);
 		},
 	},
 	computed: {

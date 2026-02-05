@@ -1,4 +1,8 @@
-import { LevelNode } from '@/generated/proto';
+import {
+	InstructionDataType,
+	LevelNode,
+	OperandDataType,
+} from '@/generated/proto';
 import { Root as PBRoot } from 'protobufjs';
 
 // helpers
@@ -81,12 +85,27 @@ export function isLevelNode<T extends LevelNodeTypes>(
 	return !!node[key];
 }
 
+// bidirectional map from enum
+type EnumMap<E> = {
+	[K in keyof E as K extends string ? K : never]: E[K];
+} & {
+	[V in E[keyof E] & number]: keyof E;
+} & {
+	[key: string]: number | keyof E;
+};
+
 // protobuf.Root with assumed
 export type Root = PBRoot & {
 	COD: {
 		Level: {
 			LevelNodeMaterial: object;
 			LevelNodeShape: object;
+			InstructionData: {
+				Type: EnumMap<typeof InstructionDataType>;
+			};
+			OperandData: {
+				Type: EnumMap<typeof OperandDataType>;
+			};
 		};
 	};
 };

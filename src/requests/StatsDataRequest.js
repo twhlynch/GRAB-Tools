@@ -2,7 +2,7 @@ import { STATS_URL } from '@/config';
 
 /**
  * @param {String} key
- * @returns {Promise<JSON | null>}
+ * @returns {Promise<object | null>}
  */
 export async function stats_data_request(key) {
 	const update_hour = 5 + 1;

@@ -60,8 +60,9 @@
 </template>
 
 <script>
+import { decodeLevel } from '@/assets/encoding/levels';
+import { add_nodes } from '@/assets/encoding/utils';
 import downloads from '@/assets/tools/downloads';
-import encoding from '@/assets/tools/encoding';
 
 export default {
 	methods: {
@@ -72,7 +73,7 @@ export default {
 		},
 		insert(json) {
 			this.$emit('modifier', (level) => {
-				encoding.add_nodes(level, json.levelNodes);
+				add_nodes(level, json.levelNodes);
 				return level;
 			});
 		},
@@ -107,7 +108,7 @@ export default {
 			const blob = new Blob([level], {
 				type: 'application/octet-stream',
 			});
-			const json = await encoding.decodeLevel(blob);
+			const json = await decodeLevel(blob);
 			return json;
 		},
 		toggle(name) {

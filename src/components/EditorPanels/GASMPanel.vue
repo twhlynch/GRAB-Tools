@@ -1,5 +1,5 @@
 <script>
-import AssemblyConversion from '@/assets/AssemblyConversion';
+import { asm_to_json, json_to_asm } from '@/assets/AssemblyConversion';
 import build_editor from '@/assets/EditorSetup';
 import {
 	gasmCompletion,
@@ -45,7 +45,7 @@ export default {
 		},
 		set_json(json) {
 			this.json = json;
-			const asm = AssemblyConversion.json_to_asm(json);
+			const asm = json_to_asm(json);
 			this.view.dispatch({
 				changes: {
 					from: 0,
@@ -60,10 +60,7 @@ export default {
 		save() {
 			let data;
 			try {
-				data = AssemblyConversion.asm_to_json(
-					this.view.state.doc.toString(),
-					this.json,
-				);
+				data = asm_to_json(this.view.state.doc.toString(), this.json);
 			} catch (e) {
 				window.toast(e.message, 'error');
 				return;

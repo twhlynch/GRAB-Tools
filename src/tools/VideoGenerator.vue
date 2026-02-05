@@ -1,5 +1,9 @@
 <script>
-import encoding from '@/assets/tools/encoding';
+import {
+	createLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import video from '@/assets/tools/video';
 import ProgressBar from '@/components/ProgressBar.vue';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
@@ -27,6 +31,7 @@ export default {
 
 			const width = parseInt(getByID(`${toolID}-width`).value) || 40;
 			const height = parseInt(getByID(`${toolID}-height`).value) || 30;
+			const mode = getByID(`${toolID}-mode`).value;
 
 			const file = files[0];
 
@@ -37,6 +42,7 @@ export default {
 				file,
 				width,
 				height,
+				mode,
 				progress_callback,
 			);
 			this.progress = 100;
@@ -45,17 +51,17 @@ export default {
 				return;
 			}
 
-			const obj = encoding.createLevel(
+			const obj = createLevel(
 				video_nodes,
 				'Video',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
 
-			const encoded = await encoding.encodeLevel(obj);
+			const encoded = await encodeLevel(obj);
 			if (encoded === null) return;
 
-			encoding.downloadLevel(encoded);
+			downloadLevel(encoded);
 			this.progress = 0;
 		},
 	},
@@ -79,6 +85,10 @@ export default {
 			id="video-generator-tool-height"
 			placeholder="height (30)"
 		/>
+		<select id="video-generator-tool-mode">
+			<option value="animations" selected>animations</option>
+			<option value="code">code</option>
+		</select>
 		<input type="file" id="video-generator-tool-file" />
 		<ProgressBar :progress="progress" />
 		<button class="button" id="video-generator-tool-btn" @click="generate">

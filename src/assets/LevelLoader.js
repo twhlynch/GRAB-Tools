@@ -1,5 +1,4 @@
 import * as SHADERS from '@/assets/shaders/shaders';
-import encoding from '@/assets/tools/encoding';
 import * as THREE from 'three';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
@@ -16,6 +15,11 @@ import modelSphereURL from './models/sphere.gltf';
 import modelStartDirectionURL from './models/start_direction.glb';
 import modelStartEndURL from './models/start_end.gltf';
 
+import { load } from './encoding/root';
+import {
+	materials as material_types,
+	shapes as shape_types,
+} from './encoding/utils';
 import textureBouncingURL from './textures/bouncing.png';
 import textureCodeURL from './textures/code.png';
 import textureDefaultURL from './textures/default.png';
@@ -335,7 +339,7 @@ class LevelLoader {
 		skyMaterial.side = THREE.BackSide;
 		this.skyMaterial = skyMaterial;
 
-		this.root = encoding.load();
+		this.root = load();
 
 		fontLoader.load('/fonts/Roboto_Regular.json', (font) => {
 			this.font = font;
@@ -409,10 +413,10 @@ class LevelLoader {
 		root.COD.Level.LevelNode.oneofs.content.fieldsArray.forEach((field) => {
 			level.nodes[field.name] = [];
 		});
-		Object.values(encoding.shapes()).forEach((value) => {
+		Object.values(shape_types()).forEach((value) => {
 			level.nodes.shape[value] = [];
 		});
-		Object.values(encoding.materials()).forEach((value) => {
+		Object.values(material_types()).forEach((value) => {
 			level.nodes.material[value] = [];
 		});
 		const LevelMessage = root.lookupType('COD.Level.Level');
@@ -636,7 +640,9 @@ class LevelLoader {
 
 					let size = 0.1;
 
-					const positions = new Float32Array(particleCount * 3);
+					const initialPositions = new Float32Array(
+						particleCount * 3,
+					);
 					const colors = new Float32Array(particleCount * 3);
 					const scales = new Float32Array(particleCount);
 					const lifeSpans = new Float32Array(particleCount);
@@ -647,13 +653,6 @@ class LevelLoader {
 					object.getWorldPosition(worldPosition);
 					object.getWorldScale(worldScale);
 					object.getWorldQuaternion(worldQuaternion);
-
-					let velocity = new THREE.Vector3(
-						node.levelNodeGravity.direction?.x ?? 0,
-						node.levelNodeGravity.direction?.y ?? 0,
-						node.levelNodeGravity.direction?.z ?? 0,
-					);
-					velocity.applyQuaternion(worldQuaternion);
 
 					for (let i = 0; i < particleCount; i++) {
 						lifeSpans[i] = Math.random() * lifeSpan;
@@ -667,10 +666,11 @@ class LevelLoader {
 						);
 						particlePosition.applyQuaternion(worldQuaternion);
 
-						positions[i * 3] = worldPosition.x + particlePosition.x;
-						positions[i * 3 + 1] =
+						initialPositions[i * 3] =
+							worldPosition.x + particlePosition.x;
+						initialPositions[i * 3 + 1] =
 							worldPosition.y + particlePosition.y;
-						positions[i * 3 + 2] =
+						initialPositions[i * 3 + 2] =
 							worldPosition.z + particlePosition.z;
 
 						colors[i * 3] = particleColor.r;
@@ -680,7 +680,7 @@ class LevelLoader {
 
 					particleGeometry.setAttribute(
 						'position',
-						new THREE.Float32BufferAttribute(positions, 3),
+						new THREE.Float32BufferAttribute(initialPositions, 3),
 					);
 					particleGeometry.setAttribute(
 						'color',
@@ -704,19 +704,19 @@ class LevelLoader {
 						const positions =
 							particleGeometry.attributes.position.array;
 
-						let worldPosition = new THREE.Vector3();
-						let worldScale = new THREE.Vector3();
-						let worldQuaternion = new THREE.Quaternion();
-						object.getWorldPosition(worldPosition);
-						object.getWorldScale(worldScale);
-						object.getWorldQuaternion(worldQuaternion);
+						let newWorldPosition = new THREE.Vector3();
+						let newWorldScale = new THREE.Vector3();
+						let newWorldQuaternion = new THREE.Quaternion();
+						object.getWorldPosition(newWorldPosition);
+						object.getWorldScale(newWorldScale);
+						object.getWorldQuaternion(newWorldQuaternion);
 
 						let velocity = new THREE.Vector3(
 							node.levelNodeGravity.direction?.x ?? 0,
 							node.levelNodeGravity.direction?.y ?? 0,
 							node.levelNodeGravity.direction?.z ?? 0,
 						);
-						velocity.applyQuaternion(worldQuaternion);
+						velocity.applyQuaternion(newWorldQuaternion);
 
 						for (let i = 0; i < particleCount; i++) {
 							lifeSpans[i] -= delta;
@@ -724,20 +724,20 @@ class LevelLoader {
 								lifeSpans[i] = lifeSpan;
 
 								let particlePosition = new THREE.Vector3(
-									(Math.random() - 0.5) * worldScale.x,
-									(Math.random() - 0.5) * worldScale.y,
-									(Math.random() - 0.5) * worldScale.z,
+									(Math.random() - 0.5) * newWorldScale.x,
+									(Math.random() - 0.5) * newWorldScale.y,
+									(Math.random() - 0.5) * newWorldScale.z,
 								);
 								particlePosition.applyQuaternion(
-									worldQuaternion,
+									newWorldQuaternion,
 								);
 
 								positions[i * 3] =
-									worldPosition.x + particlePosition.x;
+									newWorldPosition.x + particlePosition.x;
 								positions[i * 3 + 1] =
-									worldPosition.y + particlePosition.y;
+									newWorldPosition.y + particlePosition.y;
 								positions[i * 3 + 2] =
-									worldPosition.z + particlePosition.z;
+									newWorldPosition.z + particlePosition.z;
 							}
 							positions[i * 3] += velocity.x * delta;
 							positions[i * 3 + 1] += velocity.y * delta;
@@ -834,9 +834,11 @@ class LevelLoader {
 					];
 
 					// all default to 0, mimics slowly spawning in at the start
-					const positions = new Float32Array(particleCount * 3);
-					const colors = new Float32Array(particleCount * 3);
-					const scales = new Float32Array(particleCount);
+					const initialPositions = new Float32Array(
+						particleCount * 3,
+					);
+					const initialColors = new Float32Array(particleCount * 3);
+					const initialScales = new Float32Array(particleCount);
 					const lifeSpans = new Float32Array(particleCount);
 					const totalLifeSpans = new Float32Array(particleCount);
 					const startSizes = new Float32Array(particleCount);
@@ -855,15 +857,15 @@ class LevelLoader {
 
 					particleGeometry.setAttribute(
 						'position',
-						new THREE.Float32BufferAttribute(positions, 3),
+						new THREE.Float32BufferAttribute(initialPositions, 3),
 					);
 					particleGeometry.setAttribute(
 						'color',
-						new THREE.Float32BufferAttribute(colors, 3),
+						new THREE.Float32BufferAttribute(initialColors, 3),
 					);
 					particleGeometry.setAttribute(
 						'scale',
-						new THREE.Float32BufferAttribute(scales, 1),
+						new THREE.Float32BufferAttribute(initialScales, 1),
 					);
 
 					let particleMaterial = objectMaterials[7].clone();

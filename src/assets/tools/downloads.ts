@@ -5,7 +5,7 @@ import { stats_data_request } from '@/requests/StatsDataRequest';
 import { user_info_request } from '@/requests/UserInfoRequest';
 import { useUserStore } from '@/stores/user';
 
-async function can_download_level(level_id) {
+async function can_download_level(level_id: string) {
 	const user = useUserStore();
 
 	if (!user.is_logged_in) {
@@ -49,7 +49,9 @@ async function can_download_level(level_id) {
 	if (curated_listings?.includes?.('one_of_a_kind')) return true;
 
 	// check hardest levels list
-	const hardest_list = await stats_data_request('hardest_levels_list');
+	const hardest_list = (await stats_data_request('hardest_levels_list')) as {
+		id: string;
+	}[];
 	if (hardest_list?.find((level) => level.id === level_id)) return true;
 
 	// if in doubt match username
@@ -61,14 +63,15 @@ async function can_download_level(level_id) {
 	return false;
 }
 
-async function download_level(level_id) {
-	let [user_id, map_id, iteration] = level_id.split(':');
+async function download_level(level_id: string) {
+	const [user_id, map_id, iter] = level_id.split(':');
+	let iteration = iter;
 
-	if (!iteration) {
+	if (iteration === undefined) {
 		const details = await level_details_request(level_id);
 		if (details === null) return null;
 
-		iteration = iteration || details.iteration;
+		iteration = iteration || String(details.iteration);
 	}
 
 	const download_id = [user_id, map_id, iteration].join(':');
@@ -78,7 +81,7 @@ async function download_level(level_id) {
 	return level;
 }
 
-async function try_download_level(level_id) {
+async function try_download_level(level_id: string) {
 	if (level_id.includes('level=')) {
 		const params = new URLSearchParams(level_id.split('?')[1]);
 		const level = params.get('level');

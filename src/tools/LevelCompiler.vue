@@ -1,6 +1,11 @@
 <script>
+import {
+	createLevel,
+	decodeLevel,
+	downloadLevel,
+	encodeLevel,
+} from '@/assets/encoding/levels';
 import compiler from '@/assets/tools/compiler';
-import encoding from '@/assets/tools/encoding';
 import ToolTemplate from '@/tools/ToolTemplate.vue';
 
 export default {
@@ -33,12 +38,12 @@ export default {
 			);
 
 			const groups = await Promise.all(
-				files.map(async (file) => await encoding.decodeLevel(file)),
+				files.map(async (file) => await decodeLevel(file)),
 			);
 
 			let compiledNodes = compiler.compile(groups.filter(Boolean));
 
-			const obj = encoding.createLevel(
+			const obj = createLevel(
 				compiledNodes,
 				title,
 				description,
@@ -46,8 +51,8 @@ export default {
 				checkpoints,
 			);
 
-			const encoded = await encoding.encodeLevel(obj);
-			encoding.downloadLevel(encoded);
+			const encoded = await encodeLevel(obj);
+			downloadLevel(encoded);
 		},
 	},
 };

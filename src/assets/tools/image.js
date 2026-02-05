@@ -1,4 +1,4 @@
-import group from '@/assets/tools/group';
+import { groupNodes } from '../encoding/group';
 
 /**
  * @param {File} file - An image file
@@ -9,7 +9,7 @@ import group from '@/assets/tools/group';
  * @returns {Promise<Object>} - A group level node
  */
 async function image(file, width, height, mode, shape) {
-	const img = await new Promise((resolve, reject) => {
+	const result = await new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = () => {
 			const img = new Image();
@@ -21,10 +21,10 @@ async function image(file, width, height, mode, shape) {
 		reader.readAsDataURL(file);
 	});
 
-	const pixels = compute_pixels(img, width, height, shape);
+	const pixels = compute_pixels(result, width, height, shape);
 	let level_nodes = build_nodes(pixels, mode);
 
-	return group.groupNodes(level_nodes);
+	return groupNodes(level_nodes);
 }
 
 function compute_pixels(img, width, height, shape) {
