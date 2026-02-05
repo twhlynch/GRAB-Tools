@@ -284,7 +284,7 @@ function build_code_video(
 				prev[c] = p[c];
 				return [
 					{
-						line: `SET ${pixel}.${c.toUpperCase()} ${p[c]}`,
+						line: `SET ${pixel}.Col.${c.toUpperCase()} ${p[c]}`,
 						x: p.x,
 						y: p.y,
 					},
@@ -297,7 +297,7 @@ function build_code_video(
 	const reset_asm: Instruction[] = [...Array(width)].flatMap((_, x) =>
 		[...Array(height)].flatMap((__, y) =>
 			['R', 'G', 'B'].map((c) => ({
-				line: `SET P_${x}_${y}.${c} 0`,
+				line: `SET P_${x}_${y}.Col.${c} 0`,
 				x,
 				y,
 			})),
