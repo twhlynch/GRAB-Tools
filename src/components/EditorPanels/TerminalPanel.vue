@@ -3,6 +3,7 @@ import build_editor from '@/assets/EditorSetup';
 import { javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import encoding from '@/assets/encoding/encoding'; // for eval // organize-imports-ignore
 
 export default {
 	data() {
