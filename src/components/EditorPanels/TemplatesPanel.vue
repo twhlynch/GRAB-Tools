@@ -132,7 +132,10 @@ export default {
 					{ name: 'Shopping Center 2',             path: 'lobbies/shop/grab-shopping-center-2.level' },
 					{ name: 'Shopping Center 2 (Halloween)', path: 'lobbies/shop/grab-shopping-center-2-halloween.level' },
 					{ name: 'Shopping Center 2 (Christmas)', path: 'lobbies/shop/grab-shopping-center-2-christmas.level' },
+					{ name: 'Shopping Center 3',             path: 'lobbies/shop/grab-shopping-center-3.level' },
 					// post sublevels
+					{ name: 'Lobby february (2026)',                 path: 'lobbies/lobby-february-2026.level' },
+					{ name: 'Lobby january (2026)',                  path: 'lobbies/lobby-january-2026.level' },
 					{ name: 'Lobby christmas (2025)',                path: 'lobbies/lobby-christmas-2025/lobby-christmas-2025.level' },
 					{ name: 'Lobby christmas (extra) (2025)',        path: 'lobbies/lobby-christmas-2025/lobby-christmas-2025-extra.level' },
 					{ name: 'Lobby november (2025)',                 path: 'lobbies/lobby-november-2025/lobby-november-2025.level' },
