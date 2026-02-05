@@ -27,7 +27,7 @@ export const SUPPORT_EMAIL = `support@${DOMAIN}`;
 
 export const GOOGLE_TAG_ID = `G-BDS57RBQ3Q`;
 
-export const FORMAT_VERSION = 18;
+export const FORMAT_VERSION = 19;
 
 import pkg from '../package.json';
 export const VERSION = pkg.version;
