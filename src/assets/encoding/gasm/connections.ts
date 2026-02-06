@@ -303,31 +303,40 @@ function merge_gasm_properties(
 	property: ProgrammablePropertyData,
 	other_property: ProgrammablePropertyData,
 ): void {
+	const components = (property.components ??= []);
 	const other_components = (other_property.components ??= []);
 
-	for (const component of other_components) {
-		add_property_component(property, component);
+	const max_length = Math.max(components.length, other_components.length);
+	for (let i = 0; i < max_length; i++) {
+		if (
+			// add missing components (likely new update)
+			(!components[i] && other_components[i]) ||
+			// override disabled components
+			(component_is_disabled(components[i]!) && other_components[i])
+		) {
+			components[i] = other_components[i]!;
+		}
 	}
 }
 
 /**
  * @brief Add GASM property component.
- *
- * If component exists, discard.
  */
 function add_property_component(
 	property: ProgrammablePropertyData,
 	component: ProgrammablePropertyDataComponent,
 ): void {
 	const components = (property.components ??= []);
+	components.push(component);
+}
 
-	const existing_component = components.find((comp) =>
-		components_are_same(comp, component),
-	);
-
-	if (!existing_component) {
-		components.push(component);
-	}
+/**
+ * @brief Is a component not connected to a register.
+ */
+function component_is_disabled(
+	component: ProgrammablePropertyDataComponent,
+): boolean {
+	return Object.values(component).every((v) => v === -1);
 }
 
 /**
