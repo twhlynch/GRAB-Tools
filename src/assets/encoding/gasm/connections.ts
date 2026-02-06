@@ -1,10 +1,10 @@
 import { add_register, RegisterType } from '@/assets/encoding/gasm/registers';
 import {
-	gasmConnection,
+	levelNodeGASMConnection,
 	programmablePropertyData,
 	programmablePropertyDataComponent,
 	registerData,
-} from '@/assets/encoding/level_nodes';
+} from '@/generated/helpers';
 import {
 	ConnectionType,
 	LevelNode,
@@ -55,9 +55,10 @@ export function create_connection(
 	const properties = (connection.properties ??= []);
 	const program = (code_node.levelNodeGASM.program ??= {});
 
-	const property = programmablePropertyData();
-	property.objectID = connection.objectID; // redundant
-	property[type] = {};
+	const property = programmablePropertyData({
+		objectID: connection.objectID, // redundant
+		[type]: {},
+	});
 	properties.push(property);
 
 	const used_connection = add_gasm_connection(code_node, connection);
@@ -162,13 +163,13 @@ function add_connection_register(
 		type: { type, index },
 	} = register_info;
 
-	const register = registerData();
-	register.name = name;
+	const register = registerData({ name });
 
 	const register_index = add_register(program, register, type);
 
-	const component = programmablePropertyDataComponent();
-	component[index] = register_index;
+	const component = programmablePropertyDataComponent({
+		[index]: register_index,
+	});
 
 	add_property_component(property, component);
 }
@@ -181,9 +182,7 @@ function build_connection(
 	type: PropertyType,
 	name: string,
 ): LevelNodeGASMConnection {
-	const connection = gasmConnection();
-	connection.objectID = object_id;
-	connection.name = name;
+	const connection = levelNodeGASMConnection({ objectID: object_id, name });
 
 	if (type === 'player') {
 		connection.type = ConnectionType.PLAYER;
