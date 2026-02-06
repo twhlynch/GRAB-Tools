@@ -51,21 +51,25 @@ export function create_connection(
 	name = name ?? get_unique_connection_name(code_node, target_node);
 
 	const connection = build_connection(object_id, type, name);
+
 	const properties = (connection.properties ??= []);
 	const program = (code_node.levelNodeGASM.program ??= {});
-
-	const registers = get_registers_for_property(name, type);
 
 	const property = programmablePropertyData();
 	property.objectID = connection.objectID; // redundant
 	property[type] = {};
 	properties.push(property);
 
+	const used_connection = add_gasm_connection(code_node, connection);
+
+	const used_name = used_connection.name ?? name;
+	const registers = get_registers_for_property(used_name, type);
+
 	for (const register of registers) {
 		add_connection_register(program, property, register);
 	}
 
-	return add_gasm_connection(code_node, connection);
+	return used_connection === connection;
 }
 
 /**
@@ -146,7 +150,7 @@ function get_registers_for_property(
 }
 
 /**
- * @brief Add a register connected with a propert component.
+ * @brief Add a register connected with a property component.
  */
 function add_connection_register(
 	program: ProgramData,
@@ -235,12 +239,12 @@ function get_connection_name(node: LevelNode | undefined): string {
  * @brief Add a GASM connection to a LevelNodeGASM.
  *
  * If the object is already connected, merge properties and components.
- * Returns whether the connection object is new.
+ * Returns the connection if it is new, otherwise returns the merged connection.
  */
 export function add_gasm_connection(
 	level_node: LevelNodeWith<LevelNodeGASM>,
 	connection: LevelNodeGASMConnection,
-): boolean {
+): LevelNodeGASMConnection {
 	const connections = (level_node.levelNodeGASM.connections ??= []);
 
 	const existing_connection = connections.find(
@@ -249,11 +253,11 @@ export function add_gasm_connection(
 
 	if (existing_connection) {
 		merge_gasm_connections(existing_connection, connection);
-		return false;
+		return existing_connection;
 	}
 
 	connections.push(connection);
-	return true;
+	return connection;
 }
 
 /**
