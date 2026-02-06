@@ -144,34 +144,7 @@ function camelCase(str) {
 // generate output
 function generate(interfaces, enums) {
 	let output = `import * as proto from './proto';
-
-function merge<T extends object>(target: T, source: Partial<T>): T {
-	for (const key in source) {
-		const srcVal = source[key];
-		const tgtVal = target[key];
-
-		if (
-			srcVal !== undefined &&
-			typeof srcVal === 'object' &&
-			!Array.isArray(srcVal)
-		) {
-			if (
-				!tgtVal ||
-				typeof tgtVal !== 'object' ||
-				Array.isArray(tgtVal)
-			) {
-				target[key] = {} as T[typeof key];
-			}
-			merge(
-				target[key] as T[keyof T] & object,
-				srcVal as Partial<T[keyof T]>,
-			);
-		} else {
-			target[key] = srcVal as T[Extract<keyof T, string>];
-		}
-	}
-	return target;
-}
+import { merge } from './util';
 
 `;
 
