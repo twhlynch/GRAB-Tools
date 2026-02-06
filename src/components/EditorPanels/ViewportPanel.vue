@@ -2,13 +2,12 @@
 import { create_connection } from '@/assets/encoding/gasm/connections';
 import { groupNodes, ungroupNode } from '@/assets/encoding/group';
 import {
-	animation,
-	triggerSourceBasic,
-	triggerSourceBlockNames,
-	triggerTargetAmbience,
-	triggerTargetAnimation,
-	triggerTargetSound,
-	triggerTargetSubLevel,
+	triggerSourceWithBasic,
+	triggerSourceWithBlockNames,
+	triggerTargetWithAmbience,
+	triggerTargetWithAnimation,
+	triggerTargetWithSound,
+	triggerTargetWithSubLevel,
 } from '@/assets/encoding/level_nodes';
 import {
 	deepClone,
@@ -25,6 +24,7 @@ import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import KeyHint from '@/components/EditorPanels/KeyHint.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
+import { animation } from '@/generated/helpers';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';
@@ -1200,7 +1200,7 @@ export default {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			const target = triggerTargetAnimation();
+			const target = triggerTargetWithAnimation();
 			const id = target_object?.userData?.id ?? 0;
 			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
@@ -1211,35 +1211,35 @@ export default {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(triggerTargetSubLevel());
+			trigger.triggerTargets.push(triggerTargetWithSubLevel());
 			this.changed();
 		},
 		add_ambience_target(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(triggerTargetAmbience());
+			trigger.triggerTargets.push(triggerTargetWithAmbience());
 			this.changed();
 		},
 		add_sound_target(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerTargets) trigger.triggerTargets = [];
-			trigger.triggerTargets.push(triggerTargetSound());
+			trigger.triggerTargets.push(triggerTargetWithSound());
 			this.changed();
 		},
 		add_trigger_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(triggerSourceBasic());
+			trigger.triggerSources.push(triggerSourceWithBasic());
 			this.changed(object);
 		},
 		add_trigger_blocks_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
 			if (!trigger.triggerSources) trigger.triggerSources = [];
-			trigger.triggerSources.push(triggerSourceBlockNames());
+			trigger.triggerSources.push(triggerSourceWithBlockNames());
 			this.changed();
 		},
 		add_animation(object) {

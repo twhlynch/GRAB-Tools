@@ -1,23 +1,21 @@
 <script>
 import { groupNodes, recursiveUngroup } from '@/assets/encoding/group';
 import {
-	animation,
-	frame,
-	levelNodeCrumbling,
-	levelNodeFinish,
-	levelNodeGASM,
-	levelNodeGravity,
-	levelNodeParticleEmitter,
-	levelNodeSign,
-	levelNodeSound,
-	levelNodeStart,
-	levelNodeStatic,
-	levelNodeTrigger,
-	triggerSourceBasic,
-	triggerTargetAmbience,
-	triggerTargetAnimation,
-	triggerTargetSound,
-	triggerTargetSubLevel,
+	levelNodeWithCrumbling,
+	levelNodeWithFinish,
+	levelNodeWithGASM,
+	levelNodeWithGravity,
+	levelNodeWithParticleEmitter,
+	levelNodeWithSign,
+	levelNodeWithSound,
+	levelNodeWithStart,
+	levelNodeWithStatic,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+	triggerTargetWithAmbience,
+	triggerTargetWithAnimation,
+	triggerTargetWithSound,
+	triggerTargetWithSubLevel,
 } from '@/assets/encoding/level_nodes';
 import {
 	ambienceSettings,
@@ -47,6 +45,7 @@ import obj from '@/assets/tools/obj';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
 import video from '@/assets/tools/video';
+import { animation, animationFrame } from '@/generated/helpers';
 import { useConfigStore } from '@/stores/config';
 import { mapActions, mapState } from 'pinia';
 import * as THREE from 'three';
@@ -470,7 +469,7 @@ export default {
 
 				for (let i in modded_shapes) {
 					for (let j in modded_materials) {
-						const node = levelNodeStatic();
+						const node = levelNodeWithStatic();
 						const data = node.levelNodeStatic;
 						data.shape = modded_shapes[i];
 						data.material = modded_materials[j];
@@ -754,20 +753,20 @@ export default {
 			);
 		},
 		insert_static() {
-			const node = levelNodeStatic();
+			const node = levelNodeWithStatic();
 			delete node.levelNodeStatic.color1;
 			delete node.levelNodeStatic.color2;
 			this.insert_selection_nodes([node]);
 		},
 		insert_crumbling() {
-			const node = levelNodeCrumbling();
+			const node = levelNodeWithCrumbling();
 			this.insert_selection_nodes([node]);
 		},
 		insert_animated() {
-			const node = levelNodeStatic();
+			const node = levelNodeWithStatic();
 			const anim = animation();
-			anim.frames.push(frame());
-			const frm = frame();
+			anim.frames.push(animationFrame());
+			const frm = animationFrame();
 			frm.time = 1;
 			frm.position.y = 1;
 			anim.frames.push(frm);
@@ -775,63 +774,69 @@ export default {
 			this.insert_selection_nodes([node]);
 		},
 		insert_colored() {
-			const node = levelNodeStatic();
+			const node = levelNodeWithStatic();
 			node.levelNodeStatic.material = 8;
 			this.insert_selection_nodes([node]);
 		},
 		insert_sign() {
-			this.insert_selection_nodes([levelNodeSign()]);
+			this.insert_selection_nodes([levelNodeWithSign()]);
 		},
 		insert_start() {
-			this.insert_selection_nodes([levelNodeStart()]);
+			this.insert_selection_nodes([levelNodeWithStart()]);
 		},
 		insert_finish() {
-			this.insert_selection_nodes([levelNodeFinish()]);
+			this.insert_selection_nodes([levelNodeWithFinish()]);
 		},
 		insert_gravity() {
-			this.insert_selection_nodes([levelNodeGravity()]);
+			this.insert_selection_nodes([levelNodeWithGravity()]);
 		},
 		insert_particle() {
-			this.insert_selection_nodes([levelNodeParticleEmitter()]);
+			this.insert_selection_nodes([levelNodeWithParticleEmitter()]);
 		},
 		insert_trigger() {
-			this.insert_selection_nodes([levelNodeTrigger()]);
+			this.insert_selection_nodes([levelNodeWithTrigger()]);
 		},
 		insert_sound() {
-			this.insert_selection_nodes([levelNodeSound()]);
+			this.insert_selection_nodes([levelNodeWithSound()]);
 		},
 		insert_gasm() {
-			this.insert_selection_nodes([levelNodeGASM()]);
+			this.insert_selection_nodes([levelNodeWithGASM()]);
 		},
 		insert_colored_lava() {
-			const node = levelNodeStatic();
+			const node = levelNodeWithStatic();
 			node.levelNodeStatic.material = 3;
 			node.levelNodeStatic.color1.r = 1;
 			node.levelNodeStatic.color2.b = 1;
 			this.insert_selection_nodes([node]);
 		},
 		insert_ambience_trigger() {
-			const node = levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
-			node.levelNodeTrigger.triggerTargets.push(triggerTargetAmbience());
+			const node = levelNodeWithTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
+			node.levelNodeTrigger.triggerTargets.push(
+				triggerTargetWithAmbience(),
+			);
 			this.insert_selection_nodes([node]);
 		},
 		insert_animation_trigger() {
-			const node = levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
-			node.levelNodeTrigger.triggerTargets.push(triggerTargetAnimation());
+			const node = levelNodeWithTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
+			node.levelNodeTrigger.triggerTargets.push(
+				triggerTargetWithAnimation(),
+			);
 			this.insert_selection_nodes([node]);
 		},
 		insert_sound_trigger() {
-			const node = levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
-			node.levelNodeTrigger.triggerTargets.push(triggerTargetSound());
+			const node = levelNodeWithTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetWithSound());
 			this.insert_selection_nodes([node]);
 		},
 		insert_sublevel_trigger() {
-			const node = levelNodeTrigger();
-			node.levelNodeTrigger.triggerSources.push(triggerSourceBasic());
-			node.levelNodeTrigger.triggerTargets.push(triggerTargetSubLevel());
+			const node = levelNodeWithTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
+			node.levelNodeTrigger.triggerTargets.push(
+				triggerTargetWithSubLevel(),
+			);
 			this.insert_selection_nodes([node]);
 		},
 		teleport_start() {
@@ -878,7 +883,7 @@ export default {
 					z: 900000,
 				};
 				const anim = animation();
-				anim.frames.push(frame());
+				anim.frames.push(animationFrame());
 				anim.frames[0].position = {
 					x: -900000,
 					y: -900000,

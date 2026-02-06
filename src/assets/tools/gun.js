@@ -1,12 +1,12 @@
 import { asm_to_json } from '@/assets/AssemblyConversion';
+import {
+	levelNodeWithGASM,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+	triggerTargetWithGASM,
+} from '@/assets/encoding/level_nodes';
 import { create_connection } from '../encoding/gasm/connections';
 import { groupNodes } from '../encoding/group';
-import {
-	levelNodeGASM,
-	levelNodeTrigger,
-	triggerSourceBasic,
-	triggerTargetGASM,
-} from '../encoding/level_nodes';
 import { load } from '../encoding/root';
 import { deepClone, node_data, shapes, traverse_node } from '../encoding/utils';
 
@@ -44,7 +44,7 @@ async function makeGun(nodes) {
 
 	// group gun with trigger
 	const gun_position = deepClone(node_data(gun_node).position);
-	const trigger_node = levelNodeTrigger();
+	const trigger_node = levelNodeWithTrigger();
 	trigger_node.levelNodeTrigger.scale = { x: 2, y: 2, z: 2 };
 	const group_node = groupNodes([gun_node, trigger_node]);
 	group_node.levelNodeGroup.physicsObject = true;
@@ -61,7 +61,7 @@ async function makeGun(nodes) {
 	const code_id = start_id + 4;
 
 	// create code block
-	const code_node = levelNodeGASM();
+	const code_node = levelNodeWithGASM();
 
 	create_connection(code_node, undefined, 'position', group_id, 'Gun');
 	create_connection(code_node, undefined, 'rotation', group_id, 'Gun');
@@ -71,13 +71,13 @@ async function makeGun(nodes) {
 	asm_to_json(asm, code_node);
 
 	// connect trigger
-	const target = triggerTargetGASM();
+	const target = triggerTargetWithGASM();
 	target.triggerTargetGASM.objectID = code_id;
 	target.triggerTargetGASM.mode =
 		load().COD.Level.TriggerTargetGASM.Mode.RESTART;
 	trigger_node.levelNodeTrigger.triggerTargets.push(target);
 
-	const source = triggerSourceBasic();
+	const source = triggerSourceWithBasic();
 	source.triggerSourceBasic.type =
 		load().COD.Level.TriggerSourceBasic.Type.GRAPPLE;
 	trigger_node.levelNodeTrigger.triggerSources.push(source);

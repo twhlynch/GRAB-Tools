@@ -1,3 +1,7 @@
+import {
+	levelNodeWithGASM,
+	levelNodeWithStatic,
+} from '@/assets/encoding/level_nodes';
 import { PYTHON_SERVER_URL } from '@/config';
 import {
 	Animation,
@@ -9,7 +13,6 @@ import {
 import { LevelNodeWith } from '@/types/levelNodes';
 import { asm_to_json } from '../AssemblyConversion';
 import { create_connection } from '../encoding/gasm/connections';
-import { levelNodeGASM, levelNodeStatic } from '../encoding/level_nodes';
 import { decodeLevel } from '../encoding/levels';
 import { materials } from '../encoding/utils';
 
@@ -267,7 +270,7 @@ function build_code_video(
 	// create pixels
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
-			static_nodes.push(levelNodeStatic());
+			static_nodes.push(levelNodeWithStatic());
 			const { levelNodeStatic: pixel_node } =
 				static_nodes[static_nodes.length - 1]!;
 			pixel_node.material = DEFAULT_COLORED;
@@ -320,7 +323,7 @@ function build_code_video(
 
 	// build code blocks
 	for (let blk_index = 0; blk_index < code_block_count; blk_index++) {
-		const code = levelNodeGASM();
+		const code = levelNodeWithGASM();
 		const { levelNodeGASM: code_node } = code;
 
 		const x = Math.floor((blk_index * 25) / height);

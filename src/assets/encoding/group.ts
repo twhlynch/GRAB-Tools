@@ -1,3 +1,4 @@
+import { levelNodeWithGroup } from '@/assets/encoding/level_nodes';
 import {
 	LevelNode,
 	LevelNodeFinish,
@@ -13,7 +14,6 @@ import {
 import { Box3 } from 'three/src/math/Box3.js';
 import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
-import { levelNodeGroup } from './level_nodes';
 import { node_data } from './utils';
 
 export function groupNodes(
@@ -42,7 +42,7 @@ export function groupNodes(
 		data.position.z = (data.position.z ?? 0) - center.z;
 	});
 
-	const group = levelNodeGroup();
+	const group = levelNodeWithGroup();
 	group.levelNodeGroup.position = { x: center.x, y: center.y, z: center.z };
 	group.levelNodeGroup.childNodes = nodes;
 	return group;

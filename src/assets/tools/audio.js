@@ -1,19 +1,18 @@
 // SFX2GL Tool by TheTrueFax (https://github.com/thetruefax/)
 
+import {
+	levelNodeWithGroup,
+	levelNodeWithSound,
+	levelNodeWithStatic,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+	triggerTargetWithSound,
+} from '@/assets/encoding/level_nodes';
+import { load } from '@/assets/encoding/root';
+import { deepClone } from '@/assets/encoding/utils';
+import { animation, animationFrame } from '@/generated/helpers';
 import { ComplexArray } from 'jsfft';
 import { groupNodes } from '../encoding/group';
-import {
-	animation,
-	frame,
-	levelNodeGroup,
-	levelNodeSound,
-	levelNodeStatic,
-	levelNodeTrigger,
-	triggerSourceBasic,
-	triggerTargetSound,
-} from '../encoding/level_nodes';
-import { load } from '../encoding/root';
-import { deepClone } from '../encoding/utils';
 
 /**
  * @param {File} file - An image file
@@ -266,7 +265,7 @@ function getVolumes(notes, samples, cull, round) {
 
 // node helpers
 function getSoundBlock(pitch, amplitude) {
-	const node = levelNodeSound();
+	const node = levelNodeWithSound();
 	node.levelNodeSound.position.z = -2;
 	node.levelNodeSound.name = uniqueSoundName();
 	node.levelNodeSound.volume = amplitude;
@@ -290,20 +289,20 @@ function getSoundTriggerBlock(x, y, isStop, targetID) {
 	const targetSoundModes = load().COD.Level.TriggerTargetSound.Mode;
 	const sourceBasicTypes = load().COD.Level.TriggerSourceBasic.Type;
 
-	const node = levelNodeTrigger();
+	const node = levelNodeWithTrigger();
 	node.levelNodeTrigger.position.x = x;
 	node.levelNodeTrigger.scale.x = 0.03;
 
-	const source = triggerSourceBasic();
+	const source = triggerSourceWithBasic();
 	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	node.levelNodeTrigger.triggerSources.push(source);
 
-	const target = triggerTargetSound();
+	const target = triggerTargetWithSound();
 	target.triggerTargetSound.objectID = targetID;
 	node.levelNodeTrigger.triggerTargets.push(target);
 
 	const anim = animation();
-	anim.frames.push(frame());
+	anim.frames.push(animationFrame());
 	node.animations = [anim];
 
 	if (isStop) {
@@ -316,7 +315,7 @@ function getSoundTriggerBlock(x, y, isStop, targetID) {
 	return node;
 }
 function soundTarget(mode, object_id) {
-	const target = triggerTargetSound();
+	const target = triggerTargetWithSound();
 	target.triggerTargetSound.objectID = object_id;
 	target.triggerTargetSound.mode = mode;
 	return target;
@@ -339,7 +338,7 @@ async function generate(pitchSamps, volumeSamps, file) {
 	let pitches = getPitches(notes, pitchSamps, true, 2);
 	let volumes = getVolumes(notes, volumeSamps, false, 0.01);
 
-	let triggerGroup = levelNodeGroup();
+	let triggerGroup = levelNodeWithGroup();
 
 	const soundBlocks = volumes.flatMap((v) =>
 		pitches.map((p) => getSoundBlock(p, v)),
@@ -362,9 +361,9 @@ async function generate(pitchSamps, volumeSamps, file) {
 	};
 
 	const sourceBasicTypes = load().COD.Level.TriggerSourceBasic.Type;
-	const trig1 = levelNodeTrigger();
+	const trig1 = levelNodeWithTrigger();
 	trig1.levelNodeTrigger.position.x = -5;
-	const source = triggerSourceBasic();
+	const source = triggerSourceWithBasic();
 	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	trig1.levelNodeTrigger.triggerSources.push(source);
 
@@ -422,21 +421,21 @@ async function generate(pitchSamps, volumeSamps, file) {
 			}
 		}
 
-		const preframe = frame();
+		const preframe = animationFrame();
 		preframe.time = startPos - 0.01;
 		preframe.position.x = -1;
 		trigs[index1].animations[0].frames.push(preframe);
 
-		const frm = frame();
+		const frm = animationFrame();
 		frm.time = startPos;
 		trigs[index1].animations[0].frames.push(frm);
 
-		const postframe = frame();
+		const postframe = animationFrame();
 		postframe.time = endPos - 0.01;
 		postframe.position.x = -1;
 		trigs[index2].animations[0].frames.push(postframe);
 
-		const endframe = frame();
+		const endframe = animationFrame();
 		endframe.time = endPos;
 		trigs[index2].animations[0].frames.push(endframe);
 	};
@@ -456,7 +455,7 @@ async function generate(pitchSamps, volumeSamps, file) {
 		if (trigs[i].animations[0].frames.length > best) {
 			best = trigs[i].animations[0].frames.length;
 		}
-		const frm = frame();
+		const frm = animationFrame();
 		frm.time = last;
 		trigs[i].animations[0].frames.push(frm);
 	}
@@ -467,7 +466,7 @@ async function generate(pitchSamps, volumeSamps, file) {
 		),
 	);
 
-	const wall = levelNodeStatic();
+	const wall = levelNodeWithStatic();
 	wall.levelNodeStatic.position.x = -1;
 	wall.levelNodeStatic.position.y = -0.5;
 	wall.levelNodeStatic.scale.y = max * 2 + 2;

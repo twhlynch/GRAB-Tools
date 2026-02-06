@@ -1,11 +1,11 @@
 import { asm_to_json } from '@/assets/AssemblyConversion';
+import {
+	levelNodeWithGASM,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+} from '@/assets/encoding/level_nodes';
 import { create_connection } from '../encoding/gasm/connections';
 import { groupNodes } from '../encoding/group';
-import {
-	levelNodeGASM,
-	levelNodeTrigger,
-	triggerSourceBasic,
-} from '../encoding/level_nodes';
 import { load } from '../encoding/root';
 import { deepClone, node_data, shapes, traverse_node } from '../encoding/utils';
 
@@ -36,7 +36,7 @@ async function makeCar(nodes) {
 
 	// group wheel with trigger
 	const wheel_position = deepClone(node_data(wheel_node).position);
-	const trigger_node = levelNodeTrigger();
+	const trigger_node = levelNodeWithTrigger();
 	trigger_node.levelNodeTrigger.scale = { x: 0.5, y: 0.5, z: 0.5 };
 	const group_node = groupNodes([wheel_node, trigger_node]);
 	group_node.levelNodeGroup.physicsObject = true;
@@ -54,7 +54,7 @@ async function makeCar(nodes) {
 	// code
 
 	// create code block
-	const code_node = levelNodeGASM();
+	const code_node = levelNodeWithGASM();
 	code_node.levelNodeGASM.startActive = true;
 
 	create_connection(code_node, undefined, group_id, 'position', 'Str');
@@ -67,7 +67,7 @@ async function makeCar(nodes) {
 	asm_to_json(asm, code_node);
 
 	// connect trigger
-	const source = triggerSourceBasic();
+	const source = triggerSourceWithBasic();
 	source.triggerSourceBasic.type =
 		load().COD.Level.TriggerSourceBasic.Type.HAND;
 	trigger_node.levelNodeTrigger.triggerSources.push(source);
