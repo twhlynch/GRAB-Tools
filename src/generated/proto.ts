@@ -28,14 +28,14 @@ export interface Quaternion {
 	x?: number;
 	y?: number;
 	z?: number;
-	w?: number;
+	w?: number; // 1
 }
 
 export interface Color {
 	r?: number;
 	g?: number;
 	b?: number;
-	a?: number;
+	a?: number; // 1
 }
 
 export interface AmbienceSettings {
@@ -108,7 +108,7 @@ export enum InterpolationType {
 
 export interface LevelNodeGroup {
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
 	childNodes?: LevelNode[];
 	name?: string;
@@ -120,21 +120,21 @@ export interface LevelNodeGroup {
 export interface LevelNodeStart {
 	position?: Vector;
 	rotation?: Quaternion;
-	radius?: number;
-	name?: string;
+	radius?: number; // 0.5
+	name?: string; // "start0"
 	isHidden?: boolean;
 }
 
 export interface LevelNodeFinish {
 	position?: Vector;
-	radius?: number;
+	radius?: number; // 0.5
 }
 
 export interface LevelNodeStatic {
 	shape?: LevelNodeShape;
 	material?: LevelNodeMaterial;
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
 	color1?: Color;
 	isNeon?: boolean;
@@ -147,21 +147,21 @@ export interface LevelNodeStatic {
 
 export interface LevelNodeCrumbling {
 	shape?: LevelNodeShape;
-	material?: LevelNodeMaterial;
+	material?: LevelNodeMaterial; // proto.LevelNodeMaterial.GRABBABLE_CRUMBLING
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
-	stableTime?: number;
-	respawnTime?: number;
+	stableTime?: number; // 5
+	respawnTime?: number; // 5
 	isLocal?: boolean;
 }
 
 export interface LevelNodeSign {
 	position?: Vector;
 	rotation?: Quaternion;
-	text?: string;
-	scale?: number;
-	color?: Color;
+	text?: string; // "Text"
+	scale?: number; // 1
+	color?: Color; // { r: 1, g: 1, b: 1 }
 	hideModel?: boolean;
 	weight?: LevelNodeSignSignFontWeight;
 }
@@ -169,9 +169,9 @@ export interface LevelNodeSign {
 export interface LevelNodeGravity {
 	mode?: LevelNodeGravityMode;
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
-	direction?: Vector;
+	direction?: Vector; // { x: 0, y: 1, z: 0 }
 }
 
 export interface LevelNodeLobbyTerminal {
@@ -181,19 +181,19 @@ export interface LevelNodeLobbyTerminal {
 
 export interface LevelNodeParticleEmitter {
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
-	particlesPerSecond?: number;
-	lifeSpan?: Vector2;
-	startColor?: Color;
+	particlesPerSecond?: number; // 10
+	lifeSpan?: Vector2; // { x: 1, y: 2 }
+	startColor?: Color; // { r: 1, g: 1, b: 1 }
 	endColor?: Color;
-	startSize?: Vector2;
-	endSize?: Vector2;
-	velocity?: Vector;
-	velocityMin?: Vector;
-	velocityMax?: Vector;
-	accelerationMin?: Vector;
-	accelerationMax?: Vector;
+	startSize?: Vector2; // { x: 1, y: 2 }
+	endSize?: Vector2; // { x: 0.5, y: 1 }
+	velocity?: Vector; // { x: 0.1, y: 0.1, z: 0.1 }
+	velocityMin?: Vector; // { x: -0.1, y: -0.1, z: -0.1 }
+	velocityMax?: Vector; // { x: 0.1, y: 0.1, z: 0.1 }
+	accelerationMin?: Vector; // { x: -0.1, y: -0.1, z: -0.1 }
+	accelerationMax?: Vector; // { x: 0.1, y: 0.1, z: 0.1 }
 }
 
 export interface TriggerSourceBasic {
@@ -211,7 +211,7 @@ export interface TriggerSource {
 
 export interface TriggerTargetAnimation {
 	objectID?: number;
-	animationName?: string;
+	animationName?: string; // "idle"
 	loop?: boolean;
 	reverse?: boolean;
 	mode?: TriggerTargetAnimationMode;
@@ -229,8 +229,8 @@ export interface TriggerTargetGASM {
 }
 
 export interface TriggerTargetSubLevel {
-	levelIdentifier?: string;
-	spawnPoint?: string;
+	levelIdentifier?: string; // "29r46v7djliny6t4rzvq7:1654257963"
+	spawnPoint?: string; // "default"
 }
 
 export interface TriggerTargetAmbience {
@@ -238,9 +238,9 @@ export interface TriggerTargetAmbience {
 	skyColor1?: Color;
 	sunAltitude?: number;
 	sunAzimuth?: number;
-	sunSize?: number;
-	fogDensity?: number;
-	changeDuration?: number;
+	sunSize?: number; // 1
+	fogDensity?: number; // 1
+	changeDuration?: number; // 1
 	interpolationType?: InterpolationType;
 }
 
@@ -256,7 +256,7 @@ export interface TriggerTarget {
 export interface LevelNodeTrigger {
 	shape?: LevelNodeShape;
 	position?: Vector;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
 	isShared?: boolean;
 	triggerSources?: TriggerSource[];
@@ -264,7 +264,7 @@ export interface LevelNodeTrigger {
 }
 
 export interface SoundGeneratorParameters {
-	volume?: number;
+	volume?: number; // 1
 	waveType?: SoundGeneratorParametersWaveType;
 	envelopeAttack?: number;
 	envelopeSustain?: number;
@@ -292,12 +292,12 @@ export interface SoundGeneratorParameters {
 export interface LevelNodeSound {
 	position?: Vector;
 	parameters?: SoundGeneratorParameters;
-	name?: string;
+	name?: string; // 'sound0'
 	repeat?: boolean;
-	volume?: number;
+	volume?: number; // 1
 	startActive?: boolean;
 	rotation?: Quaternion;
-	maxRangeFactor?: number;
+	maxRangeFactor?: number; // 1
 }
 
 export interface LevelNodeGASM {
@@ -305,7 +305,7 @@ export interface LevelNodeGASM {
 	program?: ProgramData;
 	connections?: LevelNodeGASMConnection[];
 	startActive?: boolean;
-	scale?: Vector;
+	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
 	isShared?: boolean;
 	lateUpdate?: boolean;
@@ -318,10 +318,10 @@ export interface AnimationFrame {
 }
 
 export interface Animation {
-	name?: string;
+	name?: string; // 'idle'
 	frames?: AnimationFrame[];
 	direction?: AnimationDirection;
-	speed?: number;
+	speed?: number; // 1
 	interpolation?: AnimationInterpolation;
 }
 
@@ -366,7 +366,7 @@ export interface LabelData {
 export interface ProgramData {
 	inputRegisters?: RegisterData[];
 	outputRegisters?: RegisterData[];
-	workingRegisters?: RegisterData[];
+	workingRegisters?: RegisterData[]; // [{ name: 'R0' }, { name: 'R1' }, { name: 'R2' }, { name: 'R3' }, { name: 'R4' }, { name: 'R5' }, { name: 'R6' }, { name: 'R7' }]
 	labels?: LabelData[];
 	instructions?: InstructionData[];
 	inoutRegisters?: RegisterData[];

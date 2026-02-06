@@ -73,7 +73,7 @@ export function quaternion(
 		x: 0,
 		y: 0,
 		z: 0,
-		w: 0,
+		w: 1,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -84,7 +84,7 @@ export function color(overrides?: Partial<proto.Color>): proto.Color {
 		r: 0,
 		g: 0,
 		b: 0,
-		a: 0,
+		a: 1,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -110,7 +110,7 @@ export function levelNodeGroup(
 ): proto.LevelNodeGroup {
 	const obj: proto.LevelNodeGroup = {
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
 		childNodes: [],
 		name: '',
@@ -128,8 +128,8 @@ export function levelNodeStart(
 	const obj: proto.LevelNodeStart = {
 		position: vector(),
 		rotation: quaternion(),
-		radius: 0,
-		name: '',
+		radius: 0.5,
+		name: 'start0',
 		isHidden: false,
 	};
 	if (overrides) merge(obj, overrides);
@@ -141,7 +141,7 @@ export function levelNodeFinish(
 ): proto.LevelNodeFinish {
 	const obj: proto.LevelNodeFinish = {
 		position: vector(),
-		radius: 0,
+		radius: 0.5,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -154,7 +154,7 @@ export function levelNodeStatic(
 		shape: proto.LevelNodeShape.CUBE,
 		material: proto.LevelNodeMaterial.DEFAULT,
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
 		color1: color(),
 		isNeon: false,
@@ -173,12 +173,12 @@ export function levelNodeCrumbling(
 ): proto.LevelNodeCrumbling {
 	const obj: proto.LevelNodeCrumbling = {
 		shape: proto.LevelNodeShape.CUBE,
-		material: proto.LevelNodeMaterial.DEFAULT,
+		material: proto.LevelNodeMaterial.GRABBABLE_CRUMBLING,
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
-		stableTime: 0,
-		respawnTime: 0,
+		stableTime: 5,
+		respawnTime: 5,
 		isLocal: false,
 	};
 	if (overrides) merge(obj, overrides);
@@ -191,9 +191,9 @@ export function levelNodeSign(
 	const obj: proto.LevelNodeSign = {
 		position: vector(),
 		rotation: quaternion(),
-		text: '',
-		scale: 0,
-		color: color(),
+		text: 'Text',
+		scale: 1,
+		color: { r: 1, g: 1, b: 1 },
 		hideModel: false,
 		weight: proto.LevelNodeSignSignFontWeight.REGULAR,
 	};
@@ -207,9 +207,9 @@ export function levelNodeGravity(
 	const obj: proto.LevelNodeGravity = {
 		mode: proto.LevelNodeGravityMode.DEFAULT,
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
-		direction: vector(),
+		direction: { x: 0, y: 1, z: 0 },
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -231,19 +231,19 @@ export function levelNodeParticleEmitter(
 ): proto.LevelNodeParticleEmitter {
 	const obj: proto.LevelNodeParticleEmitter = {
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
-		particlesPerSecond: 0,
-		lifeSpan: vector2(),
-		startColor: color(),
+		particlesPerSecond: 10,
+		lifeSpan: { x: 1, y: 2 },
+		startColor: { r: 1, g: 1, b: 1 },
 		endColor: color(),
-		startSize: vector2(),
-		endSize: vector2(),
-		velocity: vector(),
-		velocityMin: vector(),
-		velocityMax: vector(),
-		accelerationMin: vector(),
-		accelerationMax: vector(),
+		startSize: { x: 1, y: 2 },
+		endSize: { x: 0.5, y: 1 },
+		velocity: { x: 0.1, y: 0.1, z: 0.1 },
+		velocityMin: { x: -0.1, y: -0.1, z: -0.1 },
+		velocityMax: { x: 0.1, y: 0.1, z: 0.1 },
+		accelerationMin: { x: -0.1, y: -0.1, z: -0.1 },
+		accelerationMax: { x: 0.1, y: 0.1, z: 0.1 },
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -282,7 +282,7 @@ export function triggerTargetAnimation(
 ): proto.TriggerTargetAnimation {
 	const obj: proto.TriggerTargetAnimation = {
 		objectID: 0,
-		animationName: '',
+		animationName: 'idle',
 		loop: false,
 		reverse: false,
 		mode: proto.TriggerTargetAnimationMode.TOGGLE_REVERSE,
@@ -318,8 +318,8 @@ export function triggerTargetSubLevel(
 	overrides?: Partial<proto.TriggerTargetSubLevel>,
 ): proto.TriggerTargetSubLevel {
 	const obj: proto.TriggerTargetSubLevel = {
-		levelIdentifier: '',
-		spawnPoint: '',
+		levelIdentifier: '29r46v7djliny6t4rzvq7:1654257963',
+		spawnPoint: 'default',
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -333,9 +333,9 @@ export function triggerTargetAmbience(
 		skyColor1: color(),
 		sunAltitude: 0,
 		sunAzimuth: 0,
-		sunSize: 0,
-		fogDensity: 0,
-		changeDuration: 0,
+		sunSize: 1,
+		fogDensity: 1,
+		changeDuration: 1,
 		interpolationType: proto.InterpolationType.LINEAR,
 	};
 	if (overrides) merge(obj, overrides);
@@ -358,7 +358,7 @@ export function levelNodeTrigger(
 	const obj: proto.LevelNodeTrigger = {
 		shape: proto.LevelNodeShape.CUBE,
 		position: vector(),
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
 		isShared: false,
 		triggerSources: [],
@@ -372,7 +372,7 @@ export function soundGeneratorParameters(
 	overrides?: Partial<proto.SoundGeneratorParameters>,
 ): proto.SoundGeneratorParameters {
 	const obj: proto.SoundGeneratorParameters = {
-		volume: 0,
+		volume: 1,
 		waveType: proto.SoundGeneratorParametersWaveType.Square,
 		envelopeAttack: 0,
 		envelopeSustain: 0,
@@ -406,12 +406,12 @@ export function levelNodeSound(
 	const obj: proto.LevelNodeSound = {
 		position: vector(),
 		parameters: soundGeneratorParameters(),
-		name: '',
+		name: 'sound0',
 		repeat: false,
-		volume: 0,
+		volume: 1,
 		startActive: false,
 		rotation: quaternion(),
-		maxRangeFactor: 0,
+		maxRangeFactor: 1,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -425,7 +425,7 @@ export function levelNodeGASM(
 		program: programData(),
 		connections: [],
 		startActive: false,
-		scale: vector(),
+		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
 		isShared: false,
 		lateUpdate: false,
@@ -450,10 +450,10 @@ export function animation(
 	overrides?: Partial<proto.Animation>,
 ): proto.Animation {
 	const obj: proto.Animation = {
-		name: '',
+		name: 'idle',
 		frames: [],
 		direction: proto.AnimationDirection.RESTART,
-		speed: 0,
+		speed: 1,
 		interpolation: proto.AnimationInterpolation.LINEAR,
 	};
 	if (overrides) merge(obj, overrides);
@@ -519,7 +519,16 @@ export function programData(
 	const obj: proto.ProgramData = {
 		inputRegisters: [],
 		outputRegisters: [],
-		workingRegisters: [],
+		workingRegisters: [
+			{ name: 'R0' },
+			{ name: 'R1' },
+			{ name: 'R2' },
+			{ name: 'R3' },
+			{ name: 'R4' },
+			{ name: 'R5' },
+			{ name: 'R6' },
+			{ name: 'R7' },
+		],
 		labels: [],
 		instructions: [],
 		inoutRegisters: [],
