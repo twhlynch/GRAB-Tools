@@ -604,26 +604,6 @@ export function programmablePropertyData(
 	return obj;
 }
 
-export function programmableSignUpdateData(
-	overrides?: Partial<proto.ProgrammableSignUpdateData>,
-): proto.ProgrammableSignUpdateData {
-	const obj: proto.ProgrammableSignUpdateData = {
-		text: '',
-	};
-	if (overrides) merge(obj, overrides);
-	return obj;
-}
-
-export function programmablePropertyUpdateData(
-	overrides?: Partial<proto.ProgrammablePropertyUpdateData>,
-): proto.ProgrammablePropertyUpdateData {
-	const obj: proto.ProgrammablePropertyUpdateData = {
-		components: [],
-	};
-	if (overrides) merge(obj, overrides);
-	return obj;
-}
-
 export function levelNodeGASMConnection(
 	overrides?: Partial<proto.LevelNodeGASMConnection>,
 ): proto.LevelNodeGASMConnection {

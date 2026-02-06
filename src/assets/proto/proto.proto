@@ -491,7 +491,6 @@ message LevelNode {
 
   repeated Animation animations = 15;
   int32 activeAnimation = 16;
-  bool wantsCreationHistory = 17;
 }
 
 // MARK: gasm.proto
@@ -597,17 +596,5 @@ message ProgrammablePropertyData {
     ProgrammableSignData sign = 7;
     ProgrammableColorData color = 8;
     ProgrammableScaleData scale = 9;
-  }
-}
-
-message ProgrammableSignUpdateData {
-  string text = 1;
-}
-
-message ProgrammablePropertyUpdateData {
-  repeated float components = 1;
-
-  oneof content {
-    ProgrammableSignUpdateData sign = 2;
   }
 }

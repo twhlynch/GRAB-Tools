@@ -341,7 +341,6 @@ export interface LevelNode {
 	levelNodeGASM?: LevelNodeGASM; // undefined
 	animations?: Animation[];
 	activeAnimation?: number;
-	wantsCreationHistory?: boolean; // undefined
 }
 
 export interface OperandData {
@@ -403,15 +402,6 @@ export interface ProgrammablePropertyData {
 	sign?: ProgrammableSignData; // undefined
 	color?: ProgrammableColorData; // undefined
 	scale?: ProgrammableScaleData; // undefined
-}
-
-export interface ProgrammableSignUpdateData {
-	text?: string;
-}
-
-export interface ProgrammablePropertyUpdateData {
-	components?: number[];
-	sign?: ProgrammableSignUpdateData; // undefined
 }
 
 export enum LevelNodeSignSignFontWeight {
