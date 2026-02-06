@@ -101,7 +101,7 @@ function default_value_for_type(prop, interfaces, enums) {
 	const type_name = prop.type.typeName.getText(source_file);
 
 	if (type_name === 'Array') return `[]`;
-	if (interfaces.has(type_name)) return `${type_name}()`;
+	if (interfaces.has(type_name)) return `${camelCase(type_name)}()`;
 
 	if (enums.has(type_name)) {
 		const member = enums.get(type_name);
@@ -135,6 +135,10 @@ function default_value(prop, interfaces, enums) {
 		default:
 			return 'undefined';
 	}
+}
+
+function camelCase(str) {
+	return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 // generate output
@@ -175,6 +179,7 @@ function merge<T extends object>(target: T, source: Partial<T>): T {
 		if (!ts.isInterfaceDeclaration(node)) return;
 
 		const name = node.name.text;
+		const func_name = camelCase(name);
 
 		const properties = node.members
 			.filter(ts.isPropertySignature)
@@ -187,7 +192,7 @@ function merge<T extends object>(target: T, source: Partial<T>): T {
 			.filter(Boolean);
 
 		output += `
-export function ${name}(overrides?: Partial<proto.${name}>): proto.${name} {
+export function ${func_name}(overrides?: Partial<proto.${name}>): proto.${name} {
 	const obj: proto.${name} = {
 		${properties.join('\n\t\t')}
 	};

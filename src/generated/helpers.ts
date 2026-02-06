@@ -28,7 +28,7 @@ function merge<T extends object>(target: T, source: Partial<T>): T {
 	return target;
 }
 
-export function Level(overrides?: Partial<proto.Level>): proto.Level {
+export function level(overrides?: Partial<proto.Level>): proto.Level {
 	const obj: proto.Level = {
 		formatVersion: 0,
 		title: '',
@@ -37,7 +37,7 @@ export function Level(overrides?: Partial<proto.Level>): proto.Level {
 		complexity: 0,
 		levelNodes: [],
 		maxCheckpointCount: 0,
-		ambienceSettings: AmbienceSettings(),
+		ambienceSettings: ambienceSettings(),
 		tags: [],
 		defaultSpawnPointID: 0,
 		unlisted: false,
@@ -47,7 +47,7 @@ export function Level(overrides?: Partial<proto.Level>): proto.Level {
 	return obj;
 }
 
-export function Vector(overrides?: Partial<proto.Vector>): proto.Vector {
+export function vector(overrides?: Partial<proto.Vector>): proto.Vector {
 	const obj: proto.Vector = {
 		x: 0,
 		y: 0,
@@ -57,7 +57,7 @@ export function Vector(overrides?: Partial<proto.Vector>): proto.Vector {
 	return obj;
 }
 
-export function Vector2(overrides?: Partial<proto.Vector2>): proto.Vector2 {
+export function vector2(overrides?: Partial<proto.Vector2>): proto.Vector2 {
 	const obj: proto.Vector2 = {
 		x: 0,
 		y: 0,
@@ -66,7 +66,7 @@ export function Vector2(overrides?: Partial<proto.Vector2>): proto.Vector2 {
 	return obj;
 }
 
-export function Quaternion(
+export function quaternion(
 	overrides?: Partial<proto.Quaternion>,
 ): proto.Quaternion {
 	const obj: proto.Quaternion = {
@@ -79,7 +79,7 @@ export function Quaternion(
 	return obj;
 }
 
-export function Color(overrides?: Partial<proto.Color>): proto.Color {
+export function color(overrides?: Partial<proto.Color>): proto.Color {
 	const obj: proto.Color = {
 		r: 0,
 		g: 0,
@@ -90,12 +90,12 @@ export function Color(overrides?: Partial<proto.Color>): proto.Color {
 	return obj;
 }
 
-export function AmbienceSettings(
+export function ambienceSettings(
 	overrides?: Partial<proto.AmbienceSettings>,
 ): proto.AmbienceSettings {
 	const obj: proto.AmbienceSettings = {
-		skyZenithColor: Color(),
-		skyHorizonColor: Color(),
+		skyZenithColor: color(),
+		skyHorizonColor: color(),
 		sunAltitude: 0,
 		sunAzimuth: 0,
 		sunSize: 0,
@@ -105,13 +105,13 @@ export function AmbienceSettings(
 	return obj;
 }
 
-export function LevelNodeGroup(
+export function levelNodeGroup(
 	overrides?: Partial<proto.LevelNodeGroup>,
 ): proto.LevelNodeGroup {
 	const obj: proto.LevelNodeGroup = {
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
 		childNodes: [],
 		name: '',
 		physicsObject: false,
@@ -122,12 +122,12 @@ export function LevelNodeGroup(
 	return obj;
 }
 
-export function LevelNodeStart(
+export function levelNodeStart(
 	overrides?: Partial<proto.LevelNodeStart>,
 ): proto.LevelNodeStart {
 	const obj: proto.LevelNodeStart = {
-		position: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		rotation: quaternion(),
 		radius: 0,
 		name: '',
 		isHidden: false,
@@ -136,30 +136,30 @@ export function LevelNodeStart(
 	return obj;
 }
 
-export function LevelNodeFinish(
+export function levelNodeFinish(
 	overrides?: Partial<proto.LevelNodeFinish>,
 ): proto.LevelNodeFinish {
 	const obj: proto.LevelNodeFinish = {
-		position: Vector(),
+		position: vector(),
 		radius: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function LevelNodeStatic(
+export function levelNodeStatic(
 	overrides?: Partial<proto.LevelNodeStatic>,
 ): proto.LevelNodeStatic {
 	const obj: proto.LevelNodeStatic = {
 		shape: proto.LevelNodeShape.CUBE,
 		material: proto.LevelNodeMaterial.DEFAULT,
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
-		color1: Color(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
+		color1: color(),
 		isNeon: false,
 		isTransparent: false,
-		color2: Color(),
+		color2: color(),
 		isGrabbable: false,
 		isGrapplable: false,
 		isPassable: false,
@@ -168,15 +168,15 @@ export function LevelNodeStatic(
 	return obj;
 }
 
-export function LevelNodeCrumbling(
+export function levelNodeCrumbling(
 	overrides?: Partial<proto.LevelNodeCrumbling>,
 ): proto.LevelNodeCrumbling {
 	const obj: proto.LevelNodeCrumbling = {
 		shape: proto.LevelNodeShape.CUBE,
 		material: proto.LevelNodeMaterial.DEFAULT,
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
 		stableTime: 0,
 		respawnTime: 0,
 		isLocal: false,
@@ -185,15 +185,15 @@ export function LevelNodeCrumbling(
 	return obj;
 }
 
-export function LevelNodeSign(
+export function levelNodeSign(
 	overrides?: Partial<proto.LevelNodeSign>,
 ): proto.LevelNodeSign {
 	const obj: proto.LevelNodeSign = {
-		position: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		rotation: quaternion(),
 		text: '',
 		scale: 0,
-		color: Color(),
+		color: color(),
 		hideModel: false,
 		weight: proto.LevelNodeSignSignFontWeight.REGULAR,
 	};
@@ -201,55 +201,55 @@ export function LevelNodeSign(
 	return obj;
 }
 
-export function LevelNodeGravity(
+export function levelNodeGravity(
 	overrides?: Partial<proto.LevelNodeGravity>,
 ): proto.LevelNodeGravity {
 	const obj: proto.LevelNodeGravity = {
 		mode: proto.LevelNodeGravityMode.DEFAULT,
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
-		direction: Vector(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
+		direction: vector(),
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function LevelNodeLobbyTerminal(
+export function levelNodeLobbyTerminal(
 	overrides?: Partial<proto.LevelNodeLobbyTerminal>,
 ): proto.LevelNodeLobbyTerminal {
 	const obj: proto.LevelNodeLobbyTerminal = {
-		position: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		rotation: quaternion(),
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function LevelNodeParticleEmitter(
+export function levelNodeParticleEmitter(
 	overrides?: Partial<proto.LevelNodeParticleEmitter>,
 ): proto.LevelNodeParticleEmitter {
 	const obj: proto.LevelNodeParticleEmitter = {
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
 		particlesPerSecond: 0,
-		lifeSpan: Vector2(),
-		startColor: Color(),
-		endColor: Color(),
-		startSize: Vector2(),
-		endSize: Vector2(),
-		velocity: Vector(),
-		velocityMin: Vector(),
-		velocityMax: Vector(),
-		accelerationMin: Vector(),
-		accelerationMax: Vector(),
+		lifeSpan: vector2(),
+		startColor: color(),
+		endColor: color(),
+		startSize: vector2(),
+		endSize: vector2(),
+		velocity: vector(),
+		velocityMin: vector(),
+		velocityMax: vector(),
+		accelerationMin: vector(),
+		accelerationMax: vector(),
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function TriggerSourceBasic(
+export function triggerSourceBasic(
 	overrides?: Partial<proto.TriggerSourceBasic>,
 ): proto.TriggerSourceBasic {
 	const obj: proto.TriggerSourceBasic = {
@@ -259,7 +259,7 @@ export function TriggerSourceBasic(
 	return obj;
 }
 
-export function TriggerSourceBlockNames(
+export function triggerSourceBlockNames(
 	overrides?: Partial<proto.TriggerSourceBlockNames>,
 ): proto.TriggerSourceBlockNames {
 	const obj: proto.TriggerSourceBlockNames = {
@@ -269,7 +269,7 @@ export function TriggerSourceBlockNames(
 	return obj;
 }
 
-export function TriggerSource(
+export function triggerSource(
 	overrides?: Partial<proto.TriggerSource>,
 ): proto.TriggerSource {
 	const obj: proto.TriggerSource = {};
@@ -277,7 +277,7 @@ export function TriggerSource(
 	return obj;
 }
 
-export function TriggerTargetAnimation(
+export function triggerTargetAnimation(
 	overrides?: Partial<proto.TriggerTargetAnimation>,
 ): proto.TriggerTargetAnimation {
 	const obj: proto.TriggerTargetAnimation = {
@@ -291,7 +291,7 @@ export function TriggerTargetAnimation(
 	return obj;
 }
 
-export function TriggerTargetSound(
+export function triggerTargetSound(
 	overrides?: Partial<proto.TriggerTargetSound>,
 ): proto.TriggerTargetSound {
 	const obj: proto.TriggerTargetSound = {
@@ -303,7 +303,7 @@ export function TriggerTargetSound(
 	return obj;
 }
 
-export function TriggerTargetGASM(
+export function triggerTargetGASM(
 	overrides?: Partial<proto.TriggerTargetGASM>,
 ): proto.TriggerTargetGASM {
 	const obj: proto.TriggerTargetGASM = {
@@ -314,7 +314,7 @@ export function TriggerTargetGASM(
 	return obj;
 }
 
-export function TriggerTargetSubLevel(
+export function triggerTargetSubLevel(
 	overrides?: Partial<proto.TriggerTargetSubLevel>,
 ): proto.TriggerTargetSubLevel {
 	const obj: proto.TriggerTargetSubLevel = {
@@ -325,12 +325,12 @@ export function TriggerTargetSubLevel(
 	return obj;
 }
 
-export function TriggerTargetAmbience(
+export function triggerTargetAmbience(
 	overrides?: Partial<proto.TriggerTargetAmbience>,
 ): proto.TriggerTargetAmbience {
 	const obj: proto.TriggerTargetAmbience = {
-		skyColor0: Color(),
-		skyColor1: Color(),
+		skyColor0: color(),
+		skyColor1: color(),
 		sunAltitude: 0,
 		sunAzimuth: 0,
 		sunSize: 0,
@@ -342,7 +342,7 @@ export function TriggerTargetAmbience(
 	return obj;
 }
 
-export function TriggerTarget(
+export function triggerTarget(
 	overrides?: Partial<proto.TriggerTarget>,
 ): proto.TriggerTarget {
 	const obj: proto.TriggerTarget = {
@@ -352,14 +352,14 @@ export function TriggerTarget(
 	return obj;
 }
 
-export function LevelNodeTrigger(
+export function levelNodeTrigger(
 	overrides?: Partial<proto.LevelNodeTrigger>,
 ): proto.LevelNodeTrigger {
 	const obj: proto.LevelNodeTrigger = {
 		shape: proto.LevelNodeShape.CUBE,
-		position: Vector(),
-		scale: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		scale: vector(),
+		rotation: quaternion(),
 		isShared: false,
 		triggerSources: [],
 		triggerTargets: [],
@@ -368,7 +368,7 @@ export function LevelNodeTrigger(
 	return obj;
 }
 
-export function SoundGeneratorParameters(
+export function soundGeneratorParameters(
 	overrides?: Partial<proto.SoundGeneratorParameters>,
 ): proto.SoundGeneratorParameters {
 	const obj: proto.SoundGeneratorParameters = {
@@ -400,33 +400,33 @@ export function SoundGeneratorParameters(
 	return obj;
 }
 
-export function LevelNodeSound(
+export function levelNodeSound(
 	overrides?: Partial<proto.LevelNodeSound>,
 ): proto.LevelNodeSound {
 	const obj: proto.LevelNodeSound = {
-		position: Vector(),
-		parameters: SoundGeneratorParameters(),
+		position: vector(),
+		parameters: soundGeneratorParameters(),
 		name: '',
 		repeat: false,
 		volume: 0,
 		startActive: false,
-		rotation: Quaternion(),
+		rotation: quaternion(),
 		maxRangeFactor: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function LevelNodeGASM(
+export function levelNodeGASM(
 	overrides?: Partial<proto.LevelNodeGASM>,
 ): proto.LevelNodeGASM {
 	const obj: proto.LevelNodeGASM = {
-		position: Vector(),
-		program: ProgramData(),
+		position: vector(),
+		program: programData(),
 		connections: [],
 		startActive: false,
-		scale: Vector(),
-		rotation: Quaternion(),
+		scale: vector(),
+		rotation: quaternion(),
 		isShared: false,
 		lateUpdate: false,
 	};
@@ -434,19 +434,19 @@ export function LevelNodeGASM(
 	return obj;
 }
 
-export function AnimationFrame(
+export function animationFrame(
 	overrides?: Partial<proto.AnimationFrame>,
 ): proto.AnimationFrame {
 	const obj: proto.AnimationFrame = {
 		time: 0,
-		position: Vector(),
-		rotation: Quaternion(),
+		position: vector(),
+		rotation: quaternion(),
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }
 
-export function Animation(
+export function animation(
 	overrides?: Partial<proto.Animation>,
 ): proto.Animation {
 	const obj: proto.Animation = {
@@ -460,7 +460,7 @@ export function Animation(
 	return obj;
 }
 
-export function LevelNode(
+export function levelNode(
 	overrides?: Partial<proto.LevelNode>,
 ): proto.LevelNode {
 	const obj: proto.LevelNode = {
@@ -472,7 +472,7 @@ export function LevelNode(
 	return obj;
 }
 
-export function OperandData(
+export function operandData(
 	overrides?: Partial<proto.OperandData>,
 ): proto.OperandData {
 	const obj: proto.OperandData = {
@@ -482,7 +482,7 @@ export function OperandData(
 	return obj;
 }
 
-export function InstructionData(
+export function instructionData(
 	overrides?: Partial<proto.InstructionData>,
 ): proto.InstructionData {
 	const obj: proto.InstructionData = {
@@ -493,7 +493,7 @@ export function InstructionData(
 	return obj;
 }
 
-export function RegisterData(
+export function registerData(
 	overrides?: Partial<proto.RegisterData>,
 ): proto.RegisterData {
 	const obj: proto.RegisterData = {
@@ -503,7 +503,7 @@ export function RegisterData(
 	return obj;
 }
 
-export function LabelData(
+export function labelData(
 	overrides?: Partial<proto.LabelData>,
 ): proto.LabelData {
 	const obj: proto.LabelData = {
@@ -513,7 +513,7 @@ export function LabelData(
 	return obj;
 }
 
-export function ProgramData(
+export function programData(
 	overrides?: Partial<proto.ProgramData>,
 ): proto.ProgramData {
 	const obj: proto.ProgramData = {
@@ -528,7 +528,7 @@ export function ProgramData(
 	return obj;
 }
 
-export function ProgrammablePositionData(
+export function programmablePositionData(
 	overrides?: Partial<proto.ProgrammablePositionData>,
 ): proto.ProgrammablePositionData {
 	const obj: proto.ProgrammablePositionData = {};
@@ -536,7 +536,7 @@ export function ProgrammablePositionData(
 	return obj;
 }
 
-export function ProgrammableRotationData(
+export function programmableRotationData(
 	overrides?: Partial<proto.ProgrammableRotationData>,
 ): proto.ProgrammableRotationData {
 	const obj: proto.ProgrammableRotationData = {};
@@ -544,7 +544,7 @@ export function ProgrammableRotationData(
 	return obj;
 }
 
-export function ProgrammableScaleData(
+export function programmableScaleData(
 	overrides?: Partial<proto.ProgrammableScaleData>,
 ): proto.ProgrammableScaleData {
 	const obj: proto.ProgrammableScaleData = {};
@@ -552,7 +552,7 @@ export function ProgrammableScaleData(
 	return obj;
 }
 
-export function ProgrammableTriggerActive(
+export function programmableTriggerActive(
 	overrides?: Partial<proto.ProgrammableTriggerActive>,
 ): proto.ProgrammableTriggerActive {
 	const obj: proto.ProgrammableTriggerActive = {};
@@ -560,7 +560,7 @@ export function ProgrammableTriggerActive(
 	return obj;
 }
 
-export function ProgrammablePlayerData(
+export function programmablePlayerData(
 	overrides?: Partial<proto.ProgrammablePlayerData>,
 ): proto.ProgrammablePlayerData {
 	const obj: proto.ProgrammablePlayerData = {};
@@ -568,7 +568,7 @@ export function ProgrammablePlayerData(
 	return obj;
 }
 
-export function ProgrammableSignData(
+export function programmableSignData(
 	overrides?: Partial<proto.ProgrammableSignData>,
 ): proto.ProgrammableSignData {
 	const obj: proto.ProgrammableSignData = {};
@@ -576,7 +576,7 @@ export function ProgrammableSignData(
 	return obj;
 }
 
-export function ProgrammableColorData(
+export function programmableColorData(
 	overrides?: Partial<proto.ProgrammableColorData>,
 ): proto.ProgrammableColorData {
 	const obj: proto.ProgrammableColorData = {};
@@ -584,7 +584,7 @@ export function ProgrammableColorData(
 	return obj;
 }
 
-export function ProgrammablePropertyData(
+export function programmablePropertyData(
 	overrides?: Partial<proto.ProgrammablePropertyData>,
 ): proto.ProgrammablePropertyData {
 	const obj: proto.ProgrammablePropertyData = {
@@ -595,7 +595,7 @@ export function ProgrammablePropertyData(
 	return obj;
 }
 
-export function ProgrammableSignUpdateData(
+export function programmableSignUpdateData(
 	overrides?: Partial<proto.ProgrammableSignUpdateData>,
 ): proto.ProgrammableSignUpdateData {
 	const obj: proto.ProgrammableSignUpdateData = {
@@ -605,7 +605,7 @@ export function ProgrammableSignUpdateData(
 	return obj;
 }
 
-export function ProgrammablePropertyUpdateData(
+export function programmablePropertyUpdateData(
 	overrides?: Partial<proto.ProgrammablePropertyUpdateData>,
 ): proto.ProgrammablePropertyUpdateData {
 	const obj: proto.ProgrammablePropertyUpdateData = {
@@ -615,7 +615,7 @@ export function ProgrammablePropertyUpdateData(
 	return obj;
 }
 
-export function LevelNodeGASMConnection(
+export function levelNodeGASMConnection(
 	overrides?: Partial<proto.LevelNodeGASMConnection>,
 ): proto.LevelNodeGASMConnection {
 	const obj: proto.LevelNodeGASMConnection = {
@@ -628,7 +628,7 @@ export function LevelNodeGASMConnection(
 	return obj;
 }
 
-export function ProgrammablePropertyDataComponent(
+export function programmablePropertyDataComponent(
 	overrides?: Partial<proto.ProgrammablePropertyDataComponent>,
 ): proto.ProgrammablePropertyDataComponent {
 	const obj: proto.ProgrammablePropertyDataComponent = {
