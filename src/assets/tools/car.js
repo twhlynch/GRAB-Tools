@@ -3,7 +3,7 @@ import {
 	levelNodeWithGASM,
 	levelNodeWithTrigger,
 	triggerSourceWithBasic,
-} from '@/assets/encoding/level_nodes';
+} from '@/generated/nodes';
 import { create_connection } from '../encoding/gasm/connections';
 import { groupNodes } from '../encoding/group';
 import { load } from '../encoding/root';

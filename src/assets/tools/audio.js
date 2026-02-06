@@ -1,5 +1,8 @@
 // SFX2GL Tool by TheTrueFax (https://github.com/thetruefax/)
 
+import { load } from '@/assets/encoding/root';
+import { deepClone } from '@/assets/encoding/utils';
+import { animation, animationFrame } from '@/generated/helpers';
 import {
 	levelNodeWithGroup,
 	levelNodeWithSound,
@@ -7,10 +10,7 @@ import {
 	levelNodeWithTrigger,
 	triggerSourceWithBasic,
 	triggerTargetWithSound,
-} from '@/assets/encoding/level_nodes';
-import { load } from '@/assets/encoding/root';
-import { deepClone } from '@/assets/encoding/utils';
-import { animation, animationFrame } from '@/generated/helpers';
+} from '@/generated/nodes';
 import { ComplexArray } from 'jsfft';
 import { groupNodes } from '../encoding/group';
 

@@ -11,7 +11,8 @@
 		"format": "prettier --write src/",
 		"tauri": "tauri",
 		"proto": "npx pbts -i src/assets/proto/proto.proto -o src/generated/proto.ts && echo 'You will have to manually clean up the file as it may have errors'",
-		"helpers": "node meta/scripts/generate-helpers.mjs && npx prettier --write src/generated/helpers.ts"
+		"helpers": "node meta/scripts/generate-helpers.mjs && npx prettier --write src/generated/helpers.ts",
+		"nodes": "node meta/scripts/generate-node-helpers.mjs && npx prettier --write src/generated/nodes.ts"
 	},
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.4",

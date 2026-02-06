@@ -1,3 +1,7 @@
+import { LevelNodeTypes, LevelNodeWith } from '@/types/levelNodes';
+import { levelNode, triggerSource, triggerTarget } from './helpers';
+import { TriggerSource, TriggerTarget } from './proto';
+
 export function merge<T extends object>(target: T, source: Partial<T>): T {
 	for (const key in source) {
 		const src = source[key];
@@ -20,4 +24,18 @@ export function merge<T extends object>(target: T, source: Partial<T>): T {
 		}
 	}
 	return target;
+}
+
+export function levelNodeWith<T extends LevelNodeTypes>(
+	nodeData: Partial<LevelNodeWith<T>>,
+): LevelNodeWith<T> {
+	return levelNode(nodeData) as LevelNodeWith<T>;
+}
+
+export function triggerTargetWith(target: TriggerTarget): TriggerTarget {
+	return triggerTarget(target);
+}
+
+export function triggerSourceWith(source: TriggerSource): TriggerSource {
+	return triggerSource(source);
 }

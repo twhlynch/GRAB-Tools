@@ -1,23 +1,6 @@
 <script>
 import { groupNodes, recursiveUngroup } from '@/assets/encoding/group';
 import {
-	levelNodeWithCrumbling,
-	levelNodeWithFinish,
-	levelNodeWithGASM,
-	levelNodeWithGravity,
-	levelNodeWithParticleEmitter,
-	levelNodeWithSign,
-	levelNodeWithSound,
-	levelNodeWithStart,
-	levelNodeWithStatic,
-	levelNodeWithTrigger,
-	triggerSourceWithBasic,
-	triggerTargetWithAmbience,
-	triggerTargetWithAnimation,
-	triggerTargetWithSound,
-	triggerTargetWithSubLevel,
-} from '@/assets/encoding/level_nodes';
-import {
 	ambienceSettings,
 	createLevel,
 	decodeLevel,
@@ -46,6 +29,23 @@ import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
 import video from '@/assets/tools/video';
 import { animation, animationFrame } from '@/generated/helpers';
+import {
+	levelNodeWithCrumbling,
+	levelNodeWithFinish,
+	levelNodeWithGASM,
+	levelNodeWithGravity,
+	levelNodeWithParticleEmitter,
+	levelNodeWithSign,
+	levelNodeWithSound,
+	levelNodeWithStart,
+	levelNodeWithStatic,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+	triggerTargetWithAmbience,
+	triggerTargetWithAnimation,
+	triggerTargetWithSound,
+	triggerTargetWithSubLevel,
+} from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
 import { mapActions, mapState } from 'pinia';
 import * as THREE from 'three';

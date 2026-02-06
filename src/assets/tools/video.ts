@@ -1,8 +1,5 @@
-import {
-	levelNodeWithGASM,
-	levelNodeWithStatic,
-} from '@/assets/encoding/level_nodes';
 import { PYTHON_SERVER_URL } from '@/config';
+import { levelNodeWithGASM, levelNodeWithStatic } from '@/generated/nodes';
 import {
 	Animation,
 	AnimationFrame,

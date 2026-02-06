@@ -1,4 +1,4 @@
-import { levelNodeWithGroup } from '@/assets/encoding/level_nodes';
+import { levelNodeWithGroup } from '@/generated/nodes';
 import {
 	LevelNode,
 	LevelNodeFinish,

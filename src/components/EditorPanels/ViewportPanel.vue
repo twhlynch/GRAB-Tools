@@ -2,14 +2,6 @@
 import { create_connection } from '@/assets/encoding/gasm/connections';
 import { groupNodes, ungroupNode } from '@/assets/encoding/group';
 import {
-	triggerSourceWithBasic,
-	triggerSourceWithBlockNames,
-	triggerTargetWithAmbience,
-	triggerTargetWithAnimation,
-	triggerTargetWithSound,
-	triggerTargetWithSubLevel,
-} from '@/assets/encoding/level_nodes';
-import {
 	deepClone,
 	materials,
 	node_data,
@@ -25,6 +17,14 @@ import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import KeyHint from '@/components/EditorPanels/KeyHint.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import { animation } from '@/generated/helpers';
+import {
+	triggerSourceWithBasic,
+	triggerSourceWithBlockNames,
+	triggerTargetWithAmbience,
+	triggerTargetWithAnimation,
+	triggerTargetWithSound,
+	triggerTargetWithSubLevel,
+} from '@/generated/nodes';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';
