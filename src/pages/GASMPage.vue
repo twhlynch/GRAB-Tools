@@ -62,6 +62,9 @@ export default {
 				<button @click="sample('get_player_by_name')">
 					Get player by name
 				</button>
+				<button @click="sample('write_text_on_sign')">
+					Write text on sign
+				</button>
 			</aside>
 		</div>
 	</main>
