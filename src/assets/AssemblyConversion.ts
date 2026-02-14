@@ -123,7 +123,7 @@ function preprocess_asm(lines: string[]): string[] {
 
 function preprocess_characters(lines: string[]): string[] {
 	for (let i = 0; i < lines.length; i++) {
-		const parts = lines[i]!.trim().split(/\s+/);
+		const parts = lines[i]!.trim().match(/'.'|\S+/g) ?? [];
 		const instruction = instruction_map[dirty_instruction(parts[0]!)];
 
 		for (let j = 1; j < parts.length; j++) {
