@@ -47,12 +47,15 @@ export default {
 			</p>
 		</section>
 		<section class="tools">
-			<a class="button" href="/editor" target="_blank"
-				>JSON Level Editor</a
-			>
+			<a class="button" href="/editor" target="_blank">
+				JSON Level Editor
+			</a>
 			<a class="button" href="/list">
 				<GHLLogoIcon class="ghl-icon" />
 				Hardest Levels
+			</a>
+			<a class="button" href="/gasm" target="_blank">
+				GRAB Assembly Editor
 			</a>
 			<a
 				class="button"
