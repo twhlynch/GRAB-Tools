@@ -1,6 +1,7 @@
 import { acceptCompletion, autocompletion } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { EditorView } from 'codemirror';
+import { DIRECTIVES } from './AssemblyConversion';
 import { SPECIAL_REGISTERS } from './encoding/gasm/registers';
 import { load } from './encoding/root';
 
@@ -15,6 +16,10 @@ const instructions_list = Object.keys(instruction_map)
 const special_registers = SPECIAL_REGISTERS.map((label) => ({
 	label,
 	type: 'class',
+}));
+const directives = Object.values(DIRECTIVES).map((label) => ({
+	label,
+	type: 'function',
 }));
 
 let node_completions = [];
@@ -54,6 +59,7 @@ function completion(context) {
 				...json_completions,
 				...special_registers,
 				...instructions_list,
+				...directives,
 			].map((item) => [item.label, item]),
 		).values(),
 	];

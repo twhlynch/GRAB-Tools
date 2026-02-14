@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 const DownloadPage = () => import('./pages/DownloadPage.vue');
 const EditorPage = () => import('./pages/EditorPage.vue');
+const GASMPage = () => import('./pages/GASMPage.vue');
 const ErrorPage = () => import('./pages/ErrorPage.vue');
 const GamesPage = () => import('./pages/GamesPage.vue');
 const HomePage = () => import('./pages/HomePage.vue');
@@ -28,9 +29,12 @@ const routes = [
 		],
 	},
 	{
-		path: '/editor',
+		path: '/',
 		component: PlainLayout,
-		children: [{ path: '', component: EditorPage }],
+		children: [
+			{ path: 'editor', component: EditorPage },
+			{ path: 'gasm', component: GASMPage },
+		],
 	},
 	{
 		path: '/levels/viewer',

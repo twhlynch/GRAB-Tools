@@ -39,6 +39,12 @@ const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InSqrt]: 2,
 	[instruction_map.InAtan2]: 3,
 };
+export const DIRECTIVES = {
+	FOR: '#FOR',
+	IF: '#IF',
+	END: '#END',
+	DEFINE: '#DEFINE',
+};
 
 // helper
 type SafeNode = {
@@ -82,12 +88,7 @@ export function asm_to_json(
 ) {
 	const node = safe_node(old_json);
 
-	const lines = asm
-		.split('\n')
-		.map((line) => (line.split(';')[0] ?? '').trim())
-		.filter((line) => line.length);
-
-	const code = preprocess_asm(lines);
+	const code = compile_gasm(asm);
 
 	const instructions = code
 		.map((line) => {
@@ -101,6 +102,17 @@ export function asm_to_json(
 	node.program.instructions.push(...instructions);
 
 	return old_json;
+}
+
+export function compile_gasm(asm: string): string[] {
+	const lines = asm
+		.split('\n')
+		.map((line) => (line.split(';')[0] ?? '').trim())
+		.filter((line) => line.length);
+
+	const code = preprocess_asm(lines);
+
+	return code;
 }
 
 function preprocess_asm(lines: string[]): string[] {
@@ -158,9 +170,9 @@ function preprocess_scopes(
 			const parts = lines[i]!.trim().split(/\s+/);
 			const directive = parts[0];
 
-			if (directive === '#FOR' || directive === '#IF') {
+			if (directive === DIRECTIVES.FOR || directive === DIRECTIVES.IF) {
 				depth++;
-			} else if (directive === '#END') {
+			} else if (directive === DIRECTIVES.END) {
 				depth--;
 			}
 
@@ -168,7 +180,7 @@ function preprocess_scopes(
 				return i;
 			}
 		}
-		throw new Error(`Missing #END for block at line ${start}`);
+		throw new Error(`Missing ${DIRECTIVES.END} for block at line ${start}`);
 	};
 
 	const output: string[] = [];
@@ -177,7 +189,7 @@ function preprocess_scopes(
 		const line = lines[i]!;
 		const [directive, ...parts] = line.trim().split(/\s+/);
 
-		if (directive === '#DEFINE') {
+		if (directive === DIRECTIVES.DEFINE) {
 			const [variable, ...rest] = parts;
 			if (variable === undefined) {
 				window.toast(`Invalid directive: ${line}`, 'error');
@@ -190,7 +202,7 @@ function preprocess_scopes(
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
 			console.log(expr);
 			context[variable] = eval(expr);
-		} else if (directive === '#FOR') {
+		} else if (directive === DIRECTIVES.FOR) {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
 			if (
 				var_name === undefined ||
@@ -226,7 +238,7 @@ function preprocess_scopes(
 			}
 
 			i = end;
-		} else if (directive === '#IF') {
+		} else if (directive === DIRECTIVES.IF) {
 			const [left, op, right] = parts;
 			if (left === undefined || op === undefined || right === undefined) {
 				window.toast(`Invalid directive: ${line}`, 'error');
@@ -258,7 +270,7 @@ function preprocess_scopes(
 			}
 
 			i = end;
-		} else if (directive === '#END') {
+		} else if (directive === DIRECTIVES.END) {
 			continue;
 		} else {
 			output.push(substitute(line, context));
