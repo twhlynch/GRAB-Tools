@@ -95,6 +95,10 @@ export default {
 							func: this.insert_nodes,
 							file: true,
 						},
+						Diff: {
+							func: this.diff_level,
+							file: true,
+						},
 					},
 					Node: {
 						Static: { func: this.insert_static },
@@ -521,6 +525,34 @@ export default {
 			const file = files[0];
 			const json = await decodeLevel(file);
 			this.insert_selection_nodes(json?.levelNodes);
+		},
+		async diff_level(e) {
+			const files = Array.from(e.target.files);
+			if (!files.length) return;
+
+			const file = files[0];
+			const json = await decodeLevel(file);
+
+			this.$emit('modifier', (level) => {
+				const a_nodes = level.levelNodes;
+				const b_nodes = json.levelNodes;
+
+				const changes = [];
+
+				for (const b of b_nodes) {
+					if (
+						a_nodes.find(
+							(a) => JSON.stringify(a) === JSON.stringify(b),
+						)
+					) {
+						continue;
+					}
+					changes.push(b);
+				}
+
+				level.levelNodes = changes;
+				return level;
+			});
 		},
 		async insert_json(e) {
 			const files = Array.from(e.target.files);
