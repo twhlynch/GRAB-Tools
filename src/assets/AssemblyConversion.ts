@@ -117,7 +117,34 @@ export function compile_gasm(asm: string): string[] {
 
 function preprocess_asm(lines: string[]): string[] {
 	const processed_scopes = preprocess_scopes(lines);
-	return processed_scopes;
+	const processed_characters = preprocess_characters(processed_scopes);
+	return processed_characters;
+}
+
+function preprocess_characters(lines: string[]): string[] {
+	for (let i = 0; i < lines.length; i++) {
+		const parts = lines[i]!.trim().split(/\s+/);
+		const instruction = instruction_map[dirty_instruction(parts[0]!)];
+
+		for (let j = 1; j < parts.length; j++) {
+			const is_label =
+				(instruction === instruction_map.InLabel ||
+					instruction === instruction_map.InGoto ||
+					instruction === instruction_map.InIf) &&
+				j === operand_counts[instruction] - 1;
+
+			if (is_label) continue;
+
+			const p = parts[j]!;
+			if (p.length === 3 && p.charAt(0) === "'" && p.charAt(2) === "'") {
+				parts[j] = String(p.charCodeAt(1));
+			}
+		}
+
+		lines[i] = parts.join(' ');
+	}
+
+	return lines;
 }
 
 function preprocess_scopes(
