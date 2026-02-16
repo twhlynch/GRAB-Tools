@@ -437,8 +437,11 @@ function preprocess_scopes(
 
 		if (directive === DIRECTIVES.DEFINE) {
 			const [variable, ...rest] = parts;
-			if (variable === undefined || rest.length === 0) {
-				throw err(`Expected variable definition`, line);
+			if (variable === undefined) {
+				throw err(`Expected variable name`, line);
+			}
+			if (rest.length === 0) {
+				throw err(`Expected expression`, line);
 			}
 
 			const setup = Object.keys(context)
@@ -460,12 +463,14 @@ function preprocess_scopes(
 			}
 		} else if (directive === DIRECTIVES.FOR) {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
-			if (
-				var_name === undefined ||
-				start_arg === undefined ||
-				stop_arg === undefined
-			) {
-				throw err(`Expected var start stop ?step`, line);
+			if (var_name === undefined) {
+				throw err(`Expected variable name`, line);
+			}
+			if (start_arg === undefined) {
+				throw err(`Expected argument 1 'start'`, line);
+			}
+			if (stop_arg === undefined) {
+				throw err(`Expected argument 2 'start'`, line);
 			}
 
 			const start = resolve(start_arg, context, line);
@@ -474,13 +479,13 @@ function preprocess_scopes(
 				step_arg !== undefined ? resolve(step_arg, context, line) : 1;
 
 			if (typeof start !== 'number') {
-				throw err('Expected number', line);
+				throw err(`Expected number but found '${start_arg}'`, line);
 			}
 			if (typeof stop !== 'number') {
-				throw err('Expected number', line);
+				throw err(`Expected number but found '${stop_arg}'`, line);
 			}
 			if (typeof step !== 'number') {
-				throw err('Expected number', line);
+				throw err(`Expected number but found '${step_arg}'`, line);
 			}
 
 			const end = find_end(i);
@@ -496,15 +501,24 @@ function preprocess_scopes(
 			i = end;
 		} else if (directive === DIRECTIVES.IF) {
 			const [left, op, right] = parts;
-			if (left === undefined || op === undefined || right === undefined) {
-				throw err(`Expected left op right`, line);
+			if (left === undefined) {
+				throw err(`Expected argument 1 'left'`, line);
+			}
+			if (op === undefined) {
+				throw err(`Expected operator`, line);
+			}
+			if (right === undefined) {
+				throw err(`Expected argument 2 'right'`, line);
 			}
 
 			const lhs = resolve(left, context, line);
 			const rhs = resolve(right, context, line);
 
-			if (typeof lhs !== 'number' || typeof rhs !== 'number') {
-				throw err('Expected number', line);
+			if (typeof lhs !== 'number') {
+				throw err(`Expected number but found '${left}'`, line);
+			}
+			if (typeof rhs !== 'number') {
+				throw err(`Expected number but found '${right}'`, line);
 			}
 
 			const end = find_end(i);
