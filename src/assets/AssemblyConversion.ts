@@ -540,6 +540,8 @@ function preprocess_scopes(
 			i = end;
 		} else if (directive === DIRECTIVES.END) {
 			continue;
+		} else if (directive[0] === '#') {
+			throw err(`Unknown directive`, line);
 		} else {
 			output.push(substitute(line, context));
 		}
