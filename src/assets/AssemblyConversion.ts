@@ -107,16 +107,6 @@ export function asm_to_json(
 	return old_json;
 }
 
-interface CompilerError extends Error {
-	line?: number;
-}
-
-function panic(message: string, line: number) {
-	const err: CompilerError = new Error(message);
-	err.line = line;
-	return err;
-}
-
 export function compile_gasm(asm: string): string[] {
 	const lines = asm
 		.split('\n')
@@ -127,139 +117,245 @@ export function compile_gasm(asm: string): string[] {
 	return code.filter((line) => line.length);
 }
 
-function preprocess_asm(lines: string[]): string[] {
-	verify_arg_counts(lines);
+function preprocess_asm(str_lines: string[]): string[] {
+	let lines = parse_lines(str_lines);
 	lines = preprocess_scopes(lines);
-	lines = preprocess_characters(lines);
+	preprocess_characters(lines);
 	verify_labels(lines);
-	return lines;
+	verify_lengths(lines);
+	return join_lines(lines);
 }
 
-function verify_arg_counts(lines: string[]) {
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]!;
-		if (!line.length) continue;
-		const lnum = i + 1;
+interface Line {
+	number: number;
+	string: string;
+	operator: string;
+	operands: string[];
+	operator_id?: InstructionDataType; // also used as 'is macro'
+}
 
-		if (line.startsWith('#')) continue;
+interface CompilerError extends Error {
+	line?: number;
+}
 
-		const parts = line.match(/'.*'|\S+/g) ?? [];
-		if (!parts.length) throw panic(`Invalid operator`, lnum);
-
-		const operator = parts[0];
-		if (!operator) throw panic(`Invalid operator`, lnum);
-
-		const instruction_id = instruction_map[dirty_instruction(operator)];
-		if (instruction_id === undefined || typeof instruction_id !== 'number')
-			throw panic(`Invalid operator`, lnum);
-
-		const count = operand_counts[instruction_id as InstructionDataType];
-		if (count === undefined) throw panic(`Invalid operator`, lnum);
-
-		const is_label =
-			instruction_id === instruction_map.InLabel ||
-			instruction_id === instruction_map.InGoto ||
-			instruction_id === instruction_map.InIf;
-
-		if (is_label) {
-			if (count > parts.length - 1)
-				throw panic(`Expected ${count} operands`, lnum);
-		} else {
-			if (count !== parts.length - 1)
-				throw panic(`Expected ${count} operands`, lnum);
-		}
+function err(message: string, line: Line) {
+	const current = `${line.operator} ${line.operands.join(' ')}`;
+	let error_message = `${message} at '${current}'`;
+	if (current != line.string) {
+		error_message += ` (from '${line.string}')`;
 	}
+
+	const e: CompilerError = new Error(error_message);
+	e.line = line.number;
+
+	return e;
 }
 
-function verify_labels(lines: string[]) {
-	const labels = new Set<string>();
+function join_lines(lines: Line[]): string[] {
+	const strings: string[] = [];
 
 	for (const line of lines) {
-		if (!line.length) continue;
-
-		const parts = line.match(/'.*'|\S+/g) ?? [];
-		if (!parts.length) continue;
-
-		const [operator, ...rest] = parts;
-		const operator_id = instruction_map[dirty_instruction(operator!)];
-
-		if (operator_id === instruction_map.InLabel) {
-			const count = operand_counts[instruction_map.InLabel];
-			if (count === undefined) continue;
-			if (count > parts.length - 1) continue;
-
-			const label = rest.slice(count - 1).join(' ');
-			labels.add(label);
+		const string = `${line.operator} ${line.operands.join(' ')}`;
+		if (string.includes('#')) {
+			throw err(`Undefined macro`, line);
 		}
+		strings.push(string);
 	}
 
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]!;
-		if (!line.length) continue;
-		const lnum = i + 1;
+	return strings;
+}
 
-		const parts = line.match(/'.*'|\S+/g) ?? [];
-		if (!parts.length) continue;
+function verify_lengths(lines: Line[]) {
+	for (const line of lines) {
+		const { operator_id, operands, operator } = line;
 
-		const [operator, ...rest] = parts;
-		const operator_id = instruction_map[dirty_instruction(operator!)];
+		if (operator_id === undefined) continue;
 
-		const is_label =
+		const count = operand_counts[operator_id];
+		if (count === undefined) {
+			throw err(`Invalid operator '${operator}'`, line);
+		}
+
+		const has_label =
+			operator_id === instruction_map.InLabel ||
 			operator_id === instruction_map.InGoto ||
 			operator_id === instruction_map.InIf;
 
-		if (is_label) {
-			const count = operand_counts[operator_id as InstructionDataType];
-			if (count === undefined) continue;
-			if (count > parts.length - 1) continue;
-
-			const label = rest.slice(count - 1).join(' ');
-			if (!labels.has(label))
-				throw panic(`Unknown label: ${label}`, lnum);
+		if (has_label) {
+			if (operands.length < count) {
+				throw err(
+					`Expected ${count} operands, found ${operands.length}`,
+					line,
+				);
+			}
+		} else {
+			if (count !== operands.length) {
+				throw err(
+					`Expected ${count} operands, found ${operands.length}`,
+					line,
+				);
+			}
 		}
 	}
 }
 
-function preprocess_characters(lines: string[]): string[] {
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]!;
-		if (!line.length) continue;
-		const lnum = i + 1;
+function parse_lines(strings: string[]): Line[] {
+	const lines: Line[] = [];
 
-		const parts = line.match(/'.*'|\S+/g) ?? [];
-		const instruction = instruction_map[dirty_instruction(parts[0]!)];
+	for (let i = 0; i < strings.length; i++) {
+		const string = strings[i]!;
+		if (!string.length) continue;
 
-		for (let j = 1; j < parts.length; j++) {
-			const is_label =
-				(instruction === instruction_map.InLabel ||
-					instruction === instruction_map.InGoto ||
-					instruction === instruction_map.InIf) &&
-				j === operand_counts[instruction] - 1;
+		const number = i + 1;
+		const is_macro = string[0] === '#';
 
-			if (is_label) continue;
+		// split words and 'characters'
+		const parts = string.match(/'.*'|\S+/g) ?? [];
+		if (!parts.length) continue;
 
-			const p = parts[j]!;
-			if (p.charAt(0) === "'" && p.charAt(p.length - 1) === "'") {
-				if (p.length === 3) parts[j] = String(p.charCodeAt(1));
-				else throw panic(`Invalid character ${p}`, lnum);
+		const [operator, ...operands] = parts;
+		if (!operator) continue;
+
+		const line: Line = {
+			number,
+			string,
+			operator,
+			operands,
+		};
+
+		if (!is_macro) {
+			const key = dirty_instruction(operator);
+			const operator_id = instruction_map[key] as InstructionDataType;
+
+			if (!operator_id) {
+				throw err(`Invalid operator '${operator}'`, line);
+			}
+
+			const count = operand_counts[operator_id];
+			if (count === undefined) {
+				throw err(`Invalid operator '${operator}'`, line);
+			}
+
+			line.operator_id = operator_id;
+
+			const has_label =
+				operator_id === instruction_map.InLabel ||
+				operator_id === instruction_map.InGoto ||
+				operator_id === instruction_map.InIf;
+
+			if (has_label) {
+				if (operands.length < count) {
+					throw err(
+						`Expected ${count} operands, found ${operands.length}`,
+						line,
+					);
+				}
+
+				// combine label into a single operand
+				line.operands = [
+					...operands.slice(0, count - 1),
+					operands.slice(count - 1).join(' '),
+				];
+			} else {
+				if (count !== operands.length) {
+					throw err(
+						`Expected ${count} operands, found ${operands.length}`,
+						line,
+					);
+				}
 			}
 		}
 
-		lines[i] = parts.join(' ');
+		lines.push(line);
 	}
 
 	return lines;
 }
 
+function verify_labels(lines: Line[]) {
+	const labels = new Set<string>();
+
+	for (const line of lines) {
+		if (line.operator_id !== instruction_map.InLabel) continue;
+		if (line.operands.length === 0) continue;
+
+		const label = line.operands[line.operands.length - 1]!;
+		labels.add(label);
+	}
+
+	for (const line of lines) {
+		if (
+			line.operator_id !== instruction_map.InGoto &&
+			line.operator_id !== instruction_map.InIf
+		)
+			continue;
+		if (line.operands.length === 0) continue;
+
+		const label = line.operands[line.operands.length - 1]!;
+		if (!labels.has(label)) {
+			throw err(`Unknown label '${label}'`, line);
+		}
+	}
+}
+
+function preprocess_characters(lines: Line[]) {
+	for (const line of lines) {
+		if (line.operator_id === undefined) continue;
+		const has_label =
+			line.operator_id === instruction_map.InGoto ||
+			line.operator_id === instruction_map.InIf ||
+			line.operator_id === instruction_map.InLabel;
+
+		for (let j = 0; j < line.operands.length; j++) {
+			if (has_label && j === operand_counts[line.operator_id] - 1)
+				continue;
+
+			const operand = line.operands[j]!;
+
+			if (operand[0] === "'" && operand[operand.length - 1] === "'") {
+				if (operand.length === 3) {
+					line.operands[j] = String(operand.charCodeAt(1));
+				} else {
+					throw err(`Invalid character ${operand}`, line);
+				}
+			}
+		}
+	}
+}
+
+function regroup_operands(line: Line) {
+	const { operator_id, operands } = line;
+	if (operator_id === undefined) return;
+
+	const count = operand_counts[operator_id];
+	if (count === undefined) return;
+
+	const has_label =
+		operator_id === instruction_map.InLabel ||
+		operator_id === instruction_map.InGoto ||
+		operator_id === instruction_map.InIf;
+
+	const separated = operands.flatMap((op) => op.match(/'.*'|\S+/g) ?? []);
+
+	if (has_label) {
+		// combine label into a single operand
+		line.operands = [
+			...separated.slice(0, count - 1),
+			separated.slice(count - 1).join(' '),
+		];
+	} else {
+		line.operands = separated;
+	}
+}
+
 function preprocess_scopes(
-	lines: string[],
+	lines: Line[],
 	context: Record<string, unknown> = {},
-	line_offset: number = 0,
-): string[] {
+): Line[] {
 	const resolve = (
 		val: string,
 		ctx: Record<string, unknown>,
-		lnum: number,
+		line: Line,
 	): unknown => {
 		// an existing variable
 		if (ctx[val] !== undefined) return ctx[val];
@@ -270,11 +366,11 @@ function preprocess_scopes(
 		const [var_a, var_b] = val.split(/(?<!^)[+-/*%]/);
 
 		if (var_a === undefined || var_b === undefined) {
-			throw panic(`Invalid value: ${val}`, lnum);
+			throw err(`Invalid value '${val}'`, line);
 		}
 
-		const a = resolve(var_a, context, lnum);
-		const b = resolve(var_b, context, lnum);
+		const a = resolve(var_a, ctx, line);
+		const b = resolve(var_b, ctx, line);
 
 		if (typeof a === 'number' && typeof b === 'number') {
 			if (val.includes('+')) return a + b;
@@ -284,25 +380,39 @@ function preprocess_scopes(
 			else if (val.includes('-')) return a - b;
 		}
 
-		throw panic(`Invalid value: ${val}`, lnum);
+		throw err(`Invalid value '${val}'`, line);
 	};
-	const substitute = (line: string, ctx: Record<string, unknown>): string => {
-		let result = line;
-
+	const substitute = (line: Line, ctx: Record<string, unknown>): Line => {
 		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
 
-		for (const key of sorted) {
-			const value = ctx[key];
-			result = result.replaceAll(`#${key}`, String(value));
+		const new_operands: string[] = [];
+
+		for (const operand of line.operands) {
+			let updated = operand;
+
+			for (const key of sorted) {
+				const value = ctx[key];
+				updated = updated.replaceAll(`#${key}`, String(value));
+			}
+
+			const split = updated.match(/'.*'|\S+/g) ?? [];
+			new_operands.push(...split);
 		}
+
+		const result: Line = {
+			...line,
+			operands: new_operands,
+		};
+
+		regroup_operands(result);
 
 		return result;
 	};
 	const find_end = (start: number): number => {
 		let depth = 1;
 		for (let i = start + 1; i < lines.length; i++) {
-			const parts = lines[i]!.trim().split(/\s+/);
-			const directive = parts[0];
+			const line = lines[i]!;
+			const directive = line.operator;
 
 			if (directive === DIRECTIVES.FOR || directive === DIRECTIVES.IF) {
 				depth++;
@@ -314,25 +424,21 @@ function preprocess_scopes(
 				return i;
 			}
 		}
-		throw panic(
-			`Missing ${DIRECTIVES.END} for block at line ${start}`,
-			start + 1,
-		);
+
+		throw err(`Missing ${DIRECTIVES.END}`, lines[start]!);
 	};
 
-	const output: string[] = [];
+	const output: Line[] = [];
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i]!;
-		if (!line.length) continue;
-		const lnum = i + 1 + line_offset;
-
-		const [directive, ...parts] = line.trim().split(/\s+/);
+		const directive = line.operator;
+		const parts = line.operands;
 
 		if (directive === DIRECTIVES.DEFINE) {
 			const [variable, ...rest] = parts;
 			if (variable === undefined || rest.length === 0) {
-				throw panic(`Expected variable definition: ${line}`, lnum);
+				throw err(`Expected variable definition`, line);
 			}
 
 			const setup = Object.keys(context)
@@ -343,8 +449,14 @@ function preprocess_scopes(
 				context[variable] = eval(expr);
 			} catch (e) {
 				if (e instanceof Error) {
-					throw panic(e.message, lnum);
+					throw err(e.message, line);
 				}
+			}
+			if (context[variable] === undefined) {
+				throw err(
+					`Expression '${rest.join(' ')}' results in undefined`,
+					line,
+				);
 			}
 		} else if (directive === DIRECTIVES.FOR) {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
@@ -353,22 +465,22 @@ function preprocess_scopes(
 				start_arg === undefined ||
 				stop_arg === undefined
 			) {
-				throw panic(`Expected var start stop ?step: ${line}`, lnum);
+				throw err(`Expected var start stop ?step`, line);
 			}
 
-			const start = resolve(start_arg, context, lnum);
-			const stop = resolve(stop_arg, context, lnum);
+			const start = resolve(start_arg, context, line);
+			const stop = resolve(stop_arg, context, line);
 			const step =
-				step_arg !== undefined ? resolve(step_arg, context, lnum) : 1;
+				step_arg !== undefined ? resolve(step_arg, context, line) : 1;
 
 			if (typeof start !== 'number') {
-				throw panic('Expected number at ' + line, lnum);
+				throw err('Expected number', line);
 			}
 			if (typeof stop !== 'number') {
-				throw panic('Expected number at ' + line, lnum);
+				throw err('Expected number', line);
 			}
 			if (typeof step !== 'number') {
-				throw panic('Expected number at ' + line, lnum);
+				throw err('Expected number', line);
 			}
 
 			const end = find_end(i);
@@ -377,7 +489,7 @@ function preprocess_scopes(
 			for (let val = start; val <= stop; val += step) {
 				const ctx = { ...context, [var_name]: val };
 
-				const block_output = preprocess_scopes(block, ctx, lnum);
+				const block_output = preprocess_scopes(block, ctx);
 				output.push(...block_output);
 			}
 
@@ -385,14 +497,14 @@ function preprocess_scopes(
 		} else if (directive === DIRECTIVES.IF) {
 			const [left, op, right] = parts;
 			if (left === undefined || op === undefined || right === undefined) {
-				throw panic(`Expected left op right: ${line}`, lnum);
+				throw err(`Expected left op right`, line);
 			}
 
-			const lhs = resolve(left, context, lnum);
-			const rhs = resolve(right, context, lnum);
+			const lhs = resolve(left, context, line);
+			const rhs = resolve(right, context, line);
 
 			if (typeof lhs !== 'number' || typeof rhs !== 'number') {
-				throw panic('Expected number: ' + line, lnum);
+				throw err('Expected number', line);
 			}
 
 			const end = find_end(i);
@@ -407,7 +519,7 @@ function preprocess_scopes(
 
 			if (cond) {
 				const block = lines.slice(i + 1, end);
-				const block_output = preprocess_scopes(block, context, lnum);
+				const block_output = preprocess_scopes(block, context);
 				output.push(...block_output);
 			}
 
