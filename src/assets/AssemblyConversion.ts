@@ -76,11 +76,6 @@ function safe_node(object: LevelNodeWith<LevelNodeGASM>): SafeNode {
 	};
 }
 
-function panic(message: string) {
-	window.toast(message, 'err');
-	return undefined;
-}
-
 // asm to json
 export function asm_to_json(
 	asm: string,
@@ -88,7 +83,15 @@ export function asm_to_json(
 ) {
 	const node = safe_node(old_json);
 
-	const code = compile_gasm(asm);
+	let code;
+	try {
+		code = compile_gasm(asm);
+	} catch (e) {
+		if (e instanceof Error) {
+			window.toast(e, 'error');
+		}
+		return undefined;
+	}
 
 	const instructions = code
 		.map((line) => {
@@ -104,26 +107,126 @@ export function asm_to_json(
 	return old_json;
 }
 
+interface CompilerError extends Error {
+	line?: number;
+}
+
+function panic(message: string, line: number) {
+	const err: CompilerError = new Error(message);
+	err.line = line;
+	return err;
+}
+
 export function compile_gasm(asm: string): string[] {
 	const lines = asm
 		.split('\n')
-		.map((line) => (line.split(';')[0] ?? '').trim())
-		.filter((line) => line.length);
+		.map((line) => (line.split(';')[0] ?? '').trim());
 
 	const code = preprocess_asm(lines);
 
-	return code;
+	return code.filter((line) => line.length);
 }
 
 function preprocess_asm(lines: string[]): string[] {
-	const processed_scopes = preprocess_scopes(lines);
-	const processed_characters = preprocess_characters(processed_scopes);
-	return processed_characters;
+	verify_arg_counts(lines);
+	lines = preprocess_scopes(lines);
+	lines = preprocess_characters(lines);
+	verify_labels(lines);
+	return lines;
+}
+
+function verify_arg_counts(lines: string[]) {
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]!;
+		if (!line.length) continue;
+		const lnum = i + 1;
+
+		if (line.startsWith('#')) continue;
+
+		const parts = line.match(/'.*'|\S+/g) ?? [];
+		if (!parts.length) throw panic(`Invalid operator`, lnum);
+
+		const operator = parts[0];
+		if (!operator) throw panic(`Invalid operator`, lnum);
+
+		const instruction_id = instruction_map[dirty_instruction(operator)];
+		if (instruction_id === undefined || typeof instruction_id !== 'number')
+			throw panic(`Invalid operator`, lnum);
+
+		const count = operand_counts[instruction_id as InstructionDataType];
+		if (count === undefined) throw panic(`Invalid operator`, lnum);
+
+		const is_label =
+			instruction_id === instruction_map.InLabel ||
+			instruction_id === instruction_map.InGoto ||
+			instruction_id === instruction_map.InIf;
+
+		if (is_label) {
+			if (count > parts.length - 1)
+				throw panic(`Expected ${count} operands`, lnum);
+		} else {
+			if (count !== parts.length - 1)
+				throw panic(`Expected ${count} operands`, lnum);
+		}
+	}
+}
+
+function verify_labels(lines: string[]) {
+	const labels = new Set<string>();
+
+	for (const line of lines) {
+		if (!line.length) continue;
+
+		const parts = line.match(/'.*'|\S+/g) ?? [];
+		if (!parts.length) continue;
+
+		const [operator, ...rest] = parts;
+		const operator_id = instruction_map[dirty_instruction(operator!)];
+
+		if (operator_id === instruction_map.InLabel) {
+			const count = operand_counts[instruction_map.InLabel];
+			if (count === undefined) continue;
+			if (count > parts.length - 1) continue;
+
+			const label = rest.slice(count - 1).join(' ');
+			labels.add(label);
+		}
+	}
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]!;
+		if (!line.length) continue;
+		const lnum = i + 1;
+
+		const parts = line.match(/'.*'|\S+/g) ?? [];
+		if (!parts.length) continue;
+
+		const [operator, ...rest] = parts;
+		const operator_id = instruction_map[dirty_instruction(operator!)];
+
+		const is_label =
+			operator_id === instruction_map.InGoto ||
+			operator_id === instruction_map.InIf;
+
+		if (is_label) {
+			const count = operand_counts[operator_id as InstructionDataType];
+			if (count === undefined) continue;
+			if (count > parts.length - 1) continue;
+
+			const label = rest.slice(count - 1).join(' ');
+			if (!labels.has(label))
+				throw panic(`Unknown label: ${label}`, lnum);
+		}
+	}
 }
 
 function preprocess_characters(lines: string[]): string[] {
 	for (let i = 0; i < lines.length; i++) {
-		const parts = lines[i]!.trim().match(/'.'|\S+/g) ?? [];
+		const line = lines[i]!;
+		if (!line.length) continue;
+		const lnum = i + 1;
+
+		const parts = line.match(/'.*'|\S+/g) ?? [];
 		const instruction = instruction_map[dirty_instruction(parts[0]!)];
 
 		for (let j = 1; j < parts.length; j++) {
@@ -136,8 +239,9 @@ function preprocess_characters(lines: string[]): string[] {
 			if (is_label) continue;
 
 			const p = parts[j]!;
-			if (p.length === 3 && p.charAt(0) === "'" && p.charAt(2) === "'") {
-				parts[j] = String(p.charCodeAt(1));
+			if (p.charAt(0) === "'" && p.charAt(p.length - 1) === "'") {
+				if (p.length === 3) parts[j] = String(p.charCodeAt(1));
+				else throw panic(`Invalid character ${p}`, lnum);
 			}
 		}
 
@@ -150,8 +254,13 @@ function preprocess_characters(lines: string[]): string[] {
 function preprocess_scopes(
 	lines: string[],
 	context: Record<string, unknown> = {},
+	line_offset: number = 0,
 ): string[] {
-	const resolve = (val: string, ctx: Record<string, unknown>): unknown => {
+	const resolve = (
+		val: string,
+		ctx: Record<string, unknown>,
+		lnum: number,
+	): unknown => {
 		// an existing variable
 		if (ctx[val] !== undefined) return ctx[val];
 		// a number
@@ -161,12 +270,11 @@ function preprocess_scopes(
 		const [var_a, var_b] = val.split(/(?<!^)[+-/*%]/);
 
 		if (var_a === undefined || var_b === undefined) {
-			window.toast(`Invalid value: ${val}`, 'error');
-			return NaN;
+			throw panic(`Invalid value: ${val}`, lnum);
 		}
 
-		const a = resolve(var_a, context);
-		const b = resolve(var_b, context);
+		const a = resolve(var_a, context, lnum);
+		const b = resolve(var_b, context, lnum);
 
 		if (typeof a === 'number' && typeof b === 'number') {
 			if (val.includes('+')) return a + b;
@@ -176,8 +284,7 @@ function preprocess_scopes(
 			else if (val.includes('-')) return a - b;
 		}
 
-		window.toast(`Invalid value: ${val}`, 'error');
-		return undefined;
+		throw panic(`Invalid value: ${val}`, lnum);
 	};
 	const substitute = (line: string, ctx: Record<string, unknown>): string => {
 		let result = line;
@@ -207,28 +314,38 @@ function preprocess_scopes(
 				return i;
 			}
 		}
-		throw new Error(`Missing ${DIRECTIVES.END} for block at line ${start}`);
+		throw panic(
+			`Missing ${DIRECTIVES.END} for block at line ${start}`,
+			start + 1,
+		);
 	};
 
 	const output: string[] = [];
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i]!;
+		if (!line.length) continue;
+		const lnum = i + 1 + line_offset;
+
 		const [directive, ...parts] = line.trim().split(/\s+/);
 
 		if (directive === DIRECTIVES.DEFINE) {
 			const [variable, ...rest] = parts;
-			if (variable === undefined) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+			if (variable === undefined || rest.length === 0) {
+				throw panic(`Expected variable definition: ${line}`, lnum);
 			}
 
 			const setup = Object.keys(context)
 				.map((v) => `let ${v} = ${JSON.stringify(context[v])};`)
 				.join('');
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
-			console.log(expr);
-			context[variable] = eval(expr);
+			try {
+				context[variable] = eval(expr);
+			} catch (e) {
+				if (e instanceof Error) {
+					throw panic(e.message, lnum);
+				}
+			}
 		} else if (directive === DIRECTIVES.FOR) {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
 			if (
@@ -236,22 +353,22 @@ function preprocess_scopes(
 				start_arg === undefined ||
 				stop_arg === undefined
 			) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+				throw panic(`Expected var start stop ?step: ${line}`, lnum);
 			}
 
-			const start = resolve(start_arg, context);
-			const stop = resolve(stop_arg, context);
+			const start = resolve(start_arg, context, lnum);
+			const stop = resolve(stop_arg, context, lnum);
 			const step =
-				step_arg !== undefined ? resolve(step_arg, context) : 1;
+				step_arg !== undefined ? resolve(step_arg, context, lnum) : 1;
 
-			if (
-				typeof start !== 'number' ||
-				typeof stop !== 'number' ||
-				typeof step !== 'number'
-			) {
-				window.toast('Expected number at ' + line, 'error');
-				continue;
+			if (typeof start !== 'number') {
+				throw panic('Expected number at ' + line, lnum);
+			}
+			if (typeof stop !== 'number') {
+				throw panic('Expected number at ' + line, lnum);
+			}
+			if (typeof step !== 'number') {
+				throw panic('Expected number at ' + line, lnum);
 			}
 
 			const end = find_end(i);
@@ -260,7 +377,7 @@ function preprocess_scopes(
 			for (let val = start; val <= stop; val += step) {
 				const ctx = { ...context, [var_name]: val };
 
-				const block_output = preprocess_scopes(block, ctx);
+				const block_output = preprocess_scopes(block, ctx, lnum);
 				output.push(...block_output);
 			}
 
@@ -268,16 +385,14 @@ function preprocess_scopes(
 		} else if (directive === DIRECTIVES.IF) {
 			const [left, op, right] = parts;
 			if (left === undefined || op === undefined || right === undefined) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+				throw panic(`Expected left op right: ${line}`, lnum);
 			}
 
-			const lhs = resolve(left, context);
-			const rhs = resolve(right, context);
+			const lhs = resolve(left, context, lnum);
+			const rhs = resolve(right, context, lnum);
 
 			if (typeof lhs !== 'number' || typeof rhs !== 'number') {
-				window.toast('Expected number at ' + line, 'error');
-				continue;
+				throw panic('Expected number: ' + line, lnum);
 			}
 
 			const end = find_end(i);
@@ -292,7 +407,7 @@ function preprocess_scopes(
 
 			if (cond) {
 				const block = lines.slice(i + 1, end);
-				const block_output = preprocess_scopes(block, context);
+				const block_output = preprocess_scopes(block, context, lnum);
 				output.push(...block_output);
 			}
 
@@ -317,7 +432,10 @@ function instruction_asm_to_json(
 
 	const dirty = dirty_instruction(operator);
 	const type = instruction_map[dirty] as InstructionDataType;
-	if (type === undefined) return panic(`Invalid instruction: ${instruction}`);
+	if (type === undefined) {
+		window.toast(`Invalid instruction: ${instruction}`, 'error');
+		return undefined;
+	}
 
 	const count = operand_counts[type]!;
 	// handle labels with spaces (they must be the last operand)
@@ -328,7 +446,8 @@ function instruction_asm_to_json(
 		operands: operands
 			.map((operand, i) => operand_asm_to_json(operand, type, i, node))
 			.filter((operand) => {
-				if (operand === undefined) panic(`Invalid operand: ${operand}`);
+				if (operand === undefined)
+					window.toast(`Invalid operand: ${operand}`, 'error');
 				return operand !== undefined;
 			}),
 	};
@@ -406,7 +525,8 @@ function operand_asm_to_json(
 		};
 	}
 
-	return panic(`Failed to parse operand: ${operand}`);
+	window.toast(`Failed to parse operand: ${operand}`, 'error');
+	return undefined;
 }
 
 // json to asm
@@ -465,7 +585,8 @@ function operand_json_to_asm(
 		case operand_map.OpWorkingRegister: return `R${index}`;
 	}
 
-	return panic(`Invalid operand type: ${type}`);
+	window.toast(`Invalid operand type: ${type}`, 'error');
+	return undefined;
 }
 
 function clean_instruction(name: string): string {

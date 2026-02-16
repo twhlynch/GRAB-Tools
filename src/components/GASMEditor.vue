@@ -6,6 +6,7 @@ import {
 	gasmCompletion,
 	update_json_completions,
 } from '@/assets/GASMCompletion';
+import { gasmDiagnostics } from '@/assets/GASMDiagnostics';
 import { gasm } from '@/assets/GASMDSL';
 import { levelNodeWithGASM } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
@@ -37,6 +38,7 @@ export default {
 					...(this.vim_enabled ? [vim()] : []),
 					basicSetup,
 					...gasmCompletion(),
+					gasmDiagnostics,
 				],
 				[...searchKeymap],
 				(update) => {
