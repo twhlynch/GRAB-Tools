@@ -76,11 +76,6 @@ function safe_node(object: LevelNodeWith<LevelNodeGASM>): SafeNode {
 	};
 }
 
-function panic(message: string) {
-	window.toast(message, 'err');
-	return undefined;
-}
-
 // asm to json
 export function asm_to_json(
 	asm: string,
@@ -88,7 +83,15 @@ export function asm_to_json(
 ) {
 	const node = safe_node(old_json);
 
-	const code = compile_gasm(asm);
+	let code;
+	try {
+		code = compile_gasm(asm);
+	} catch (e) {
+		if (e instanceof Error) {
+			window.toast(e, 'error');
+		}
+		return undefined;
+	}
 
 	const instructions = code
 		.map((line) => {
@@ -107,51 +110,253 @@ export function asm_to_json(
 export function compile_gasm(asm: string): string[] {
 	const lines = asm
 		.split('\n')
-		.map((line) => (line.split(';')[0] ?? '').trim())
-		.filter((line) => line.length);
+		.map((line) => (line.split(';')[0] ?? '').trim());
 
 	const code = preprocess_asm(lines);
 
-	return code;
+	return code.filter((line) => line.length);
 }
 
-function preprocess_asm(lines: string[]): string[] {
-	const processed_scopes = preprocess_scopes(lines);
-	const processed_characters = preprocess_characters(processed_scopes);
-	return processed_characters;
+function preprocess_asm(str_lines: string[]): string[] {
+	let lines = parse_lines(str_lines);
+	lines = preprocess_scopes(lines);
+	preprocess_characters(lines);
+	verify_labels(lines);
+	verify_lengths(lines);
+	return join_lines(lines);
 }
 
-function preprocess_characters(lines: string[]): string[] {
-	for (let i = 0; i < lines.length; i++) {
-		const parts = lines[i]!.trim().match(/'.'|\S+/g) ?? [];
-		const instruction = instruction_map[dirty_instruction(parts[0]!)];
+interface Line {
+	number: number;
+	string: string;
+	operator: string;
+	operands: string[];
+	operator_id?: InstructionDataType; // also used as 'is macro'
+}
 
-		for (let j = 1; j < parts.length; j++) {
-			const is_label =
-				(instruction === instruction_map.InLabel ||
-					instruction === instruction_map.InGoto ||
-					instruction === instruction_map.InIf) &&
-				j === operand_counts[instruction] - 1;
+interface CompilerError extends Error {
+	line?: number;
+}
 
-			if (is_label) continue;
+function err(message: string, line: Line) {
+	const current = `${line.operator} ${line.operands.join(' ')}`;
+	let error_message = `${message} at '${current}'`;
+	if (current != line.string) {
+		error_message += ` (from '${line.string}')`;
+	}
 
-			const p = parts[j]!;
-			if (p.length === 3 && p.charAt(0) === "'" && p.charAt(2) === "'") {
-				parts[j] = String(p.charCodeAt(1));
+	const e: CompilerError = new Error(error_message);
+	e.line = line.number;
+
+	return e;
+}
+
+function join_lines(lines: Line[]): string[] {
+	const strings: string[] = [];
+
+	for (const line of lines) {
+		const string = `${line.operator} ${line.operands.join(' ')}`;
+		if (string.includes('#')) {
+			throw err(`Undefined macro`, line);
+		}
+		strings.push(string);
+	}
+
+	return strings;
+}
+
+function verify_lengths(lines: Line[]) {
+	for (const line of lines) {
+		const { operator_id, operands, operator } = line;
+
+		if (operator_id === undefined) continue;
+
+		const count = operand_counts[operator_id];
+		if (count === undefined) {
+			throw err(`Invalid operator '${operator}'`, line);
+		}
+
+		const has_label =
+			operator_id === instruction_map.InLabel ||
+			operator_id === instruction_map.InGoto ||
+			operator_id === instruction_map.InIf;
+
+		if (has_label) {
+			if (operands.length < count) {
+				throw err(
+					`Expected ${count} operands, found ${operands.length}`,
+					line,
+				);
+			}
+		} else {
+			if (count !== operands.length) {
+				throw err(
+					`Expected ${count} operands, found ${operands.length}`,
+					line,
+				);
+			}
+		}
+	}
+}
+
+function parse_lines(strings: string[]): Line[] {
+	const lines: Line[] = [];
+
+	for (let i = 0; i < strings.length; i++) {
+		const string = strings[i]!;
+		if (!string.length) continue;
+
+		const number = i + 1;
+		const is_macro = string[0] === '#';
+
+		// split words and 'characters'
+		const parts = string.match(/'.*'|\S+/g) ?? [];
+		if (!parts.length) continue;
+
+		const [operator, ...operands] = parts;
+		if (!operator) continue;
+
+		const line: Line = {
+			number,
+			string,
+			operator,
+			operands,
+		};
+
+		if (!is_macro) {
+			const key = dirty_instruction(operator);
+			const operator_id = instruction_map[key] as InstructionDataType;
+
+			if (!operator_id) {
+				throw err(`Invalid operator '${operator}'`, line);
+			}
+
+			const count = operand_counts[operator_id];
+			if (count === undefined) {
+				throw err(`Invalid operator '${operator}'`, line);
+			}
+
+			line.operator_id = operator_id;
+
+			const has_label =
+				operator_id === instruction_map.InLabel ||
+				operator_id === instruction_map.InGoto ||
+				operator_id === instruction_map.InIf;
+
+			if (has_label) {
+				if (operands.length < count) {
+					throw err(
+						`Expected ${count} operands, found ${operands.length}`,
+						line,
+					);
+				}
+
+				// combine label into a single operand
+				line.operands = [
+					...operands.slice(0, count - 1),
+					operands.slice(count - 1).join(' '),
+				];
+			} else {
+				if (count !== operands.length) {
+					throw err(
+						`Expected ${count} operands, found ${operands.length}`,
+						line,
+					);
+				}
 			}
 		}
 
-		lines[i] = parts.join(' ');
+		lines.push(line);
 	}
 
 	return lines;
 }
 
+function verify_labels(lines: Line[]) {
+	const labels = new Set<string>();
+
+	for (const line of lines) {
+		if (line.operator_id !== instruction_map.InLabel) continue;
+		if (line.operands.length === 0) continue;
+
+		const label = line.operands[line.operands.length - 1]!;
+		labels.add(label);
+	}
+
+	for (const line of lines) {
+		if (
+			line.operator_id !== instruction_map.InGoto &&
+			line.operator_id !== instruction_map.InIf
+		)
+			continue;
+		if (line.operands.length === 0) continue;
+
+		const label = line.operands[line.operands.length - 1]!;
+		if (!labels.has(label)) {
+			throw err(`Unknown label '${label}'`, line);
+		}
+	}
+}
+
+function preprocess_characters(lines: Line[]) {
+	for (const line of lines) {
+		if (line.operator_id === undefined) continue;
+		const has_label =
+			line.operator_id === instruction_map.InGoto ||
+			line.operator_id === instruction_map.InIf ||
+			line.operator_id === instruction_map.InLabel;
+
+		for (let j = 0; j < line.operands.length; j++) {
+			if (has_label && j === operand_counts[line.operator_id] - 1)
+				continue;
+
+			const operand = line.operands[j]!;
+
+			if (operand[0] === "'" && operand[operand.length - 1] === "'") {
+				if (operand.length === 3) {
+					line.operands[j] = String(operand.charCodeAt(1));
+				} else {
+					throw err(`Invalid character ${operand}`, line);
+				}
+			}
+		}
+	}
+}
+
+function regroup_operands(line: Line) {
+	const { operator_id, operands } = line;
+	if (operator_id === undefined) return;
+
+	const count = operand_counts[operator_id];
+	if (count === undefined) return;
+
+	const has_label =
+		operator_id === instruction_map.InLabel ||
+		operator_id === instruction_map.InGoto ||
+		operator_id === instruction_map.InIf;
+
+	const separated = operands.flatMap((op) => op.match(/'.*'|\S+/g) ?? []);
+
+	if (has_label) {
+		// combine label into a single operand
+		line.operands = [
+			...separated.slice(0, count - 1),
+			separated.slice(count - 1).join(' '),
+		];
+	} else {
+		line.operands = separated;
+	}
+}
+
 function preprocess_scopes(
-	lines: string[],
+	lines: Line[],
 	context: Record<string, unknown> = {},
-): string[] {
-	const resolve = (val: string, ctx: Record<string, unknown>): unknown => {
+): Line[] {
+	const resolve = (
+		val: string,
+		ctx: Record<string, unknown>,
+		line: Line,
+	): unknown => {
 		// an existing variable
 		if (ctx[val] !== undefined) return ctx[val];
 		// a number
@@ -161,12 +366,11 @@ function preprocess_scopes(
 		const [var_a, var_b] = val.split(/(?<!^)[+-/*%]/);
 
 		if (var_a === undefined || var_b === undefined) {
-			window.toast(`Invalid value: ${val}`, 'error');
-			return NaN;
+			throw err(`Invalid value '${val}'`, line);
 		}
 
-		const a = resolve(var_a, context);
-		const b = resolve(var_b, context);
+		const a = resolve(var_a, ctx, line);
+		const b = resolve(var_b, ctx, line);
 
 		if (typeof a === 'number' && typeof b === 'number') {
 			if (val.includes('+')) return a + b;
@@ -176,26 +380,39 @@ function preprocess_scopes(
 			else if (val.includes('-')) return a - b;
 		}
 
-		window.toast(`Invalid value: ${val}`, 'error');
-		return undefined;
+		throw err(`Invalid value '${val}'`, line);
 	};
-	const substitute = (line: string, ctx: Record<string, unknown>): string => {
-		let result = line;
-
+	const substitute = (line: Line, ctx: Record<string, unknown>): Line => {
 		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
 
-		for (const key of sorted) {
-			const value = ctx[key];
-			result = result.replaceAll(`#${key}`, String(value));
+		const new_operands: string[] = [];
+
+		for (const operand of line.operands) {
+			let updated = operand;
+
+			for (const key of sorted) {
+				const value = ctx[key];
+				updated = updated.replaceAll(`#${key}`, String(value));
+			}
+
+			const split = updated.match(/'.*'|\S+/g) ?? [];
+			new_operands.push(...split);
 		}
+
+		const result: Line = {
+			...line,
+			operands: new_operands,
+		};
+
+		regroup_operands(result);
 
 		return result;
 	};
 	const find_end = (start: number): number => {
 		let depth = 1;
 		for (let i = start + 1; i < lines.length; i++) {
-			const parts = lines[i]!.trim().split(/\s+/);
-			const directive = parts[0];
+			const line = lines[i]!;
+			const directive = line.operator;
 
 			if (directive === DIRECTIVES.FOR || directive === DIRECTIVES.IF) {
 				depth++;
@@ -207,51 +424,68 @@ function preprocess_scopes(
 				return i;
 			}
 		}
-		throw new Error(`Missing ${DIRECTIVES.END} for block at line ${start}`);
+
+		throw err(`Missing ${DIRECTIVES.END}`, lines[start]!);
 	};
 
-	const output: string[] = [];
+	const output: Line[] = [];
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i]!;
-		const [directive, ...parts] = line.trim().split(/\s+/);
+		const directive = line.operator;
+		const parts = line.operands;
 
 		if (directive === DIRECTIVES.DEFINE) {
 			const [variable, ...rest] = parts;
 			if (variable === undefined) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+				throw err(`Expected variable name`, line);
+			}
+			if (rest.length === 0) {
+				throw err(`Expected expression`, line);
 			}
 
 			const setup = Object.keys(context)
 				.map((v) => `let ${v} = ${JSON.stringify(context[v])};`)
 				.join('');
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
-			console.log(expr);
-			context[variable] = eval(expr);
+			try {
+				context[variable] = eval(expr);
+			} catch (e) {
+				if (e instanceof Error) {
+					throw err(e.message, line);
+				}
+			}
+			if (context[variable] === undefined) {
+				throw err(
+					`Expression '${rest.join(' ')}' results in undefined`,
+					line,
+				);
+			}
 		} else if (directive === DIRECTIVES.FOR) {
 			const [var_name, start_arg, stop_arg, step_arg] = parts;
-			if (
-				var_name === undefined ||
-				start_arg === undefined ||
-				stop_arg === undefined
-			) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+			if (var_name === undefined) {
+				throw err(`Expected variable name`, line);
+			}
+			if (start_arg === undefined) {
+				throw err(`Expected argument 1 'start'`, line);
+			}
+			if (stop_arg === undefined) {
+				throw err(`Expected argument 2 'start'`, line);
 			}
 
-			const start = resolve(start_arg, context);
-			const stop = resolve(stop_arg, context);
+			const start = resolve(start_arg, context, line);
+			const stop = resolve(stop_arg, context, line);
 			const step =
-				step_arg !== undefined ? resolve(step_arg, context) : 1;
+				step_arg !== undefined ? resolve(step_arg, context, line) : 1;
 
-			if (
-				typeof start !== 'number' ||
-				typeof stop !== 'number' ||
-				typeof step !== 'number'
-			) {
-				window.toast('Expected number at ' + line, 'error');
-				continue;
+			if (typeof start !== 'number') {
+				throw err(`Expected number but found '${start_arg}'`, line);
+			}
+			if (typeof stop !== 'number') {
+				throw err(`Expected number but found '${stop_arg}'`, line);
+			}
+			if (typeof step !== 'number') {
+				throw err(`Expected number but found '${step_arg}'`, line);
 			}
 
 			const end = find_end(i);
@@ -267,17 +501,24 @@ function preprocess_scopes(
 			i = end;
 		} else if (directive === DIRECTIVES.IF) {
 			const [left, op, right] = parts;
-			if (left === undefined || op === undefined || right === undefined) {
-				window.toast(`Invalid directive: ${line}`, 'error');
-				continue;
+			if (left === undefined) {
+				throw err(`Expected argument 1 'left'`, line);
+			}
+			if (op === undefined) {
+				throw err(`Expected operator`, line);
+			}
+			if (right === undefined) {
+				throw err(`Expected argument 2 'right'`, line);
 			}
 
-			const lhs = resolve(left, context);
-			const rhs = resolve(right, context);
+			const lhs = resolve(left, context, line);
+			const rhs = resolve(right, context, line);
 
-			if (typeof lhs !== 'number' || typeof rhs !== 'number') {
-				window.toast('Expected number at ' + line, 'error');
-				continue;
+			if (typeof lhs !== 'number') {
+				throw err(`Expected number but found '${left}'`, line);
+			}
+			if (typeof rhs !== 'number') {
+				throw err(`Expected number but found '${right}'`, line);
 			}
 
 			const end = find_end(i);
@@ -299,6 +540,8 @@ function preprocess_scopes(
 			i = end;
 		} else if (directive === DIRECTIVES.END) {
 			continue;
+		} else if (directive[0] === '#') {
+			throw err(`Unknown directive`, line);
 		} else {
 			output.push(substitute(line, context));
 		}
@@ -317,7 +560,10 @@ function instruction_asm_to_json(
 
 	const dirty = dirty_instruction(operator);
 	const type = instruction_map[dirty] as InstructionDataType;
-	if (type === undefined) return panic(`Invalid instruction: ${instruction}`);
+	if (type === undefined) {
+		window.toast(`Invalid instruction: ${instruction}`, 'error');
+		return undefined;
+	}
 
 	const count = operand_counts[type]!;
 	// handle labels with spaces (they must be the last operand)
@@ -328,7 +574,8 @@ function instruction_asm_to_json(
 		operands: operands
 			.map((operand, i) => operand_asm_to_json(operand, type, i, node))
 			.filter((operand) => {
-				if (operand === undefined) panic(`Invalid operand: ${operand}`);
+				if (operand === undefined)
+					window.toast(`Invalid operand: ${operand}`, 'error');
 				return operand !== undefined;
 			}),
 	};
@@ -406,7 +653,8 @@ function operand_asm_to_json(
 		};
 	}
 
-	return panic(`Failed to parse operand: ${operand}`);
+	window.toast(`Failed to parse operand: ${operand}`, 'error');
+	return undefined;
 }
 
 // json to asm
@@ -465,7 +713,8 @@ function operand_json_to_asm(
 		case operand_map.OpWorkingRegister: return `R${index}`;
 	}
 
-	return panic(`Invalid operand type: ${type}`);
+	window.toast(`Invalid operand type: ${type}`, 'error');
+	return undefined;
 }
 
 function clean_instruction(name: string): string {
