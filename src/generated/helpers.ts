@@ -73,6 +73,11 @@ export function ambienceSettings(
 		sunAzimuth: 0,
 		sunSize: 0,
 		fogDensity: 0,
+		useAdvancedSunSettings: false,
+		sunColor: color(),
+		sunBrightness: 0,
+		ambientColor: color(),
+		ambientBrightness: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -136,6 +141,10 @@ export function levelNodeStatic(
 		isGrabbable: false,
 		isGrapplable: false,
 		isPassable: false,
+		isGradient: false,
+		gradientDirection: vector(),
+		specularBrightness: 0,
+		isAdditive: false,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -169,6 +178,7 @@ export function levelNodeSign(
 		color: { r: 1, g: 1, b: 1 },
 		hideModel: false,
 		weight: proto.LevelNodeSignSignFontWeight.REGULAR,
+		isNeon: false,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -310,6 +320,11 @@ export function triggerTargetAmbience(
 		fogDensity: 1,
 		changeDuration: 1,
 		interpolationType: proto.InterpolationType.LINEAR,
+		useAdvancedSunSettings: false,
+		sunColor: color(),
+		sunBrightness: 0,
+		ambientColor: color(),
+		ambientBrightness: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -402,6 +417,24 @@ export function levelNodeGASM(
 		rotation: quaternion(),
 		isShared: false,
 		lateUpdate: false,
+	};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
+export function levelNodeLight(
+	overrides?: Partial<proto.LevelNodeLight>,
+): proto.LevelNodeLight {
+	const obj: proto.LevelNodeLight = {
+		position: vector(),
+		rotation: quaternion(),
+		type: proto.LevelNodeLightType.POINT,
+		color: color(),
+		intensity: 0,
+		range: 1,
+		angle: 0,
+		distanceFalloffShape: 0,
+		coneFalloffShape: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -562,6 +595,22 @@ export function programmableColorData(
 	overrides?: Partial<proto.ProgrammableColorData>,
 ): proto.ProgrammableColorData {
 	const obj: proto.ProgrammableColorData = {};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
+export function programmablePhysicsData(
+	overrides?: Partial<proto.ProgrammablePhysicsData>,
+): proto.ProgrammablePhysicsData {
+	const obj: proto.ProgrammablePhysicsData = {};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
+export function programmableLightData(
+	overrides?: Partial<proto.ProgrammableLightData>,
+): proto.ProgrammableLightData {
+	const obj: proto.ProgrammableLightData = {};
 	if (overrides) merge(obj, overrides);
 	return obj;
 }

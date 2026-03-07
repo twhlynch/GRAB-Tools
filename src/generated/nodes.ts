@@ -4,6 +4,7 @@ import {
 	levelNodeGASM,
 	levelNodeGravity,
 	levelNodeGroup,
+	levelNodeLight,
 	levelNodeLobbyTerminal,
 	levelNodeParticleEmitter,
 	levelNodeSign,
@@ -25,6 +26,7 @@ import {
 	LevelNodeGASM,
 	LevelNodeGravity,
 	LevelNodeGroup,
+	LevelNodeLight,
 	LevelNodeLobbyTerminal,
 	LevelNodeParticleEmitter,
 	LevelNodeSign,
@@ -153,5 +155,10 @@ export function levelNodeWithSound(overrides?: Partial<LevelNodeSound>) {
 export function levelNodeWithGASM(overrides?: Partial<LevelNodeGASM>) {
 	return levelNodeWith({
 		levelNodeGASM: levelNodeGASM(overrides),
+	});
+}
+export function levelNodeWithLight(overrides?: Partial<LevelNodeLight>) {
+	return levelNodeWith({
+		levelNodeLight: levelNodeLight(overrides),
 	});
 }

@@ -45,6 +45,11 @@ export interface AmbienceSettings {
 	sunAzimuth?: number;
 	sunSize?: number;
 	fogDensity?: number;
+	useAdvancedSunSettings?: boolean;
+	sunColor?: Color;
+	sunBrightness?: number;
+	ambientColor?: Color;
+	ambientBrightness?: number;
 }
 
 export enum LevelNodeShape {
@@ -56,7 +61,8 @@ export enum LevelNodeShape {
 	PARTICLE_EMITTER = 5,
 	SOUND = 6,
 	GASM = 7,
-	__END_OF_SPECIAL_PARTS__ = 8,
+	LIGHT = 8,
+	__END_OF_SPECIAL_PARTS__ = 9,
 	CUBE = 1000, // default
 	SPHERE = 1001,
 	CYLINDER = 1002,
@@ -143,6 +149,10 @@ export interface LevelNodeStatic {
 	isGrabbable?: boolean;
 	isGrapplable?: boolean;
 	isPassable?: boolean;
+	isGradient?: boolean;
+	gradientDirection?: Vector;
+	specularBrightness?: number;
+	isAdditive?: boolean;
 }
 
 export interface LevelNodeCrumbling {
@@ -164,6 +174,7 @@ export interface LevelNodeSign {
 	color?: Color; // { r: 1, g: 1, b: 1 }
 	hideModel?: boolean;
 	weight?: LevelNodeSignSignFontWeight;
+	isNeon?: boolean;
 }
 
 export interface LevelNodeGravity {
@@ -242,6 +253,11 @@ export interface TriggerTargetAmbience {
 	fogDensity?: number; // 1
 	changeDuration?: number; // 1
 	interpolationType?: InterpolationType;
+	useAdvancedSunSettings?: boolean;
+	sunColor?: Color;
+	sunBrightness?: number;
+	ambientColor?: Color;
+	ambientBrightness?: number;
 }
 
 export interface TriggerTarget {
@@ -311,6 +327,18 @@ export interface LevelNodeGASM {
 	lateUpdate?: boolean;
 }
 
+export interface LevelNodeLight {
+	position?: Vector;
+	rotation?: Quaternion;
+	type?: LevelNodeLightType;
+	color?: Color;
+	intensity?: number;
+	range?: number; // 1
+	angle?: number;
+	distanceFalloffShape?: number;
+	coneFalloffShape?: number;
+}
+
 export interface AnimationFrame {
 	time?: number;
 	position?: Vector;
@@ -339,6 +367,7 @@ export interface LevelNode {
 	levelNodeParticleEmitter?: LevelNodeParticleEmitter; // undefined
 	levelNodeSound?: LevelNodeSound; // undefined
 	levelNodeGASM?: LevelNodeGASM; // undefined
+	levelNodeLight?: LevelNodeLight; // undefined
 	animations?: Animation[];
 	activeAnimation?: number;
 }
@@ -392,6 +421,12 @@ export interface ProgrammableSignData {}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ProgrammableColorData {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammablePhysicsData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableLightData {}
+
 export interface ProgrammablePropertyData {
 	objectID?: number;
 	components?: ProgrammablePropertyDataComponent[];
@@ -402,6 +437,8 @@ export interface ProgrammablePropertyData {
 	sign?: ProgrammableSignData; // undefined
 	color?: ProgrammableColorData; // undefined
 	scale?: ProgrammableScaleData; // undefined
+	physics?: ProgrammablePhysicsData; // undefined
+	light?: ProgrammableLightData; // undefined
 }
 
 export enum LevelNodeSignSignFontWeight {
@@ -469,6 +506,11 @@ export interface LevelNodeGASMConnection {
 	name?: string;
 	properties?: ProgrammablePropertyData[];
 	type?: ConnectionType;
+}
+
+export enum LevelNodeLightType {
+	POINT = 0,
+	SPOT = 1,
 }
 
 export enum AnimationDirection {
