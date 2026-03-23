@@ -70,7 +70,7 @@ export default {
 						<p>GeoGuesser with GRAB maps!</p>
 						<div class="game-links">
 							<a
-								href="https://twhlynch.me/GrabGuessr"
+								href="https://grabguessr.grabvr.tools"
 								class="button-sml"
 								>Website</a
 							>
