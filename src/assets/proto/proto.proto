@@ -329,6 +329,14 @@ message TriggerTargetGASM {
   Mode mode = 2;
 }
 
+message TriggerTargetLight {
+  uint64 objectID = 1;
+  Color color = 2;
+  float range = 3;
+  float brightness = 4;
+  float fadeDuration = 5;
+}
+
 message TriggerTargetSubLevel {
   string levelIdentifier = 1;
   string spawnPoint = 2;
@@ -371,6 +379,7 @@ message TriggerTarget {
     TriggerTargetSound triggerTargetSound = 3;
     TriggerTargetAmbience triggerTargetAmbience = 6;
     TriggerTargetGASM triggerTargetGASM = 7;
+    TriggerTargetLight triggerTargetLight = 8;
   }
 }
 

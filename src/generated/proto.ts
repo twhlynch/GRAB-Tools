@@ -239,6 +239,14 @@ export interface TriggerTargetGASM {
 	mode?: TriggerTargetGASMMode;
 }
 
+export interface TriggerTargetLight {
+	objectID?: number;
+	color?: Color;
+	range?: number;
+	brightness?: number;
+	fadeDuration?: number;
+}
+
 export interface TriggerTargetSubLevel {
 	levelIdentifier?: string; // "29r46v7djliny6t4rzvq7:1654257963"
 	spawnPoint?: string; // "default"
@@ -267,6 +275,7 @@ export interface TriggerTarget {
 	mode?: TriggerTargetMode;
 	triggerTargetAmbience?: TriggerTargetAmbience; // undefined
 	triggerTargetGASM?: TriggerTargetGASM; // undefined
+	triggerTargetLight?: TriggerTargetLight; // undefined
 }
 
 export interface LevelNodeTrigger {

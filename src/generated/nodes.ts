@@ -17,6 +17,7 @@ import {
 	triggerTargetAmbience,
 	triggerTargetAnimation,
 	triggerTargetGASM,
+	triggerTargetLight,
 	triggerTargetSound,
 	triggerTargetSubLevel,
 } from './helpers';
@@ -39,6 +40,7 @@ import {
 	TriggerTargetAmbience,
 	TriggerTargetAnimation,
 	TriggerTargetGASM,
+	TriggerTargetLight,
 	TriggerTargetSound,
 	TriggerTargetSubLevel,
 } from './proto';
@@ -126,6 +128,13 @@ export function triggerTargetWithSound(
 export function triggerTargetWithGASM(overrides?: Partial<TriggerTargetGASM>) {
 	return triggerTargetWith({
 		triggerTargetGASM: triggerTargetGASM(overrides),
+	});
+}
+export function triggerTargetWithLight(
+	overrides?: Partial<TriggerTargetLight>,
+) {
+	return triggerTargetWith({
+		triggerTargetLight: triggerTargetLight(overrides),
 	});
 }
 export function triggerTargetWithSubLevel(

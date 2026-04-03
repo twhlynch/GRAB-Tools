@@ -297,6 +297,20 @@ export function triggerTargetGASM(
 	return obj;
 }
 
+export function triggerTargetLight(
+	overrides?: Partial<proto.TriggerTargetLight>,
+): proto.TriggerTargetLight {
+	const obj: proto.TriggerTargetLight = {
+		objectID: 0,
+		color: color(),
+		range: 0,
+		brightness: 0,
+		fadeDuration: 0,
+	};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
 export function triggerTargetSubLevel(
 	overrides?: Partial<proto.TriggerTargetSubLevel>,
 ): proto.TriggerTargetSubLevel {
