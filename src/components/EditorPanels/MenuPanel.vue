@@ -37,6 +37,7 @@ import {
 	levelNodeWithParticleEmitter,
 	levelNodeWithSign,
 	levelNodeWithSound,
+	levelNodeWithLight,
 	levelNodeWithStart,
 	levelNodeWithStatic,
 	levelNodeWithTrigger,
@@ -44,6 +45,7 @@ import {
 	triggerTargetWithAmbience,
 	triggerTargetWithAnimation,
 	triggerTargetWithSound,
+	triggerTargetWithLight,
 	triggerTargetWithSubLevel,
 } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
@@ -112,6 +114,7 @@ export default {
 						Particle: { func: this.insert_particle },
 						Trigger: { func: this.insert_trigger },
 						Sound: { func: this.insert_sound },
+						Light: { func: this.insert_light },
 						Code: { func: this.insert_gasm },
 						'Colored Lava': { func: this.insert_colored_lava },
 						'Ambience Trigger': {
@@ -121,6 +124,7 @@ export default {
 							func: this.insert_animation_trigger,
 						},
 						'Sound Trigger': { func: this.insert_sound_trigger },
+						'Light Trigger': { func: this.insert_light_trigger },
 						'Sublevel Trigger': {
 							func: this.insert_sublevel_trigger,
 						},
@@ -273,6 +277,7 @@ export default {
 						'Animation paths': { func: this.toggle_animations },
 						Triggers: { func: this.toggle_triggers },
 						Sound: { func: this.toggle_sound },
+						Light: { func: this.toggle_light },
 						'Trigger connections': {
 							func: this.toggle_trigger_connections,
 						},
@@ -831,6 +836,9 @@ export default {
 		insert_sound() {
 			this.insert_selection_nodes([levelNodeWithSound()]);
 		},
+		insert_light() {
+			this.insert_selection_nodes([levelNodeWithLight()]);
+		},
 		insert_gasm() {
 			this.insert_selection_nodes([levelNodeWithGASM()]);
 		},
@@ -861,6 +869,12 @@ export default {
 			const node = levelNodeWithTrigger();
 			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
 			node.levelNodeTrigger.triggerTargets.push(triggerTargetWithSound());
+			this.insert_selection_nodes([node]);
+		},
+		insert_light_trigger() {
+			const node = levelNodeWithTrigger();
+			node.levelNodeTrigger.triggerSources.push(triggerSourceWithBasic());
+			node.levelNodeTrigger.triggerTargets.push(triggerTargetWithLight());
 			this.insert_selection_nodes([node]);
 		},
 		insert_sublevel_trigger() {
@@ -1287,6 +1301,14 @@ export default {
 				scope.show_sound = !scope.show_sound;
 				scope.level.nodes.levelNodeSound.forEach((node) => {
 					node.visible = scope.show_sound;
+				});
+			});
+		},
+		toggle_light() {
+			this.$emit('viewport', (scope) => {
+				scope.show_light = !scope.show_light;
+				scope.level.nodes.levelNodeLight.forEach((node) => {
+					node.visible = scope.show_light;
 				});
 			});
 		},

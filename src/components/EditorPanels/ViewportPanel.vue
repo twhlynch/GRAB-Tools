@@ -22,6 +22,7 @@ import {
 	triggerSourceWithBlockNames,
 	triggerTargetWithAmbience,
 	triggerTargetWithAnimation,
+	triggerTargetWithLight,
 	triggerTargetWithSound,
 	triggerTargetWithSubLevel,
 } from '@/generated/nodes';
@@ -48,6 +49,7 @@ export default {
 			show_animations: true,
 			show_triggers: true,
 			show_sound: true,
+			show_light: true,
 			show_trigger_connections: true,
 			show_gasm_connections: true,
 			show_fog: true,
@@ -340,6 +342,7 @@ export default {
 				text: true,
 				triggers: this.show_triggers,
 				sound: this.show_sound,
+				light: this.show_light,
 				sublevels: true,
 				static: false,
 				fog: this.show_fog,
@@ -626,6 +629,7 @@ export default {
 				show_animations: this.show_animations,
 				show_triggers: this.show_triggers,
 				show_sound: this.show_sound,
+				show_light: this.show_light,
 				show_trigger_connections: this.show_trigger_connections,
 				show_gasm_connections: this.show_gasm_connections,
 				show_fog: this.show_fog,
@@ -1228,6 +1232,13 @@ export default {
 			trigger.triggerTargets.push(triggerTargetWithSound());
 			this.changed();
 		},
+		add_light_target(object) {
+			if (!object?.userData?.node?.levelNodeTrigger) return;
+			const trigger = object.userData.node.levelNodeTrigger;
+			if (!trigger.triggerTargets) trigger.triggerTargets = [];
+			trigger.triggerTargets.push(triggerTargetWithLight());
+			this.changed();
+		},
 		add_trigger_source(object) {
 			if (!object?.userData?.node?.levelNodeTrigger) return;
 			const trigger = object.userData.node.levelNodeTrigger;
@@ -1330,6 +1341,8 @@ export default {
 			const selected_is_code = selected_node.levelNodeGASM;
 			const clicked_has_code = clicked_node.levelNodeGASM;
 			const clicked_is_trigger = clicked_node.levelNodeTrigger;
+			const clicked_is_light = clicked_node.levelNodeLight;
+			const clicked_is_group = clicked_node.levelNodeGroup;
 			const clicked_can_animate =
 				!clicked_node.levelNodeStart && !clicked_node.levelNodeFinish;
 			const can_group = !selection.some((object) => {
@@ -1464,6 +1477,11 @@ export default {
 									this.add_sound_target(clicked_object);
 								},
 							},
+							Light: {
+								func: () => {
+									this.add_light_target(clicked_object);
+								},
+							},
 						},
 						'Add Source': {
 							Basic: {
@@ -1553,6 +1571,28 @@ export default {
 											selected_object,
 											clicked_object,
 											'active',
+										);
+									},
+								},
+							}),
+							...(clicked_is_light && {
+								Light: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'light',
+										);
+									},
+								},
+							}),
+							...(clicked_is_group && {
+								Physics: {
+									func: () => {
+										this.add_code_connection(
+											selected_object,
+											clicked_object,
+											'physics',
 										);
 									},
 								},

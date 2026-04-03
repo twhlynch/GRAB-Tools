@@ -120,6 +120,17 @@ function get_registers_for_property(
 			{ name: `${name}.Trg.PlayerId`, type: input},
 			{ name: `${name}.Trg.Force`,    type: inout},
 		];
+		case 'physics': return [
+			{ name: `${name}.Physics.Enable`, type: output},
+			{ name: `${name}.Physics.State`,  type: input},
+		];
+		case 'light': return [
+			{ name: `${name}.Col.R`,  type: inout},
+			{ name: `${name}.Col.G`,  type: inout},
+			{ name: `${name}.Col.B`,  type: inout},
+			{ name: `${name}.Brt`,    type: inout},
+			{ name: `${name}.Range`,  type: inout},
+		];
 		case 'sign': return [
 			{ name: `${name}.Sign.Write`,   type: output},
 			{ name: `${name}.Sign.Sel`,     type: output},
@@ -225,6 +236,7 @@ function get_connection_name(node: LevelNode | undefined): string {
 	if (node.levelNodeGroup) return node.levelNodeGroup.name ?? 'Grp';
 	if (node.levelNodeTrigger) return 'Trg';
 	if (node.levelNodeSound) return 'Snd';
+	if (node.levelNodeLight) return 'Lght';
 	if (node.levelNodeFinish) return 'Fin';
 	if (node.levelNodeGravity) return 'Grav';
 	if (node.levelNodeParticleEmitter) return 'Ptcl';

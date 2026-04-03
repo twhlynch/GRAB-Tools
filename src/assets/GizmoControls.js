@@ -223,7 +223,7 @@ class GizmoControls {
 			}
 		}
 
-		if (node.levelNodeSound) {
+		if (node.levelNodeSound || node.levelNodeLight) {
 			if (mode === 'scale') {
 				object.scale.x = 1;
 				object.scale.y = 1;
