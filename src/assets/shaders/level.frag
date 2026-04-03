@@ -1,6 +1,7 @@
 varying vec3 vWorldPosition;
 varying vec3 vInitialWorldPosition;
 varying vec3 vFrozenNormal;
+varying vec3 vLocalPosition;
 varying vec3 vNormal;
 
 uniform sampler2D colorTexture;
@@ -11,6 +12,11 @@ uniform float transparentEnabled;
 uniform float fogEnabled;
 uniform float isLava;
 uniform float isColoredLava;
+
+uniform float isGradient;
+uniform float isAdditive;
+uniform vec3 diffuseColor2;
+uniform vec3 gradientDirection;
 
 uniform vec2 cameraFogDistance;
 uniform vec3 cameraFogColor0;
@@ -47,11 +53,19 @@ void main()
         texColor.rgb = texture2D(colorTexture, vInitialWorldPosition.xy * tileFactor).rgb;
     }
 
-    color.rgb = texColor.rgb * diffuseColor;
+    vec3 baseColor = diffuseColor;
+    if (isGradient > 0.5)
+    {
+        float gradient = dot(vLocalPosition, gradientDirection);
+        float extent = 0.5 * dot(abs(gradientDirection), vec3(1.0));
+        baseColor = mix(diffuseColor, diffuseColor2, clamp((gradient + extent) / (2.0 * extent), 0.0, 1.0));
+    }
+
+    color.rgb = texColor.rgb * baseColor;
 
     if (isColoredLava > 0.5) {
         vec3 blendValues = vec3(texColor.b);
-        color.rgb = mix(diffuseColor.rgb, specularColor.rgb, blendValues.b);
+        color.rgb = mix(baseColor.rgb, specularColor.rgb, blendValues.b);
         color.rgb += blendValues.g * 0.1 - (1.0 - blendValues.r) * 0.2;
     } else if (isLava > 0.5) {
         color.rgb = vec3(color.rg, 0);
@@ -61,7 +75,7 @@ void main()
     float distanceToCamera = length(cameraToVertex);
     cameraToVertex = normalize(cameraToVertex);
 
-    if (neonEnabled < 0.5)
+    if (neonEnabled < 0.5 && isAdditive < 0.5)
     {
         //Apply sun light
         vec3 lightDirection = normalize(-sunDirection);

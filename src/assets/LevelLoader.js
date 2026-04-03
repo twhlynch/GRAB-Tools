@@ -1075,6 +1075,34 @@ class LevelLoader {
 							node.levelNodeStatic.color1.b ?? 0,
 						];
 
+						// gradient
+						if (
+							node.levelNodeStatic.isGradient &&
+							node.levelNodeStatic.color2
+						) {
+							newMaterial.uniforms.isGradient.value = 1.0;
+							newMaterial.uniforms.diffuseColor2.value = [
+								node.levelNodeStatic.color2.r ?? 0,
+								node.levelNodeStatic.color2.g ?? 0,
+								node.levelNodeStatic.color2.b ?? 0,
+							];
+							if (node.levelNodeStatic.gradientDirection) {
+								let x =
+									node.levelNodeStatic.gradientDirection.x ??
+									0;
+								let y =
+									node.levelNodeStatic.gradientDirection.y ??
+									0;
+								let z =
+									node.levelNodeStatic.gradientDirection.z ??
+									0;
+								if (x != 0 || y != 0 || z != 0) {
+									newMaterial.uniforms.gradientDirection.value =
+										[x, y, z];
+								}
+							}
+						}
+
 						let specularFactor =
 							Math.sqrt(
 								(node.levelNodeStatic.color1.r ?? 0) *
@@ -1090,7 +1118,10 @@ class LevelLoader {
 							specularFactor,
 							16.0,
 						];
-						if (node.levelNodeStatic.color2) {
+						if (
+							node.levelNodeStatic.color2 &&
+							!node.levelNodeStatic.isGradient
+						) {
 							specularColor = [
 								node.levelNodeStatic.color2.r ?? 0,
 								node.levelNodeStatic.color2.g ?? 0,
@@ -1106,6 +1137,14 @@ class LevelLoader {
 						}
 						newMaterial.uniforms.specularColor.value =
 							specularColor;
+					}
+
+					// additive
+					if (node.levelNodeStatic.isAdditive) {
+						newMaterial.transparent = true;
+						newMaterial.blending = THREE.AdditiveBlending;
+						newMaterial.depthWrite = false;
+						newMaterial.uniforms.isAdditive.value = 1.0;
 					}
 
 					object = new THREE.Mesh(
@@ -1687,6 +1726,10 @@ function getMaterialForTexture(
 		specularColor: { value: specularColor },
 		isLava: { value: isLava },
 		isColoredLava: { value: 0.0 },
+		isGradient: { value: 0.0 },
+		isAdditive: { value: 0.0 },
+		diffuseColor2: { value: [1.0, 1.0, 1.0] },
+		gradientDirection: { value: [0.0, 1.0, 0.0] },
 	};
 
 	material.uniforms.colorTexture.value = textureLoader.load(name);
