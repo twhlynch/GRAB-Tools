@@ -387,6 +387,7 @@ class LevelLoader {
 				material: {},
 				shape: {},
 				defaultSpawn: undefined,
+				namedSpawns: {},
 			},
 			sun: undefined,
 			complexity: 0,
@@ -448,7 +449,7 @@ class LevelLoader {
 
 		let { shapes, objects, materials, objectMaterials } = this;
 		let scene = level.scene;
-		let namedSpawns = [];
+		level.nodes.namedSpawns = {};
 
 		let sunAngle = new THREE.Euler(
 			THREE.MathUtils.degToRad(45),
@@ -1527,7 +1528,7 @@ class LevelLoader {
 
 					const spawnName = node.levelNodeStart.name;
 					if (spawnName && spawnName.length > 0) {
-						namedSpawns[spawnName] = {
+						level.nodes.namedSpawns[spawnName] = {
 							position: object.position.clone(),
 							quaternion: object.quaternion.clone(),
 						};
