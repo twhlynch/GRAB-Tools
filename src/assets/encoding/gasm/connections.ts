@@ -119,6 +119,7 @@ function get_registers_for_property(
 			{ name: `${name}.Trg.Active`,   type: input},
 			{ name: `${name}.Trg.PlayerId`, type: input},
 			{ name: `${name}.Trg.Force`,    type: inout},
+			{ name: `${name}.Trg.Part`,     type: input},
 		];
 		case 'physics': return [
 			{ name: `${name}.Physics.Enable`, type: output},
