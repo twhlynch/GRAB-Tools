@@ -126,11 +126,11 @@ function get_registers_for_property(
 			{ name: `${name}.Physics.State`,  type: input},
 		];
 		case 'light': return [
-			{ name: `${name}.Col.R`,  type: inout},
-			{ name: `${name}.Col.G`,  type: inout},
-			{ name: `${name}.Col.B`,  type: inout},
-			{ name: `${name}.Brt`,    type: inout},
-			{ name: `${name}.Range`,  type: inout},
+			{ name: `${name}.Col.R`, type: inout},
+			{ name: `${name}.Col.G`, type: inout},
+			{ name: `${name}.Col.B`, type: inout},
+			{ name: `${name}.Brt`,   type: inout},
+			{ name: `${name}.Range`, type: inout},
 		];
 		case 'sign': return [
 			{ name: `${name}.Sign.Write`,   type: output},
