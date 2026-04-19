@@ -385,6 +385,12 @@ function preprocess_scopes(
 	const substitute = (line: Line, ctx: Record<string, unknown>): Line => {
 		const sorted = Object.keys(ctx).sort((a, b) => b.length - a.length);
 
+		let new_operator = line.operator;
+		for (const key of sorted) {
+			const value = ctx[key];
+			new_operator = new_operator.replaceAll(`#${key}`, String(value));
+		}
+
 		const new_operands: string[] = [];
 
 		for (const operand of line.operands) {
@@ -401,6 +407,7 @@ function preprocess_scopes(
 
 		const result: Line = {
 			...line,
+			operator: new_operator,
 			operands: new_operands,
 		};
 
@@ -540,7 +547,10 @@ function preprocess_scopes(
 			i = end;
 		} else if (directive === DIRECTIVES.END) {
 			continue;
-		} else if (directive[0] === '#') {
+		} else if (
+			directive[0] === '#' &&
+			!context[directive.replace('#', '')]
+		) {
 			throw err(`Unknown directive`, line);
 		} else {
 			output.push(substitute(line, context));
