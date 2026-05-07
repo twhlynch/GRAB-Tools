@@ -1028,7 +1028,7 @@ class LevelLoader {
 					}
 
 					level.nodes.levelNodeParticleEmitter.push(object);
-					level.complexity += 5;
+					level.complexity += 8;
 				} else if (node.levelNodeStatic) {
 					let material =
 						materials[
@@ -1351,7 +1351,7 @@ class LevelLoader {
 						node.levelNodeTrigger.shape ?? 1000
 					]?.push(object);
 					level.nodes.levelNodeTrigger.push(object);
-					level.complexity += 5;
+					level.complexity += 3;
 				} else if (node.levelNodeGASM) {
 					let material = objectMaterials[9];
 
@@ -1485,7 +1485,7 @@ class LevelLoader {
 					object.visible = this.options.light;
 
 					level.nodes.levelNodeLight.push(object);
-					level.complexity += 10;
+					level.complexity += 5;
 				} else if (node.levelNodeStart) {
 					const isDefaultSpawn =
 						((decoded.defaultSpawnPointID ?? 0) == 0 &&
@@ -1660,7 +1660,7 @@ class LevelLoader {
 					}
 
 					level.nodes.levelNodeSign.push(object);
-					level.complexity += 5;
+					level.complexity += 10;
 				}
 
 				if (object !== undefined) {
