@@ -629,6 +629,22 @@ export function programmableLightData(
 	return obj;
 }
 
+export function programmablePlayerVariablesData(
+	overrides?: Partial<proto.ProgrammablePlayerVariablesData>,
+): proto.ProgrammablePlayerVariablesData {
+	const obj: proto.ProgrammablePlayerVariablesData = {};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
+export function programmableLobbyVariablesData(
+	overrides?: Partial<proto.ProgrammableLobbyVariablesData>,
+): proto.ProgrammableLobbyVariablesData {
+	const obj: proto.ProgrammableLobbyVariablesData = {};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
 export function programmablePropertyData(
 	overrides?: Partial<proto.ProgrammablePropertyData>,
 ): proto.ProgrammablePropertyData {

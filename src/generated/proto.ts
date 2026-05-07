@@ -436,6 +436,12 @@ export interface ProgrammablePhysicsData {}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ProgrammableLightData {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammablePlayerVariablesData {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProgrammableLobbyVariablesData {}
+
 export interface ProgrammablePropertyData {
 	objectID?: number;
 	components?: ProgrammablePropertyDataComponent[];
@@ -448,6 +454,8 @@ export interface ProgrammablePropertyData {
 	scale?: ProgrammableScaleData; // undefined
 	physics?: ProgrammablePhysicsData; // undefined
 	light?: ProgrammableLightData; // undefined
+	playerVariables?: ProgrammablePlayerVariablesData; // undefined
+	lobbyVariables?: ProgrammableLobbyVariablesData; // undefined
 }
 
 export enum LevelNodeSignSignFontWeight {

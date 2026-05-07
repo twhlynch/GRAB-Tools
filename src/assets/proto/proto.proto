@@ -631,6 +631,10 @@ message ProgrammablePhysicsData {}
 
 message ProgrammableLightData {}
 
+message ProgrammablePlayerVariablesData {}
+
+message ProgrammableLobbyVariablesData {}
+
 message ProgrammablePropertyData {
   message Component {
     int32 inputRegisterIndex = 1;
@@ -651,5 +655,7 @@ message ProgrammablePropertyData {
     ProgrammableScaleData scale = 9;
     ProgrammablePhysicsData physics = 10;
     ProgrammableLightData light = 11;
+    ProgrammablePlayerVariablesData playerVariables = 12;
+    ProgrammableLobbyVariablesData lobbyVariables = 13;
   }
 }
