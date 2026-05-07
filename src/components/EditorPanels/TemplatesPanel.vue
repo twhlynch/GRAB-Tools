@@ -134,6 +134,7 @@ export default {
 					{ name: 'Shopping Center 2 (Christmas)', path: 'lobbies/shop/grab-shopping-center-2-christmas.level' },
 					{ name: 'Shopping Center 3',             path: 'lobbies/shop/grab-shopping-center-3.level' },
 					// post sublevels
+					{ name: 'Lobby may (2026)',                      path: 'lobbies/lobby-may-2026.level' },
 					{ name: 'Lobby april (2026)',                    path: 'lobbies/lobby-april-2026.level' },
 					{ name: 'Lobby rooftop (2026)',                  path: 'lobbies/lobby-rooftop-2026.level' },
 					{ name: 'Lobby february (2026)',                 path: 'lobbies/lobby-february-2026.level' },
