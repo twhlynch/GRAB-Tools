@@ -1181,9 +1181,9 @@ export default {
 				this.mini_editor_changed(this.$refs.mini_editor.json);
 			this.show_mini_editor = false;
 		},
-		add_code_player_connection(object) {
+		add_standalone_code_connection(object, type, name) {
 			const object_node = object.userData.node;
-			create_connection(object_node, undefined, 0, 'player', 'Player');
+			create_connection(object_node, undefined, 0, type, name);
 			this.changed();
 		},
 		add_code_connection(object, target, type) {
@@ -1194,7 +1194,7 @@ export default {
 				object_node,
 				target_node,
 				id,
-				type === 'active' ? 'triggerActive' : type,
+				type,
 			);
 			if (is_new) this.add_gasm_path(object, target);
 
@@ -1570,7 +1570,7 @@ export default {
 										this.add_code_connection(
 											selected_object,
 											clicked_object,
-											'active',
+											'triggerActive',
 										);
 									},
 								},
@@ -1600,8 +1600,28 @@ export default {
 							...(clicked_is_selected && {
 								Player: {
 									func: () => {
-										this.add_code_player_connection(
+										this.add_standalone_code_connection(
 											selected_object,
+											'player',
+											'Player',
+										);
+									},
+								},
+								'Player Vars': {
+									func: () => {
+										this.add_standalone_code_connection(
+											selected_object,
+											'playerVariables',
+											'Player',
+										);
+									},
+								},
+								'Lobby Vars': {
+									func: () => {
+										this.add_standalone_code_connection(
+											selected_object,
+											'lobbyVariables',
+											'Lobby',
 										);
 									},
 								},

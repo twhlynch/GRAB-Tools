@@ -159,6 +159,20 @@ function get_registers_for_property(
 			{ name: `Player.Col.B`,    type: input},
 			{ name: `Player.LocalId`,  type: input},
 		];
+		case 'playerVariables': return [
+			{ name: `Player.Var1`, type: inout},
+			{ name: `Player.Var2`, type: inout},
+			{ name: `Player.Var3`, type: inout},
+			{ name: `Player.Var4`, type: inout},
+			{ name: `Player.Var5`, type: inout},
+		];
+		case 'lobbyVariables': return [
+			{ name: `Lobby.Var1`, type: inout},
+			{ name: `Lobby.Var2`, type: inout},
+			{ name: `Lobby.Var3`, type: inout},
+			{ name: `Lobby.Var4`, type: inout},
+			{ name: `Lobby.Var5`, type: inout},
+		];
 	}
 }
 

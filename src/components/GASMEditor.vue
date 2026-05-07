@@ -60,6 +60,8 @@ export default {
 			create_connection(node, undefined, 1, 'scale', 'Obj');
 			create_connection(node, undefined, 1, 'physics', 'Obj');
 			create_connection(node, undefined, 1, 'light', 'Obj');
+			create_connection(node, undefined, 0, 'lobbyVariables', undefined);
+			create_connection(node, undefined, 0, 'playerVariables', undefined);
 			update_json_completions(node);
 		},
 		click(e) {
