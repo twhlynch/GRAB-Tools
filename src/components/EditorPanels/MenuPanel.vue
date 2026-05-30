@@ -20,6 +20,7 @@ import {
 	traverse_node,
 } from '@/assets/encoding/utils';
 import audio from '@/assets/tools/audio';
+import midi from '@/assets/tools/midi';
 import car from '@/assets/tools/car';
 import gun from '@/assets/tools/gun';
 import image from '@/assets/tools/image';
@@ -141,7 +142,8 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
-						'Audio (SFX2GL)': { func: this.insert_audio },
+						//'Audio (SFX2GL)': { func: this.insert_audio },
+						MIDI: { func: this.insert_midi }
 					},
 				},
 				Edit: {
@@ -320,7 +322,7 @@ export default {
 					Credit: {
 						Slin: { href: 'https://slin.dev' },
 						EBSpark: { href: 'https://ebspark.github.io/' },
-						TheTrueFax: { href: 'https://thetruefax.github.io/' },
+						TheTrueFax: { href: 'https://github.com/thetruefax/' },
 					},
 					[`v${this.$config.VERSION}`]: {
 						href: this.$config.REPO_URL,
@@ -611,6 +613,36 @@ export default {
 					const file = files[0];
 
 					const node = await audio.audio(file, samples);
+					if (!node) return;
+
+					this.insert_selection_nodes([node]);
+				},
+			);
+		},
+		insert_midi() {
+			this.$emit(
+				'popup',
+				[
+					{
+						type: 'file',
+						accept: '.mid,.midi',
+					},
+				],
+				async (files) => {
+					if (!files.length) {
+						window.toast('No midi file chosen', 'error');
+						return;
+					}
+
+					const file = files[0];
+
+					// Get all nodes in scene so trigger linking will work properly
+					let node_count = 0;
+					this.$emit('viewport', (scope) => {
+						node_count = scope.level.nodes.all.length;
+					});
+
+					const node = await midi.midi(file, node_count);
 					if (!node) return;
 
 					this.insert_selection_nodes([node]);
