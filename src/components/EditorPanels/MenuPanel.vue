@@ -142,8 +142,8 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
-						//'Audio (SFX2GL)': { func: this.insert_audio },
-						MIDI: { func: this.insert_midi }
+						MIDI: { func: this.insert_midi },
+						'Audio (Old)': { func: this.insert_audio }
 					},
 				},
 				Edit: {
