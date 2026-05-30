@@ -23,17 +23,17 @@ export default {
 			}
 
 			const file = files[0];
-			const samples =
-				parseInt(getByID(`${toolID}-pitch-samples`).value) || 40;
+			const complexity =
+				parseInt(getByID(`${toolID}-complexity`).value) || 40;
 
-			const node = await audio.audio(file, samples);
-			if (!node) return;
+			const nodes = await audio.audio(file, complexity);
+			if (!nodes) return;
 
 			const obj = createLevel(
-				[node],
+				nodes,
 				'Audio',
 				'Generated with GRAB Tools',
-				['SFX2GL', 'GRAB Tools'],
+				['GRAB Tools'],
 			);
 
 			const encoded = await encodeLevel(obj);
@@ -49,12 +49,12 @@ export default {
 	<ToolTemplate>
 		<template #title>Import audio</template>
 		<template #info>
-			Generate audio with triggers and sound blocks.
+			Generate audio with code, trigger, and sound blocks.
 		</template>
 		<input
 			type="number"
-			id="audio-tool-pitch-samples"
-			placeholder="samples (40)"
+			id="audio-tool-complexity"
+			placeholder="max complexity (1000)"
 		/>
 		<input type="file" id="audio-tool-file" accept="audio/*" />
 		<button class="button" id="audio-tool-btn" @click="run">

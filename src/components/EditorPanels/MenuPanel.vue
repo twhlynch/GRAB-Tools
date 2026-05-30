@@ -141,7 +141,7 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
-						'Audio (SFX2GL)': { func: this.insert_audio },
+						Audio: { func: this.insert_audio },
 					},
 				},
 				Edit: {
@@ -593,27 +593,27 @@ export default {
 				[
 					{
 						type: 'number',
-						text: 'Pitch samples (40)',
+						text: 'Max complexity (1000)',
 					},
 					{
 						type: 'file',
 						accept: 'audio/*',
 					},
 				],
-				async (samples, files) => {
+				async (complexity, files) => {
 					if (!files.length) {
 						window.toast('No audio file chosen', 'error');
 						return;
 					}
 
-					samples = parseInt(samples) || 40;
+					complexity = parseInt(complexity) || 1000;
 
 					const file = files[0];
 
-					const node = await audio.audio(file, samples);
-					if (!node) return;
+					const nodes = await audio.audio(file, complexity);
+					if (!nodes) return;
 
-					this.insert_selection_nodes([node]);
+					this.insert_selection_nodes(nodes);
 				},
 			);
 		},
