@@ -37,10 +37,10 @@ async function midi(file, node_count) {
 }
 
 // Node helpers
-function getBasicSoundBlock(pitch, amplitude, isNoise) {
+function get_basic_sound_block(pitch, amplitude, isNoise) {
     const node = levelNodeWithSound();
     node.levelNodeSound.position.z = -2;
-    node.levelNodeSound.name = uniqueSoundName();
+    node.levelNodeSound.name = unique_sound_name();
     node.levelNodeSound.volume = amplitude;
     node.levelNodeSound.maxRangeFactor = 1000;
     node.levelNodeSound.parameters = {
@@ -58,7 +58,7 @@ function getBasicSoundBlock(pitch, amplitude, isNoise) {
     };
     return node;
 }
-function getSoundTriggerBlock(x, y, targetID) {
+function get_sound_trigger_block(x, y, target_id) {
 	const targetSoundModes = load().COD.Level.TriggerTargetSound.Mode;
 	const sourceBasicTypes = load().COD.Level.TriggerSourceBasic.Type;
 
@@ -71,16 +71,16 @@ function getSoundTriggerBlock(x, y, targetID) {
 	source.triggerSourceBasic.type = sourceBasicTypes.BLOCK;
 	node.levelNodeTrigger.triggerSources.push(source);
 
-	const startTarget = triggerTargetWithSound();
-	startTarget.triggerTargetSound.objectID = targetID;
-    startTarget.triggerTargetSound.repeat = true;
-	node.levelNodeTrigger.triggerTargets.push(startTarget);
+	const start_target = triggerTargetWithSound();
+	start_target.triggerTargetSound.objectID = target_id;
+    start_target.triggerTargetSound.repeat = true;
+	node.levelNodeTrigger.triggerTargets.push(start_target);
 
-    const stopTarget = triggerTargetWithSound();
-	stopTarget.triggerTargetSound.objectID = targetID;
-	stopTarget.triggerTargetSound.mode = targetSoundModes.STOP;
-    stopTarget.mode = 1; // On exit, its easier to not import the TriggerTarget mode enum
-	node.levelNodeTrigger.triggerTargets.push(stopTarget);
+    const stop_target = triggerTargetWithSound();
+	stop_target.triggerTargetSound.objectID = target_id;
+	stop_target.triggerTargetSound.mode = targetSoundModes.STOP;
+    stop_target.mode = 1; // On exit, its easier to not import the TriggerTarget mode enum
+	node.levelNodeTrigger.triggerTargets.push(stop_target);
 
 	const anim = animation();
 	anim.frames.push(animationFrame());
@@ -88,34 +88,28 @@ function getSoundTriggerBlock(x, y, targetID) {
 
 	return node;
 }
-function soundTarget(mode, object_id) {
-	const target = triggerTargetWithSound();
-	target.triggerTargetSound.objectID = object_id;
-	target.triggerTargetSound.mode = mode;
-	return target;
-}
 
 // Other helpers
-function uniqueSoundName() {
+function unique_sound_name() {
 	const chars =
 		'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM1234567890';
 	let output = '';
 	for (let i = 0; i < 5; i++) {
 		output += chars[Math.floor(Math.random() * chars.length)];
 	}
-	return `SFX2GRAB-${output}`;
+	return `MIDI-${output}`;
 }
-async function decodeMidiFileAsJson(file) {
+async function decode_midi_file_as_json(file) {
     if (!file) return;
 
     const buffer = await file.arrayBuffer();
 
     return new Midi(buffer);
 }
-function midiToHz(midi) {
+function midi_to_hz(midi) {
     return 440 * Math.pow(2, (midi - 69) / 12);
 }
-function getUseableTracks(midi) {
+function get_useable_tracks(midi) {
     var tracks = [];
     midi.tracks.forEach(track => {
         if (track.notes.length == 0) { // No notes, no track
@@ -125,62 +119,62 @@ function getUseableTracks(midi) {
     });
     return tracks;
 }
-function parseUnparsedTracks(tracks) {
-    var newTracks = [];
+function parse_unparsed_tracks(tracks) {
+    var new_tracks = [];
     tracks.forEach(track => {
         var notes = [];
 
-        var avgVelocity = 0;
+        var average_velocity = 0;
 
         track.notes.forEach(note => {
             notes.push({
                 start: note.time,
                 duration: note.duration,
-                freqHz: midiToHz(note.midi),
+                frequency_hertz: midi_to_hz(note.midi),
                 midi: note.midi
             });
-            avgVelocity += note.velocity;
+            average_velocity += note.velocity;
         });
-        avgVelocity /= track.notes.length;
+        average_velocity /= track.notes.length;
 
-        var trackVolume = 1;
+        var track_volume = 1;
         if (track.controlChanges[7]) {
-            trackVolume = track.controlChanges[7][0].value;
+            track_volume = track.controlChanges[7][0].value;
         }
 
-        newTracks.push({
+        new_tracks.push({
             channel: track.channel,
-            volume: trackVolume * avgVelocity,
+            volume: track_volume * average_velocity,
             instrument: track.instrument.number,
             name: track.name,
             notes: notes,
             isDrums: track.channel == 9
         });
     });
-    return newTracks;
+    return new_tracks;
 }
-function getUniquePitches(track) {
-    var uniquePitches = [];
+function get_unique_pitches(track) {
+    var unique_pitches = [];
     track.notes.forEach(note => {
-        if (!uniquePitches.includes(note.freqHz)) {
-            uniquePitches.push(note.freqHz);
+        if (!unique_pitches.includes(note.frequency_hertz)) {
+            unique_pitches.push(note.frequency_hertz);
         }
     });
-    return uniquePitches;
+    return unique_pitches;
 }
-function getNotesByPitch(track) {
-    var notesByPitch = {};
+function get_notes_by_pitch(track) {
+    var notes_by_pitch = {};
     track.notes.forEach(note => {
-        let strHz = note.freqHz.toString();
-        if (notesByPitch[strHz]) {
-            notesByPitch[strHz].push(note);
+        let frequency_string = note.frequency_hertz.toString();
+        if (notes_by_pitch[frequency_string]) {
+            notes_by_pitch[frequency_string].push(note);
         } else {
-            notesByPitch[strHz] = [note];
+            notes_by_pitch[frequency_string] = [note];
         }
     });
-    return notesByPitch;
+    return notes_by_pitch;
 }
-function getDuration(tracks) {
+function get_duration(tracks) {
     var longest = 0;
     tracks.forEach(track => {
         track.notes.forEach(note => {
@@ -195,81 +189,76 @@ function getDuration(tracks) {
 
 async function generate(file, node_count) {
     // Decode midi file into JSON
-    const midi = await decodeMidiFileAsJson(file);
+    const midi = await decode_midi_file_as_json(file);
 
     // Get the available tracks that can be parsed
-    const unparsedTracks = getUseableTracks(midi);
+    const unparsed_tracks = get_useable_tracks(midi);
 
     // Turn the units inside the note into useable units by GRAB
     // Eg: turn the midi pitch value into hz
-    const tracks = parseUnparsedTracks(unparsedTracks);
-    console.log(tracks, unparsedTracks);
+    const tracks = parse_unparsed_tracks(unparsed_tracks);
+    console.log(tracks, unparsed_tracks);
 
     // Get duration of song in seconds
-    const duration = getDuration(tracks);
+    const duration = get_duration(tracks);
     
-    var soundBlocks = [];
+    var sound_blocks = [];
     var triggers = [];
-    var wallNodes = [];
-
-    var biggestTriggerCount = 0;
+    var wall_blocks = [];
 
     for (let t=0; t<tracks.length;t++) {
         // Get unique pitches to create sound blocks and triggers from
-        const uniquePitches = getUniquePitches(tracks[t]);
+        const unique_pitches = get_unique_pitches(tracks[t]);
 
-        let current_soundblocks = soundBlocks.length;
+        let current_soundblocks = sound_blocks.length;
         let current_triggers = triggers.length;
 
         // Make each sound block for each pitch
-        uniquePitches.forEach(hz => soundBlocks.push(getBasicSoundBlock(hz * ((tracks[t].isDrums)? 2.5:1), tracks[t].volume, tracks[t].isDrums)));
+        unique_pitches.forEach(hz => sound_blocks.push(get_basic_sound_block(hz * ((tracks[t].isDrums)? 2.5:1), tracks[t].volume, tracks[t].isDrums)));
 
         // Create triggers linked to each sound block
-        for (let i=0; i<uniquePitches.length; i++) {
-            triggers.push(getSoundTriggerBlock(i, t+1, i + node_count + 2 + current_soundblocks));
-        }
-        if (uniquePitches.length>biggestTriggerCount) {
-            biggestTriggerCount = uniquePitches.length;
+        for (let i=0; i<unique_pitches.length; i++) {
+            triggers.push(get_sound_trigger_block(i, t+1, i + node_count + 2 + current_soundblocks));
         }
 
         // For efficient access
-        const notesByPitch = getNotesByPitch(tracks[t]);
+        const notes_by_pitch = get_notes_by_pitch(tracks[t]);
 
         // Create animations for each trigger according to the notes
-        for (let i=0; i<uniquePitches.length; i++) {
-            let currentTriggerAnim = triggers[i+current_triggers].animations[0];
-            let hz = uniquePitches[i];
+        for (let i=0; i<unique_pitches.length; i++) {
+            let current_trigger_animation = triggers[i+current_triggers].animations[0];
+            let hz = unique_pitches[i];
 
-            let notes = notesByPitch[hz.toString()];
+            let notes = notes_by_pitch[hz.toString()];
             for (let x=0; x<notes.length; x++) {
-                let prevFrame = animationFrame();
-                prevFrame.time = notes[x].start - 0.05;
-                prevFrame.position.x = 0;
-                currentTriggerAnim.frames.push(prevFrame);
+                let previous_frame = animationFrame();
+                previous_frame.time = notes[x].start - 0.05;
+                previous_frame.position.x = 0;
+                current_trigger_animation.frames.push(previous_frame);
 
                 let frame = animationFrame();
                 frame.time = notes[x].start;
                 frame.position.x = 1;
-                currentTriggerAnim.frames.push(frame);
+                current_trigger_animation.frames.push(frame);
 
-                let postFrame = animationFrame();
-                postFrame.time = notes[x].start + notes[x].duration + 0.05;
-                postFrame.position.x = 0;
-                currentTriggerAnim.frames.push(postFrame);
+                let next_frame = animationFrame();
+                next_frame.time = notes[x].start + notes[x].duration + 0.05;
+                next_frame.position.x = 0;
+                current_trigger_animation.frames.push(next_frame);
             }
 
-            let endFrame = animationFrame();
-            endFrame.time = Math.ceil(duration);
-            currentTriggerAnim.frames.push(endFrame);
+            let last_frame = animationFrame();
+            last_frame.time = Math.ceil(duration);
+            current_trigger_animation.frames.push(last_frame);
         }
 
-        let wallNode = levelNodeWithStatic();
-        wallNode.levelNodeStatic.position = { x: 0.55, y: t+1, z: (uniquePitches.length - 1)/2 };
-        wallNode.levelNodeStatic.scale = { x: 1, y: 1, z: uniquePitches.length };
-        wallNodes.push(wallNode);
+        let wall_block = levelNodeWithStatic();
+        wall_block.levelNodeStatic.position = { x: 0.55, y: t+1, z: (unique_pitches.length - 1)/2 };
+        wall_block.levelNodeStatic.scale = { x: 1, y: 1, z: unique_pitches.length };
+        wall_blocks.push(wall_block);
     }
 
-    return [...soundBlocks, ...triggers, ...wallNodes];
+    return [...sound_blocks, ...triggers, ...wall_blocks];
 }
 
 
