@@ -606,7 +606,7 @@ export default {
 
 					const file = files[0];
 
-					this.$emit('viewport', (scope) => {
+					this.$emit('viewport', async (scope) => {
 						const max_id = scope.level.nodes.all.length;
 
 						const node = await midi.midi(file, max_id);
