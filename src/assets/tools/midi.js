@@ -22,15 +22,16 @@ import { groupNodes } from '../encoding/group';
  * @param {Number} node_count - node count to offset ids
  * @param {Boolean} start_active - should the animation be start active
  * @param {Boolean} loop - should the animation loop
+ * @param {Number} volume - volume multiplier for whole song (0-1)
  * @returns {Promise<Object>} - A group level node
  */
-async function midi(file, node_count, start_active, loop) {
+async function midi(file, node_count, start_active, loop, volume) {
 	if (start_active && !loop) {
 		window.toast('Cannot make an animation start active and not looping.', 'error');
 		return null;
 	}
 	try {
-		const level_nodes = await generate(file, node_count, start_active, loop);
+		const level_nodes = await generate(file, node_count, start_active, loop, volume);
 		if (!level_nodes) return null;
 		return groupNodes(level_nodes);
 	} catch (e) {
@@ -284,7 +285,7 @@ function combine_notes(tracks) {
 	return tracks;
 }
 
-async function generate(file, node_count, start_active, loop) {
+async function generate(file, node_count, start_active, loop, volume) {
 	// Decode midi file into JSON
 	const m = await decode_midi_file_as_json(file);
 
@@ -316,7 +317,7 @@ async function generate(file, node_count, start_active, loop) {
 				get_basic_sound_block(
 					{ x: 0, y: t, z: -1 },
 					hz * (tracks[t].isDrums ? 2.5 : 1),
-					tracks[t].volume,
+					tracks[t].volume * volume,
 					tracks[t].isDrums,
 				),
 			),

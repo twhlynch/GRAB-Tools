@@ -605,8 +605,12 @@ export default {
 						type: 'option',
 						options: ['Loop: No', 'Loop: Yes'],
 					},
+					{
+						type: 'number',
+						text: 'Volume (0-100, default 30)'
+					},
 				],
-				async (files, start_active_option, loop_option) => {
+				async (files, start_active_option, loop_option, volume) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
@@ -614,13 +618,14 @@ export default {
 
 					const start_active = start_active_option.includes("Yes");
 					const loop = loop_option.includes("Yes");
+					volume = (parseInt(volume) || 30)/100;
 
 					const file = files[0];
 
 					this.$emit('viewport', async (scope) => {
 						const max_id = scope.level.nodes.all.length;
 
-						const node = await midi.midi(file, max_id, start_active, loop);
+						const node = await midi.midi(file, max_id, start_active, loop, volume);
 						if (!node) return;
 
 						this.insert_selection_nodes([node]);
