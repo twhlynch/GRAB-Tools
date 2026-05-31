@@ -11,6 +11,7 @@ import PlayIcon from '@/icons/PlayIcon.vue';
 import ShrinkIcon from '@/icons/ShrinkIcon.vue';
 import XMLIcon from '@/icons/XMLIcon.vue';
 import AudioImporter from '@/tools/AudioImporter.vue';
+import MIDIImporter from '@/tools/MIDIImporter.vue';
 import ImageGenerator from '@/tools/ImageGenerator.vue';
 import LevelCompiler from '@/tools/LevelCompiler.vue';
 import LevelDownloader from '@/tools/LevelDownloader.vue';
@@ -41,6 +42,7 @@ export default {
 		PlayIcon,
 		PencilIcon,
 		AudioImporter,
+		MIDIImporter,
 		MusicIcon,
 	},
 	methods: {
@@ -173,6 +175,14 @@ export default {
 				Audio
 				<MusicIcon />
 			</button>
+			<button
+				class="button"
+				id="midi-importer-tool-button"
+				@click="selectTool('midi-importer')"
+			>
+				MIDI
+				<MusicIcon />
+			</button>
 		</section>
 		<section id="tools">
 			<LevelCompiler id="level-compiler-tool" />
@@ -184,6 +194,7 @@ export default {
 			<LevelDownloader id="download-tool" />
 			<TextSigns id="text-signs-tool" />
 			<AudioImporter id="audio-importer-tool" />
+			<MIDIImporter id="midi-importer-tool" />
 			<div id="custom-colors-tool">
 				<h2>Custom Colors</h2>
 				<p>
