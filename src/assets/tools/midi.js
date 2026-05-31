@@ -20,11 +20,17 @@ import { groupNodes } from '../encoding/group';
 /**
  * @param {File} file - A midi file
  * @param {Number} node_count - node count to offset ids
+ * @param {Boolean} start_active - should the animation be start active
+ * @param {Boolean} loop - should the animation loop
  * @returns {Promise<Object>} - A group level node
  */
-async function midi(file, node_count) {
+async function midi(file, node_count, start_active, loop) {
+	if (start_active && !loop) {
+		window.toast('Cannot make an animation start active and not looping.', 'error');
+		return null;
+	}
 	try {
-		const level_nodes = await generate(file, node_count);
+		const level_nodes = await generate(file, node_count, start_active, loop);
 		if (!level_nodes) return null;
 		return groupNodes(level_nodes);
 	} catch (e) {
@@ -58,7 +64,7 @@ function get_basic_sound_block(position, pitch, amplitude, isNoise) {
 	};
 	return node;
 }
-function get_sound_trigger_block(x, y, target_id) {
+function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 	const node = levelNodeWithTrigger();
 	node.levelNodeTrigger.position.z = x;
 	node.levelNodeTrigger.scale = { x: 0.03, y: 0.9, z: 0.9 };
@@ -70,7 +76,7 @@ function get_sound_trigger_block(x, y, target_id) {
 
 	const start_target = triggerTargetWithSound();
 	start_target.triggerTargetSound.objectID = target_id;
-	start_target.triggerTargetSound.repeat = true;
+	start_target.triggerTargetSound.repeat = looping;
 	node.levelNodeTrigger.triggerTargets.push(start_target);
 
 	const stop_target = triggerTargetWithSound();
@@ -82,6 +88,8 @@ function get_sound_trigger_block(x, y, target_id) {
 	const anim = animation();
 	anim.frames.push(animationFrame());
 	node.animations = [anim];
+
+	node.activeAnimation = (start_active) ? 0:-1;
 
 	return node;
 }
@@ -160,6 +168,17 @@ function get_unique_pitches(track) {
 	});
 	return unique_pitches;
 }
+function get_unique_pitches_tracks(tracks) {
+	var unique_pitches = [];
+	tracks.forEach((track) => {
+		track.notes.forEach((note) => {
+			if (!unique_pitches.includes(note.frequency_hertz)) {
+				unique_pitches.push(note.frequency_hertz);
+			}
+		});
+	});
+	return unique_pitches;
+}
 function get_notes_by_pitch(track) {
 	var notes_by_pitch = {};
 	track.notes.forEach((note) => {
@@ -189,6 +208,7 @@ function make_connected_trigger(
 	trigger_count,
 	node_count,
 	target_mode,
+	do_loop,
 ) {
 	var trigger = levelNodeWithTrigger();
 	trigger.levelNodeTrigger.position = position;
@@ -196,11 +216,12 @@ function make_connected_trigger(
 
 	for (
 		let i = current_soundblocks + node_count + 1;
-		i < trigger_count + current_soundblocks + node_count + 1;
+		i < trigger_count + current_soundblocks + node_count + 2;
 		i++
 	) {
 		let target = triggerTargetWithAnimation();
 		target.triggerTargetAnimation.objectID = i;
+		target.triggerTargetAnimation.loop = do_loop;
 		target.triggerTargetAnimation.mode = target_mode;
 
 		trigger.levelNodeTrigger.triggerTargets.push(target);
@@ -209,7 +230,61 @@ function make_connected_trigger(
 	return trigger;
 }
 
-async function generate(file, node_count) {
+// This function isn't used yet, It has the capability to save complexity more than any other method, ill get it working later
+function combine_notes(tracks) {
+	var notes_by_time = [];
+	tracks.forEach(track => {
+		if (track.isDrums) return;
+		track.notes.forEach(note => {
+			notes_by_time.push({
+				original_track: track.name,
+				pitch: note.frequency_hertz,
+				start: note.start,
+				end: note.start + note.duration,
+			});
+		});
+	});
+	notes_by_time = notes_by_time.toSorted((a, b) => a.start - b.start);
+	console.log(notes_by_time);
+	var pitches_left_to_merge = get_unique_pitches_tracks(tracks);
+	console.log(pitches_left_to_merge.length);
+	for (let i=0;i<notes_by_time.length-1;i++) {
+		let searchIndex = i+1;
+		while (notes_by_time[searchIndex].start < notes_by_time[i].end && searchIndex < notes_by_time.length-1) {
+			let my_pitch = notes_by_time[i].pitch;
+			if (notes_by_time[searchIndex].pitch == my_pitch && pitches_left_to_merge.includes(my_pitch)) {
+				let index = pitches_left_to_merge.indexOf(my_pitch);
+				pitches_left_to_merge.splice(index, 1);
+			}
+			searchIndex++;
+		}
+	}
+	console.log(pitches_left_to_merge);
+	var merged_track_notes = [];
+	tracks.forEach(track => {
+		if (track.isDrums) return;
+		var new_notes = [];
+		track.notes.forEach(note => {
+			if (pitches_left_to_merge.includes(note.frequency_hertz)) {
+				merged_track_notes.push(note);
+			} else {
+				new_notes.push(note);
+			}
+		});
+		track.notes = new_notes;
+	});
+	tracks.push({
+		channel: 0,
+		instrument: 0,
+		isDrums: false,
+		name: "Merged track",
+		volume: 0.7, // idk?
+		notes: merged_track_notes,
+	});
+	return tracks;
+}
+
+async function generate(file, node_count, start_active, loop) {
 	// Decode midi file into JSON
 	const m = await decode_midi_file_as_json(file);
 
@@ -254,6 +329,7 @@ async function generate(file, node_count) {
 					i,
 					t,
 					i + node_count + 2 + current_soundblocks,
+					start_active,
 				),
 			);
 		}
@@ -310,6 +386,7 @@ async function generate(file, node_count) {
 		triggers.length,
 		node_count,
 		TriggerTargetAnimationMode.STOP,
+		loop,
 	);
 	var trigger_start = make_connected_trigger(
 		{ x: 0, y: 1, z: -3 },
@@ -317,13 +394,15 @@ async function generate(file, node_count) {
 		triggers.length,
 		node_count,
 		TriggerTargetAnimationMode.START,
+		loop,
 	);
-	var trigger_reset = make_connected_trigger(
+	var trigger_restart = make_connected_trigger(
 		{ x: 0, y: 2, z: -3 },
 		sound_blocks.length,
 		triggers.length,
 		node_count,
-		TriggerTargetAnimationMode.RESET,
+		TriggerTargetAnimationMode.RESTART,
+		loop,
 	);
 
 	return [
@@ -332,7 +411,7 @@ async function generate(file, node_count) {
 		...wall_blocks,
 		trigger_stop,
 		trigger_start,
-		trigger_reset,
+		trigger_restart,
 	];
 }
 

@@ -597,19 +597,30 @@ export default {
 						type: 'file',
 						accept: '.mid,.midi',
 					},
+					{
+						type: 'option',
+						options: ['Start active: No', 'Start active: Yes'],
+					},
+					{
+						type: 'option',
+						options: ['Loop: No', 'Loop: Yes'],
+					},
 				],
-				async (files) => {
+				async (files, start_active_option, loop_option) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
 					}
+
+					const start_active = start_active_option.includes("Yes");
+					const loop = loop_option.includes("Yes");
 
 					const file = files[0];
 
 					this.$emit('viewport', async (scope) => {
 						const max_id = scope.level.nodes.all.length;
 
-						const node = await midi.midi(file, max_id);
+						const node = await midi.midi(file, max_id, start_active, loop);
 						if (!node) return;
 
 						this.insert_selection_nodes([node]);
