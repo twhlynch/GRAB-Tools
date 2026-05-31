@@ -1,56 +1,56 @@
 <script>
-import { groupNodes, recursiveUngroup } from '@/assets/encoding/group';
+import { groupNodes,recursiveUngroup } from '@/assets/encoding/group';
 import {
-	ambienceSettings,
-	createLevel,
-	decodeLevel,
-	downloadJSON,
-	downloadLevel,
-	encodeLevel,
+ambienceSettings,
+createLevel,
+decodeLevel,
+downloadJSON,
+downloadLevel,
+encodeLevel,
 } from '@/assets/encoding/levels';
 import { load } from '@/assets/encoding/root';
 import {
-	deepClone,
-	json_parse,
-	materials,
-	node_data,
-	random_material,
-	random_shape,
-	shapes,
-	traverse_node,
+deepClone,
+json_parse,
+materials,
+node_data,
+random_material,
+random_shape,
+shapes,
+traverse_node,
 } from '@/assets/encoding/utils';
 import audio from '@/assets/tools/audio';
-import midi from '@/assets/tools/midi';
 import car from '@/assets/tools/car';
 import gun from '@/assets/tools/gun';
 import image from '@/assets/tools/image';
+import midi from '@/assets/tools/midi';
 import monochrome from '@/assets/tools/monochrome';
 import obj from '@/assets/tools/obj';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
 import video from '@/assets/tools/video';
-import { animation, animationFrame } from '@/generated/helpers';
+import { animation,animationFrame } from '@/generated/helpers';
 import {
-	levelNodeWithCrumbling,
-	levelNodeWithFinish,
-	levelNodeWithGASM,
-	levelNodeWithGravity,
-	levelNodeWithParticleEmitter,
-	levelNodeWithSign,
-	levelNodeWithSound,
-	levelNodeWithLight,
-	levelNodeWithStart,
-	levelNodeWithStatic,
-	levelNodeWithTrigger,
-	triggerSourceWithBasic,
-	triggerTargetWithAmbience,
-	triggerTargetWithAnimation,
-	triggerTargetWithSound,
-	triggerTargetWithLight,
-	triggerTargetWithSubLevel,
+levelNodeWithCrumbling,
+levelNodeWithFinish,
+levelNodeWithGASM,
+levelNodeWithGravity,
+levelNodeWithLight,
+levelNodeWithParticleEmitter,
+levelNodeWithSign,
+levelNodeWithSound,
+levelNodeWithStart,
+levelNodeWithStatic,
+levelNodeWithTrigger,
+triggerSourceWithBasic,
+triggerTargetWithAmbience,
+triggerTargetWithAnimation,
+triggerTargetWithLight,
+triggerTargetWithSound,
+triggerTargetWithSubLevel,
 } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
-import { mapActions, mapState } from 'pinia';
+import { mapActions,mapState } from 'pinia';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 
@@ -142,8 +142,8 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
-						'Audio (SFX2GL)': { func: this.insert_audio },
 						MIDI: { func: this.insert_midi },
+						'Audio (SFX2GL)': { func: this.insert_audio },
 					},
 				},
 				Edit: {
@@ -606,16 +606,14 @@ export default {
 
 					const file = files[0];
 
-					// Get all nodes in scene so trigger linking will work properly
-					let node_count = 0;
 					this.$emit('viewport', (scope) => {
-						node_count = scope.level.nodes.all.length;
+						const max_id = scope.level.nodes.all.length;
+
+						const node = await midi.midi(file, max_id);
+						if (!node) return;
+
+						this.insert_selection_nodes([node]);
 					});
-
-					const node = await midi.midi(file, node_count);
-					if (!node) return;
-
-					this.insert_selection_nodes([node]);
 				},
 			);
 		},
