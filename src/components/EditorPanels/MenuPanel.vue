@@ -599,11 +599,11 @@ export default {
 					},
 					{
 						type: 'option',
-						options: ['Start active: No', 'Start active: Yes'],
+						options: ['Start active: Yes', 'Start active: No'],
 					},
 					{
 						type: 'option',
-						options: ['Loop: No', 'Loop: Yes'],
+						options: ['Loop: Yes', 'Loop: No'],
 					},
 					{
 						type: 'number',

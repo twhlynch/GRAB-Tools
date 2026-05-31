@@ -58,12 +58,12 @@ export default {
 		</template>
 		<input type="file" id="midi-tool-file" accept=".mid,.midi" />
 		<select id="midi-tool-start-active">
-			<option value="no" selected>Start active: No</option>
-            <option value="yes">Start active: Yes</option>
+			<option value="no">Start active: No</option>
+            <option value="yes" selected>Start active: Yes</option>
         </select>
 		<select id="midi-tool-loop">
-			<option value="no" selected>Loop: No</option>
-            <option value="yes">Loop: Yes</option>
+			<option value="no">Loop: No</option>
+            <option value="yes" selected>Loop: Yes</option>
         </select>
 		<input
 			type="number"
