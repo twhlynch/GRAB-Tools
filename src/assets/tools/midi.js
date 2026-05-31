@@ -56,7 +56,7 @@ function get_basic_sound_block(position, pitch, amplitude, isNoise) {
 			envelopeAttack: 0,
 			envelopeSustain: 0,
 			envelopeRelease: isNoise ? 0.3 : 5,
-			envelopePunch: isNoise ? 100 : 10,
+			envelopePunch: isNoise ? 100 : 0,
 			frequencyBase: pitch,
 			frequencyLimit: 35,
 			pitchJumpMod: 0.10000000149011612,
