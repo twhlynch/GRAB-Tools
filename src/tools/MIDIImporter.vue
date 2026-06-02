@@ -23,13 +23,10 @@ export default {
 			}
 
 			const file = files[0];
-            const start_active = 
-                getByID(`${toolID}-start-active`).value == "yes";
-            const loop = 
-                getByID(`${toolID}-loop`).value == "yes";
-			const volume =
-				parseInt(getByID(`${toolID}-volume`).value) || 40;
-            
+			const start_active =
+				getByID(`${toolID}-start-active`).value == 'yes';
+			const loop = getByID(`${toolID}-loop`).value == 'yes';
+			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
 			const node = await midi.midi(file, 0, start_active, loop, volume);
 			if (!node) return;
@@ -59,19 +56,17 @@ export default {
 		<input type="file" id="midi-tool-file" accept=".mid,.midi" />
 		<select id="midi-tool-start-active">
 			<option value="no">Start active: No</option>
-            <option value="yes" selected>Start active: Yes</option>
-        </select>
+			<option value="yes" selected>Start active: Yes</option>
+		</select>
 		<select id="midi-tool-loop">
 			<option value="no">Loop: No</option>
-            <option value="yes" selected>Loop: Yes</option>
-        </select>
+			<option value="yes" selected>Loop: Yes</option>
+		</select>
 		<input
 			type="number"
 			id="midi-tool-volume"
 			placeholder="Volume (0-100, default 30)"
 		/>
-		<button class="button" id="midi-tool-btn" @click="run">
-			Generate
-		</button>
+		<button class="button" id="midi-tool-btn" @click="run">Generate</button>
 	</ToolTemplate>
 </template>

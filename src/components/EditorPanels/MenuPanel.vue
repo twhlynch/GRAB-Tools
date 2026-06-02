@@ -1,23 +1,23 @@
 <script>
-import { groupNodes,recursiveUngroup } from '@/assets/encoding/group';
+import { groupNodes, recursiveUngroup } from '@/assets/encoding/group';
 import {
-ambienceSettings,
-createLevel,
-decodeLevel,
-downloadJSON,
-downloadLevel,
-encodeLevel,
+	ambienceSettings,
+	createLevel,
+	decodeLevel,
+	downloadJSON,
+	downloadLevel,
+	encodeLevel,
 } from '@/assets/encoding/levels';
 import { load } from '@/assets/encoding/root';
 import {
-deepClone,
-json_parse,
-materials,
-node_data,
-random_material,
-random_shape,
-shapes,
-traverse_node,
+	deepClone,
+	json_parse,
+	materials,
+	node_data,
+	random_material,
+	random_shape,
+	shapes,
+	traverse_node,
 } from '@/assets/encoding/utils';
 import audio from '@/assets/tools/audio';
 import car from '@/assets/tools/car';
@@ -29,28 +29,28 @@ import obj from '@/assets/tools/obj';
 import signs from '@/assets/tools/signs';
 import svg from '@/assets/tools/svg';
 import video from '@/assets/tools/video';
-import { animation,animationFrame } from '@/generated/helpers';
+import { animation, animationFrame } from '@/generated/helpers';
 import {
-levelNodeWithCrumbling,
-levelNodeWithFinish,
-levelNodeWithGASM,
-levelNodeWithGravity,
-levelNodeWithLight,
-levelNodeWithParticleEmitter,
-levelNodeWithSign,
-levelNodeWithSound,
-levelNodeWithStart,
-levelNodeWithStatic,
-levelNodeWithTrigger,
-triggerSourceWithBasic,
-triggerTargetWithAmbience,
-triggerTargetWithAnimation,
-triggerTargetWithLight,
-triggerTargetWithSound,
-triggerTargetWithSubLevel,
+	levelNodeWithCrumbling,
+	levelNodeWithFinish,
+	levelNodeWithGASM,
+	levelNodeWithGravity,
+	levelNodeWithLight,
+	levelNodeWithParticleEmitter,
+	levelNodeWithSign,
+	levelNodeWithSound,
+	levelNodeWithStart,
+	levelNodeWithStatic,
+	levelNodeWithTrigger,
+	triggerSourceWithBasic,
+	triggerTargetWithAmbience,
+	triggerTargetWithAnimation,
+	triggerTargetWithLight,
+	triggerTargetWithSound,
+	triggerTargetWithSubLevel,
 } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
-import { mapActions,mapState } from 'pinia';
+import { mapActions, mapState } from 'pinia';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 
@@ -607,7 +607,7 @@ export default {
 					},
 					{
 						type: 'number',
-						text: 'Volume (0-100, default 30)'
+						text: 'Volume (0-100, default 30)',
 					},
 				],
 				async (files, start_active_option, loop_option, volume) => {
@@ -616,16 +616,22 @@ export default {
 						return;
 					}
 
-					const start_active = start_active_option.includes("Yes");
-					const loop = loop_option.includes("Yes");
-					volume = (parseInt(volume) || 30)/100;
+					const start_active = start_active_option.includes('Yes');
+					const loop = loop_option.includes('Yes');
+					volume = (parseInt(volume) || 30) / 100;
 
 					const file = files[0];
 
 					this.$emit('viewport', async (scope) => {
 						const max_id = scope.level.nodes.all.length;
 
-						const node = await midi.midi(file, max_id, start_active, loop, volume);
+						const node = await midi.midi(
+							file,
+							max_id,
+							start_active,
+							loop,
+							volume,
+						);
 						if (!node) return;
 
 						this.insert_selection_nodes([node]);
