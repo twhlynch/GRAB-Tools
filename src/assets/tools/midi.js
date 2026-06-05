@@ -242,64 +242,92 @@ function make_connected_trigger(
 	return trigger;
 }
 
-// This function isn't used yet, It has the capability to save complexity more than any other method, ill get it working later
-function combine_notes(tracks) {
-	let notes_by_time = [];
+// Split one track of overlapping notes into many tracks of non-overlapping notes
+function split_overlapping_notes(track) {
+	let new_tracks = [[]];
+	track.forEach((note) => {
+		note.velocity *= track.volume;
+		new_tracks[0].push(note);
+	});
+
+	let splitted_index = 0;
+	while (true) {
+		let origin = [];
+		let splitted = [];
+		let i = 0;
+		console.log(new_tracks[splitted_index]);
+		while (i < new_tracks[splitted_index].length) {
+			let track = new_tracks[splitted_index];
+			origin.push(track[i]);
+			let scan_index = i+1;
+			//console.log(track[scan_index].start, (track[i].start + track[i].end));
+			while (scan_index < track.length - 1 && track[scan_index].start < (track[i].start + track[i].duration)) {
+				if (track[scan_index].midi == track[i].midi) {
+					splitted.push(track[scan_index]);
+				} else {
+					origin.push(track[scan_index]);
+				}
+				scan_index++;
+			}
+			i=scan_index;
+		}
+		if (splitted.length == 0) {
+			break;
+		}
+		new_tracks[splitted_index] = origin;
+		new_tracks.push(splitted);
+		splitted_index++;
+	}
+	return new_tracks;
+}
+
+function refactor_as_optimised(tracks) {
+	const track_name_instrument = "Combined-";
+	const track_name_drums = "Combined-drums-";
+
+	let tracks_inst = [[]];
+	let tracks_drum = [[]];
 	tracks.forEach((track) => {
-		if (track.isDrums) return;
 		track.notes.forEach((note) => {
-			notes_by_time.push({
-				original_track: track.name,
-				pitch: note.frequency_hertz,
-				start: note.start,
-				end: note.start + note.duration,
+			if (track.isDrums) {
+				tracks_drum[0].push(note);
+			} else {
+				tracks_inst[0].push(note);
+			}
+		});
+	});
+	tracks_inst[0].toSorted((a, b) => a.start - b.start);
+	tracks_drum[0].toSorted((a, b) => a.start - b.start);
+
+	tracks_inst = split_overlapping_notes(tracks_inst[0]);
+	tracks_drum = split_overlapping_notes(tracks_drum[0]);
+
+	let new_tracks = [];
+
+	tracks_inst.forEach((track, index) => {
+		new_tracks.push({
+			channel: 0,
+			volume: 1,
+			instrument: 0,
+			name: track_name_instrument + index.toString(),
+			notes: track,
+			isDrums: false,
+		});
+	});
+	if (tracks_drum[0].length > 0) {
+		tracks_drum.forEach((track, index) => {
+			new_tracks.push({
+				channel: 9,
+				volume: 1,
+				instrument: 0,
+				name: track_name_drums + index.toString(),
+				notes: track,
+				isDrums: true,
 			});
 		});
-	});
-	notes_by_time = notes_by_time.toSorted((a, b) => a.start - b.start);
-	console.log(notes_by_time);
-	const pitches_left_to_merge = get_unique_pitches_tracks(tracks);
-	console.log(pitches_left_to_merge.length);
-	for (let i = 0; i < notes_by_time.length - 1; i++) {
-		let searchIndex = i + 1;
-		while (
-			notes_by_time[searchIndex].start < notes_by_time[i].end &&
-			searchIndex < notes_by_time.length - 1
-		) {
-			let my_pitch = notes_by_time[i].pitch;
-			if (
-				notes_by_time[searchIndex].pitch == my_pitch &&
-				pitches_left_to_merge.includes(my_pitch)
-			) {
-				let index = pitches_left_to_merge.indexOf(my_pitch);
-				pitches_left_to_merge.splice(index, 1);
-			}
-			searchIndex++;
-		}
 	}
-	console.log(pitches_left_to_merge);
-	let merged_track_notes = [];
-	tracks.forEach((track) => {
-		if (track.isDrums) return;
-		let new_notes = [];
-		track.notes.forEach((note) => {
-			if (pitches_left_to_merge.includes(note.frequency_hertz)) {
-				merged_track_notes.push(note);
-			} else {
-				new_notes.push(note);
-			}
-		});
-		track.notes = new_notes;
-	});
-	tracks.push({
-		channel: 0,
-		instrument: 0,
-		isDrums: false,
-		name: 'Merged track',
-		volume: 0.7, // TODO: Replace this magic number with a calculated average note volume
-		notes: merged_track_notes,
-	});
-	return tracks;
+
+	return new_tracks;
 }
 
 async function generate(file, node_count, start_active, loop, volume) {
