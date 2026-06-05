@@ -598,26 +598,24 @@ export default {
 						accept: '.mid,.midi',
 					},
 					{
-						type: 'option',
-						options: ['Start active: Yes', 'Start active: No'],
+						type: 'checkbox',
+						text: 'Start active: '
 					},
 					{
-						type: 'option',
-						options: ['Loop: Yes', 'Loop: No'],
+						type: 'checkbox',
+						text: 'Loop: '
 					},
 					{
 						type: 'number',
 						text: 'Volume (0-100, default 30)',
 					},
 				],
-				async (files, start_active_option, loop_option, volume) => {
+				async (files, start_active, loop, volume) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
 					}
-
-					const start_active = start_active_option.includes('Yes');
-					const loop = loop_option.includes('Yes');
+					
 					volume = (parseInt(volume) || 30) / 100;
 
 					const file = files[0];

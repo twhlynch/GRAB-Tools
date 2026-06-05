@@ -15,6 +15,9 @@ export default {
 				if (input.type === 'file') {
 					return Array.from(this.$refs[`input-${index}`][0].files);
 				}
+				if (this.$refs[`input-${index}`][0].tagName === 'LABEL') { // Checkboxes are wrapped in a label
+					return this.$refs[`input-${index}`][0].querySelector("input[type='checkbox']").checked;
+				}
 				return this.$refs[`input-${index}`][0].value;
 			});
 			this.visible = false;
@@ -94,6 +97,10 @@ export default {
 					}
 				"
 			/>
+			<label v-else-if="input.type === 'checkbox'" :ref="`input-${i}`">
+				{{ input.text }}
+				<input type="checkbox">
+			</label>
 			<input
 				v-else
 				:type="input.type"
@@ -120,9 +127,10 @@ section {
 	padding: 1rem 0.8rem;
 	border-radius: 1.5rem;
 }
-input,
+input:not([type='checkbox']),
 textarea,
 select,
+label:has(input[type='checkbox']),
 button {
 	height: 2rem;
 	background-color: var(--border-color);
@@ -132,6 +140,13 @@ button {
 	color: white;
 	line-height: 2rem;
 }
+
+label:has(input[type='checkbox']) {
+	display: block;
+	font-size: var(--font-size-alt);
+	user-select: none;
+}
+
 button {
 	cursor: pointer;
 	background-color: var(--blue);
