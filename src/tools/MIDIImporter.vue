@@ -24,8 +24,8 @@ export default {
 
 			const file = files[0];
 			const start_active =
-				getByID(`${toolID}-start-active`).value == 'yes';
-			const loop = getByID(`${toolID}-loop`).value == 'yes';
+				getByID(`${toolID}-start-active`).checked;
+			const loop = getByID(`${toolID}-loop`).checked;
 			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
 			const node = await midi.midi(file, 0, start_active, loop, volume);
