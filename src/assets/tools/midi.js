@@ -247,23 +247,17 @@ function make_connected_trigger(
 
 // Split one track of overlapping notes into many tracks of non-overlapping notes
 function split_overlapping_notes(track) {
-	let new_tracks = [[]];
-	track.forEach((note) => {
-		note.velocity *= track.volume;
-		new_tracks[0].push(note);
-	});
+	let new_tracks = [track];
 
 	let splitted_index = 0;
 	while (true) {
 		let origin = [];
 		let splitted = [];
 		let i = 0;
-		console.log(new_tracks[splitted_index]);
 		while (i < new_tracks[splitted_index].length) {
 			let track = new_tracks[splitted_index];
 			origin.push(track[i]);
 			let scan_index = i + 1;
-			//console.log(track[scan_index].start, (track[i].start + track[i].end));
 			while (
 				scan_index < track.length - 1 &&
 				track[scan_index].start < track[i].start + track[i].duration
@@ -302,8 +296,8 @@ function refactor_as_optimised(tracks) {
 			}
 		});
 	});
-	tracks_inst[0].toSorted((a, b) => a.start - b.start);
-	tracks_drum[0].toSorted((a, b) => a.start - b.start);
+	tracks_inst[0] = tracks_inst[0].toSorted((a, b) => a.start - b.start);
+	tracks_drum[0] = tracks_drum[0].toSorted((a, b) => a.start - b.start);
 
 	tracks_inst = split_overlapping_notes(tracks_inst[0]);
 	tracks_drum = split_overlapping_notes(tracks_drum[0]);
