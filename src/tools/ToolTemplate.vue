@@ -19,7 +19,8 @@ div {
 	align-items: center;
 	gap: 5px;
 }
-:global(.tool-template-content input),
+:global(.tool-template-content input:not([type="checkbox"])),
+:global(.tool-template-content label:has(input[type="checkbox"])),
 :global(.tool-template-content textarea),
 :global(.tool-template-content select) {
 	padding: 5px;
@@ -29,6 +30,13 @@ div {
 	outline: none;
 	width: 100%;
 	color: var(--text-color-default);
+}
+:global(.tool-template-content label:has(input[type="checkbox"])) {
+	user-select: none;
+	padding-left:10px;
+	font-size: var(--font-size-alt);
+	display: flex; /* To make checkbox inline with label text */
+	gap:10px;
 }
 h2 {
 	color: #2976d4;
