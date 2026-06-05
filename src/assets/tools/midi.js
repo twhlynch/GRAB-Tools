@@ -123,7 +123,8 @@ async function decode_midi_file_as_json(file) {
 	return new Midi(buffer);
 }
 function midi_to_hz(m) {
-	return 440 * Math.pow(2, (m - 69) / 12);
+	const hz_value = 440 * Math.pow(2, (m - 69) / 12);
+	return hz_value;
 }
 function get_usable_tracks(m) {
 	let tracks = [];
@@ -154,6 +155,7 @@ function parse_unparsed_tracks(tracks) {
 		});
 		average_velocity /= track.notes.length;
 
+		// Sometimes tracks can have a volume control on controlChanges[7]
 		const track_volume = (track.controlChanges[7]) ? track.controlChanges[7][0].value : 1;
 
 		new_tracks.push({
@@ -203,8 +205,9 @@ function get_duration(tracks) {
 	let longest = 0;
 	tracks.forEach((track) => {
 		track.notes.forEach((note) => {
-			if (note.start + note.duration > longest) {
-				longest = note.start + note.duration;
+			const note_end_time = note.start + note.duration;
+			if (note_end_time > longest) {
+				longest = note_end_time;
 			}
 		});
 	});
@@ -222,9 +225,10 @@ function make_connected_trigger(
 	trigger.levelNodeTrigger.position = position;
 	trigger.levelNodeTrigger.scale = { x: 1, y: 1, z: 1 };
 
+	const trigger_start_index = current_soundblocks + node_count + 1;
 	for (
-		let i = current_soundblocks + node_count + 1;
-		i < trigger_count + current_soundblocks + node_count + 2;
+		let i = trigger_start_index;
+		i < trigger_count + trigger_start_index + 1;
 		i++
 	) {
 		let target = triggerTargetWithAnimation();
@@ -303,8 +307,7 @@ async function generate(file, node_count, start_active, loop, volume) {
 	const m = await decode_midi_file_as_json(file);
 
 	// Get the available tracks that can be parsed
-	const unparsed_tracks = get_usable_tracks
-(m);
+	const unparsed_tracks = get_usable_tracks(m);
 
 	// Turn the units inside the note into useable units by GRAB
 	// Eg: turn the midi pitch value into hz
@@ -330,7 +333,7 @@ async function generate(file, node_count, start_active, loop, volume) {
 			sound_blocks.push(
 				get_basic_sound_block(
 					{ x: 0, y: t, z: -1 },
-					hz * (tracks[t].isDrums ? 2.5 : 1),
+					hz * (tracks[t].isDrums ? 2.5 : 1), // Frequency is doubled for drum tracks (style choice, makes drums sound better)
 					tracks[t].volume * volume,
 					tracks[t].isDrums,
 				),
@@ -371,11 +374,13 @@ async function generate(file, node_count, start_active, loop, volume) {
 				current_trigger_animation.frames.push(frame);
 
 				let next_frame = animationFrame();
+				// Note duration is multipled by 2 because only half of the animation is spent inside the colliding block
 				next_frame.time = notes[x].start + notes[x].duration * 2 + 0.05;
 				next_frame.position.x = 0;
 				current_trigger_animation.frames.push(next_frame);
 			}
 
+			// Last frame for each block has to be at the same time to ensure sync
 			let last_frame = animationFrame();
 			last_frame.time = Math.ceil(duration);
 			current_trigger_animation.frames.push(last_frame);
