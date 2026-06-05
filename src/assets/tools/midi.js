@@ -25,7 +25,7 @@ import { groupNodes } from '../encoding/group';
  * @param {Number} volume - volume multiplier for whole song (0-1)
  * @returns {Promise<Object>} - A group level node
  */
-async function midi(file, node_count, start_active, loop, volume) {
+async function midi(file, node_count, start_active, loop, optimize, volume) {
 	if (start_active && !loop) {
 		// Can't make a non-looping start active animation in grab.
 		window.toast(
@@ -40,6 +40,7 @@ async function midi(file, node_count, start_active, loop, volume) {
 			node_count,
 			start_active,
 			loop,
+			optimize,
 			volume,
 		);
 		if (!level_nodes) return null;
@@ -330,7 +331,7 @@ function refactor_as_optimised(tracks) {
 	return new_tracks;
 }
 
-async function generate(file, node_count, start_active, loop, volume) {
+async function generate(file, node_count, start_active, loop, optimize, volume) {
 	// Decode midi file into JSON
 	const m = await decode_midi_file_as_json(file);
 
@@ -339,7 +340,7 @@ async function generate(file, node_count, start_active, loop, volume) {
 
 	// Turn the units inside the note into useable units by GRAB
 	// Eg: turn the midi pitch value into hz
-	const tracks = parse_unparsed_tracks(unparsed_tracks);
+	const tracks = (optimize) ? refactor_as_optimised(parse_unparsed_tracks(unparsed_tracks)) : parse_unparsed_tracks(unparsed_tracks);
 	console.log(tracks, unparsed_tracks);
 
 	// Get duration of song in seconds

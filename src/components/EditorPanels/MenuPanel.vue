@@ -599,18 +599,25 @@ export default {
 					},
 					{
 						type: 'checkbox',
-						text: 'Start active: '
+						text: 'Start active: ',
+						default: true,
 					},
 					{
 						type: 'checkbox',
-						text: 'Loop: '
+						text: 'Loop: ',
+						default: true,
+					},
+					{
+						type: 'checkbox',
+						text: 'Optimize complexity: ',
+						default: false,
 					},
 					{
 						type: 'number',
 						text: 'Volume (0-100, default 30)',
 					},
 				],
-				async (files, start_active, loop, volume) => {
+				async (files, start_active, loop, optimize, volume) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
@@ -628,6 +635,7 @@ export default {
 							max_id,
 							start_active,
 							loop,
+							optimize,
 							volume,
 						);
 						if (!node) return;

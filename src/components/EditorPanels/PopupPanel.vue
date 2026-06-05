@@ -99,7 +99,10 @@ export default {
 			/>
 			<label v-else-if="input.type === 'checkbox'" :ref="`input-${i}`">
 				{{ input.text }}
-				<input type="checkbox">
+				<input 
+					type="checkbox"
+					:checked="input.default"
+				>
 			</label>
 			<input
 				v-else

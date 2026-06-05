@@ -26,9 +26,17 @@ export default {
 			const start_active =
 				getByID(`${toolID}-start-active`).checked;
 			const loop = getByID(`${toolID}-loop`).checked;
+			const optimize = getByID(`${toolID}-optimize`).checked;
 			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
-			const node = await midi.midi(file, 0, start_active, loop, volume);
+			const node = await midi.midi(
+				file, 
+				0, 
+				start_active, 
+				loop, 
+				optimize, 
+				volume
+			);
 			if (!node) return;
 
 			const obj = createLevel(
@@ -58,12 +66,20 @@ export default {
             Start active: <input
                 type="checkbox"
                 id="midi-tool-start-active"
+				checked="true"
             />
         </label>
         <label>
             Loop: <input
                 type="checkbox"
                 id="midi-tool-loop"
+				checked="true"
+            />
+        </label>
+        <label>
+            Optimize complexity: <input
+                type="checkbox"
+                id="midi-tool-optimize"
             />
         </label>
 		<input
