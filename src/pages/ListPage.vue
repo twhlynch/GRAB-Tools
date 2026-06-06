@@ -22,7 +22,7 @@ export default {
 			tab: 'maps',
 			hardest_levels: [],
 			featured_creators: [],
-			all_metrics: {},
+			all_metrics: [],
 			top_metrics: [],
 			query: '',
 			add_level_id: '',
@@ -121,6 +121,14 @@ export default {
 
 				await Promise.all([
 					get_hardest_levels_request().then((data) => {
+						if (!data) {
+							window.toast(
+								'Failed to fetch hardest levels list',
+								'error',
+							);
+							return;
+						}
+
 						this.hardest_levels = data.sort(
 							(a, b) => a.position - b.position,
 						);
@@ -394,6 +402,11 @@ export default {
 		},
 		async update_levels() {
 			const list = await get_hardest_levels_request();
+			if (!list) {
+				window.toast('Failed to fetch hardest levels list', 'error');
+				return;
+			}
+
 			this.hardest_levels = list.sort((a, b) => a.position - b.position);
 		},
 		on_expand() {
