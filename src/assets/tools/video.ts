@@ -1,4 +1,3 @@
-import { PYTHON_SERVER_URL } from '@/config';
 import { levelNodeWithGASM, levelNodeWithStatic } from '@/generated/nodes';
 import {
 	Animation,
@@ -10,10 +9,8 @@ import {
 import { LevelNodeWith } from '@/types/levelNodes';
 import { asm_to_json } from '../AssemblyConversion';
 import { create_connection } from '../encoding/gasm/connections';
-import { decodeLevel } from '../encoding/levels';
 import { materials } from '../encoding/utils';
 
-const VIDEO_SERVER_URL = `${PYTHON_SERVER_URL}process_video`;
 const FRAME_INTERVAL = Math.round(1000 / 24);
 
 async function video(
@@ -25,10 +22,9 @@ async function video(
 ): Promise<Array<LevelNode> | null> {
 	if (!window.MediaStreamTrackProcessor) {
 		window.toast(
-			'MediaStreamTrackProcessor not available on this browser, using server fallback',
+			'MediaStreamTrackProcessor is not available on this browser. Chrome is required for this tool.',
 			'warning',
 		);
-		return fallback_video(file);
 	}
 
 	const video_data = await read_video(file, callback);
@@ -446,45 +442,6 @@ function bitmaps_to_frames(
 	if (!ctx) return [];
 
 	return bitmaps.map((bitmap) => bitmap_to_frame(bitmap, width, height, ctx));
-}
-
-async function fallback_video(file: File): Promise<Array<LevelNode> | null> {
-	const formData = new FormData();
-	formData.append('file', file);
-
-	let response;
-	try {
-		response = await fetch(VIDEO_SERVER_URL, {
-			method: 'POST',
-			body: formData,
-		});
-	} catch (e) {
-		if (e instanceof Error) {
-			e.message = 'Error making request: ' + e.message;
-			window.toast(e, 'error');
-		}
-		return null;
-	}
-
-	if (!response.ok) {
-		const error = await response.text();
-		window.toast('Error processing video: ' + error, 'error');
-		return null;
-	}
-
-	const result = await response.blob();
-	const level = await decodeLevel(result);
-	if (!level) {
-		window.toast('Invalid level', 'error');
-		return null;
-	}
-
-	if (!level.levelNodes?.length) {
-		window.toast('Video returned has no nodes', 'error');
-		return null;
-	}
-
-	return level.levelNodes;
 }
 
 export default {

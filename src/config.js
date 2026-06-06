@@ -7,7 +7,6 @@ export const SERVER_URL = `https://api.${DOMAIN}/`;
 export const WIKI_URL = `https://grabvr.miraheze.org/`;
 export const DISCORD_URL = `https://discord.${DOMAIN}/`;
 export const STATS_URL = `https://grab-tools.live/stats_data/`;
-export const PYTHON_SERVER_URL = `https://dotindex.pythonanywhere.com`;
 
 // grab urls
 const GRAB_DOMAIN = `slin.dev`;
