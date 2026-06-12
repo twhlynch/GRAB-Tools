@@ -143,7 +143,7 @@ export default {
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
 						MIDI: { func: this.insert_midi },
-						'Audio (SFX2GL)': { func: this.insert_audio },
+						// 'Audio (SFX2GL)': { func: this.insert_audio },
 					},
 				},
 				Edit: {

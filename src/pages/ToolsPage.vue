@@ -167,14 +167,14 @@ export default {
 				Point Cloud
 				<CubeIcon />
 			</button>
-			<button
-				class="button"
-				id="audio-importer-tool-button"
-				@click="selectTool('audio-importer')"
-			>
-				Audio
-				<MusicIcon />
-			</button>
+			<!-- <button -->
+			<!-- 	class="button" -->
+			<!-- 	id="audio-importer-tool-button" -->
+			<!-- 	@click="selectTool('audio-importer')" -->
+			<!-- > -->
+			<!-- 	Audio -->
+			<!-- 	<MusicIcon /> -->
+			<!-- </button> -->
 			<button
 				class="button"
 				id="midi-importer-tool-button"
