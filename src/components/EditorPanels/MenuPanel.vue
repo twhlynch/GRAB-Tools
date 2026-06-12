@@ -23,6 +23,7 @@ import audio from '@/assets/tools/audio';
 import car from '@/assets/tools/car';
 import gun from '@/assets/tools/gun';
 import image from '@/assets/tools/image';
+import midi from '@/assets/tools/midi';
 import monochrome from '@/assets/tools/monochrome';
 import obj from '@/assets/tools/obj';
 import signs from '@/assets/tools/signs';
@@ -141,6 +142,7 @@ export default {
 						},
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
+						MIDI: { func: this.insert_midi },
 						'Audio (SFX2GL)': { func: this.insert_audio },
 					},
 				},
@@ -586,6 +588,62 @@ export default {
 			const file = files[0];
 			const json = json_parse(await file.text());
 			this.insert_selection_nodes(json?.levelNodes ?? json);
+		},
+		insert_midi() {
+			this.$emit(
+				'popup',
+				[
+					{
+						type: 'file',
+						accept: '.mid,.midi',
+					},
+					{
+						type: 'checkbox',
+						text: 'Start active: ',
+						default: true,
+					},
+					{
+						type: 'checkbox',
+						text: 'Loop: ',
+						default: true,
+					},
+					{
+						type: 'checkbox',
+						text: 'Optimize complexity: ',
+						default: false,
+					},
+					{
+						type: 'number',
+						text: 'Volume (0-100, default 30)',
+					},
+				],
+				async (files, start_active, loop, optimize, volume) => {
+					if (!files.length) {
+						window.toast('No midi file chosen', 'error');
+						return;
+					}
+
+					volume = (parseInt(volume) || 30) / 100;
+
+					const file = files[0];
+
+					this.$emit('viewport', async (scope) => {
+						const max_id = scope.level.nodes.all.length;
+
+						const node = await midi.midi(
+							file,
+							max_id,
+							start_active,
+							loop,
+							optimize,
+							volume,
+						);
+						if (!node) return;
+
+						this.insert_selection_nodes([node]);
+					});
+				},
+			);
 		},
 		insert_audio() {
 			this.$emit(
