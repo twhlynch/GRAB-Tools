@@ -28,7 +28,7 @@
 		"pinia": "^2.0.32",
 		"pinia-plugin-persistedstate": "^3.1.0",
 		"protobufjs": "^7.2.5",
-		"three": "^0.157.0",
+		"three": "^0.159.0",
 		"vue": "^3.4.30",
 		"vue-router": "^4.1.6"
 	},
