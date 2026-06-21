@@ -796,7 +796,8 @@ export default {
 					},
 					{
 						type: 'file',
-						accept: '.obj',
+						accept: '.obj,.mtl',
+						multiple: true,
 					},
 				],
 				async (mode, files) => {
@@ -805,8 +806,14 @@ export default {
 						return;
 					}
 
-					const file = files[0];
-					const nodes = await obj.obj(file, mode);
+					const objFile = files.find((f) => f.name.endsWith('.obj'));
+					const mtlFile = files.find((f) => f.name.endsWith('.mtl'));
+					if (!objFile) {
+						window.toast('No .obj file selected', 'error');
+						return;
+					}
+
+					const nodes = await obj.obj(objFile, mode, mtlFile);
 
 					this.insert_selection_nodes(nodes);
 				},

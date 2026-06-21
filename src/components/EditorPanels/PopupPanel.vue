@@ -111,6 +111,7 @@ export default {
 				:ref="`input-${i}`"
 				:placeholder="input.text"
 				:accept="input.accept"
+				:multiple="input.multiple"
 			/>
 		</div>
 		<button @click="run">Run</button>

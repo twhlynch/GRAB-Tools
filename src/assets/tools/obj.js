@@ -7,11 +7,13 @@ import { partition_into_isosceles, tri_to_node } from './triangle_partition';
 /**
  * @param {File} file - An obj file
  * @param {"spheres" | "particles" | "triangles"} mode - what is placed
+ * @param {File} mtlFile- An optional mtl file for material colors
  * @returns {Promise<Array<Object>>} - A list of level nodes
  */
-async function obj(file, mode) {
+async function obj(file, mode, mtlFile) {
 	if (mode === 'triangles') {
-		const nodes = await parse_obj_nodes(file);
+		const mtl_colors = mtlFile ? parse_mtl(await mtlFile.text()) : null;
+		const nodes = scale_to_unit(await parse_obj_nodes(file, mtl_colors));
 		return nodes.map((node) =>
 			levelNodeWithStatic({
 				...node,
@@ -149,7 +151,78 @@ function obj_vertices(text) {
 	return model;
 }
 
-async function parse_obj_nodes(obj_file) {
+function parse_mtl(text) {
+	const colors = {};
+	let currentMat = null;
+
+	for (const line of text.split('\n')) {
+		const parts = line.trim().split(/\s+/);
+		if (parts[0] === 'newmtl') {
+			currentMat = parts[1];
+		} else if (parts[0] === 'Kd' && currentMat) {
+			colors[currentMat] = {
+				r: parseFloat(parts[1]),
+				g: parseFloat(parts[2]),
+				b: parseFloat(parts[3]),
+			};
+		}
+	}
+
+	return colors;
+}
+
+function get_material_color(material, mtl_colors) {
+	const mat = Array.isArray(material) ? material[0] : material;
+	if (mat?.name && mtl_colors?.[mat.name]) return mtl_colors[mat.name];
+	const c = mat?.color;
+	if (c) return { r: c.r, g: c.g, b: c.b };
+	return { r: 1, g: 1, b: 1 };
+}
+
+function scale_to_unit(nodes) {
+	if (!nodes.length) return nodes;
+
+	let minX = Infinity,
+		maxX = -Infinity;
+	let minY = Infinity,
+		maxY = -Infinity;
+	let minZ = Infinity,
+		maxZ = -Infinity;
+
+	for (const n of nodes) {
+		const p = n.position;
+		if (p.x < minX) minX = p.x;
+		if (p.x > maxX) maxX = p.x;
+		if (p.y < minY) minY = p.y;
+		if (p.y > maxY) maxY = p.y;
+		if (p.z < minZ) minZ = p.z;
+		if (p.z > maxZ) maxZ = p.z;
+	}
+
+	const maxDim = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+	if (maxDim < 1e-8) return nodes;
+
+	const s = 1 / maxDim;
+	const cx = (minX + maxX) / 2;
+	const cy = (minY + maxY) / 2;
+	const cz = (minZ + maxZ) / 2;
+
+	return nodes.map((n) => ({
+		...n,
+		position: {
+			x: (n.position.x - cx) * s,
+			y: (n.position.y - cy) * s,
+			z: (n.position.z - cz) * s,
+		},
+		scale: {
+			x: n.scale.x * s,
+			y: n.scale.y * s,
+			z: n.scale.z * s,
+		},
+	}));
+}
+
+async function parse_obj_nodes(obj_file, mtl_colors) {
 	const text = await obj_file.text();
 	const loader = new OBJLoader();
 	const object = loader.parse(text);
@@ -158,6 +231,7 @@ async function parse_obj_nodes(obj_file) {
 	object.traverse((child) => {
 		if (!child.isMesh) return;
 
+		const color1 = get_material_color(child.material, mtl_colors);
 		const posAttr = child.geometry.toNonIndexed().attributes.position;
 
 		for (let i = 0; i < posAttr.count; i += 3) {
@@ -197,7 +271,7 @@ async function parse_obj_nodes(obj_file) {
 					to_3D(tri[1]),
 					to_3D(tri[2]),
 				);
-				if (node) nodes.push(node);
+				if (node) nodes.push({ ...node, color1 });
 			});
 		}
 	});
