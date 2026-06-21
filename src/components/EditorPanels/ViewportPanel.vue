@@ -74,6 +74,7 @@ export default defineComponent({
 			},
 			mousedown_pos: null,
 			deferred_context_menu: null,
+			is_touch_interaction: false,
 		};
 	},
 	components: {
@@ -1869,22 +1870,36 @@ export default defineComponent({
 				return json;
 			});
 		},
-		pointerstart(e) {
-			if (e.touches.length !== 1) return;
+		pointerdown(e) {
+			if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
 
+			this.is_touch_interaction = true;
 			this.hold.x = e.clientX;
 			this.hold.y = e.clientY;
 
 			clearTimeout(this.hold.timeout);
 
 			this.hold.timeout = setTimeout(() => {
-				this.open_context_menu(this.hold.x, this.hold.y, e);
+				if (this.is_touch_interaction) {
+					this.is_touch_interaction = false;
+					this.contextmenu = undefined;
+					this.contextmenu_position.x = this.hold.x;
+					this.contextmenu_position.y = this.hold.y;
+					const menu = this.build_context_menu(
+						this.hold.x,
+						this.hold.y,
+					);
+					if (menu) this.contextmenu = menu;
+				}
 			}, 600);
 		},
-		pointerend(e) {
+		pointerup(e) {
+			if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+			this.is_touch_interaction = false;
 			clearTimeout(this.hold.timeout);
 		},
 		pointercancel(e) {
+			this.is_touch_interaction = false;
 			clearTimeout(this.hold.timeout);
 		},
 		pointermove(e) {
@@ -1903,11 +1918,18 @@ export default defineComponent({
 			this.contextmenu = undefined;
 			this.contextmenu_position.x = e.clientX;
 			this.contextmenu_position.y = e.clientY;
-			this.deferred_context_menu = {
-				x: e.clientX,
-				y: e.clientY,
-				menu: this.build_context_menu(e.clientX, e.clientY),
-			};
+			const menu = this.build_context_menu(e.clientX, e.clientY);
+			if (this.is_touch_interaction) {
+				this.is_touch_interaction = false;
+				clearTimeout(this.hold.timeout);
+				if (menu) this.contextmenu = menu;
+			} else {
+				this.deferred_context_menu = {
+					x: e.clientX,
+					y: e.clientY,
+					menu,
+				};
+			}
 		},
 		run_in_scope(func) {
 			func(this);
@@ -1925,8 +1947,8 @@ export default defineComponent({
 				@mousedown="mousedown"
 				@mouseup="mouseup"
 				@contextmenu="rightmousedown"
-				@pointerstart="pointerstart"
-				@pointerend="pointerend"
+				@pointerdown="pointerdown"
+				@pointerup="pointerup"
 				@pointercancel="pointercancel"
 				@pointermove="pointermove"
 			>
@@ -2135,6 +2157,8 @@ canvas {
 	width: 100%;
 	height: 100%;
 	outline: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 .viewport {
 	position: relative;

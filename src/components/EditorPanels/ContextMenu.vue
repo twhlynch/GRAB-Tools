@@ -95,6 +95,8 @@ section {
 	width: fit-content;
 	height: fit-content;
 	z-index: 2000;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 a {
