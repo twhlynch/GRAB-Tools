@@ -24,6 +24,7 @@
 		"@tonejs/midi": "^2.0.28",
 		"codemirror": "^6.0.2",
 		"jsfft": "^0.0.4",
+		"jsfxr": "^1.4.1",
 		"pako": "^2.1.0",
 		"pinia": "^2.0.32",
 		"pinia-plugin-persistedstate": "^3.1.0",

@@ -10,6 +10,7 @@ import {
 import { FreeControls } from '@/assets/FreeControls';
 import GizmoControls from '@/assets/GizmoControls';
 import { LevelLoader } from '@/assets/LevelLoader';
+import { play_sound } from '@/assets/tools/sfxr';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -1183,6 +1184,11 @@ export default defineComponent({
 					break;
 			}
 		},
+		play(object) {
+			if (!object?.userData?.node?.levelNodeSound) return;
+			const params = object.userData.node.levelNodeSound.parameters ?? {};
+			play_sound(params);
+		},
 		enter_group() {
 			if (this.gizmo.selection.length !== 1) return;
 			const group = this.gizmo.selection[0];
@@ -1389,6 +1395,7 @@ export default defineComponent({
 				clicked_node.levelNodeTrigger;
 			const selected_is_trigger = selected_node.levelNodeTrigger;
 			const selected_is_code = selected_node.levelNodeGASM;
+			const selected_is_sound = selected_node.levelNodeSound;
 			const clicked_has_code = clicked_node.levelNodeGASM;
 			const clicked_is_trigger = clicked_node.levelNodeTrigger;
 			const clicked_is_light = clicked_node.levelNodeLight;
@@ -1502,6 +1509,13 @@ export default defineComponent({
 						'Add Animation': {
 							func: () => {
 								this.add_animation(clicked_object);
+							},
+						},
+					}),
+					...(selected_is_sound && {
+						Play: {
+							func: () => {
+								this.play(clicked_object);
 							},
 						},
 					}),
