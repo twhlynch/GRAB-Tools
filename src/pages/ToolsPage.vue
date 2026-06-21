@@ -16,7 +16,7 @@ import LevelCompiler from '@/tools/LevelCompiler.vue';
 import LevelDownloader from '@/tools/LevelDownloader.vue';
 import LevelJSON from '@/tools/LevelJSON.vue';
 import MIDIImporter from '@/tools/MIDIImporter.vue';
-import PointCloud from '@/tools/PointCloud.vue';
+import OBJModel from '@/tools/OBJModel.vue';
 import SVGDrawer from '@/tools/SVGDrawer.vue';
 import TextSigns from '@/tools/TextSigns.vue';
 import VideoGenerator from '@/tools/VideoGenerator.vue';
@@ -29,7 +29,7 @@ export default {
 		VideoGenerator,
 		SVGDrawer,
 		LevelJSON,
-		PointCloud,
+		OBJModel,
 		LevelDownloader,
 		TextSigns,
 		ShrinkIcon,
@@ -161,10 +161,10 @@ export default {
 			</button>
 			<button
 				class="button"
-				id="point-cloud-tool-button"
-				@click="selectTool('point-cloud')"
+				id="object-model-tool-button"
+				@click="selectTool('object-model')"
 			>
-				Point Cloud
+				3D Model
 				<CubeIcon />
 			</button>
 			<!-- <button -->
@@ -190,7 +190,7 @@ export default {
 			<SVGDrawer id="svg-tool" />
 			<LevelJSON id="level-json-tool" />
 			<ImageGenerator id="image-generator-tool" />
-			<PointCloud id="point-cloud-tool" />
+			<OBJModel id="object-model-tool" />
 			<LevelDownloader id="download-tool" />
 			<TextSigns id="text-signs-tool" />
 			<AudioImporter id="audio-importer-tool" />

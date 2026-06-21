@@ -138,7 +138,7 @@ export default {
 						Video: {
 							func: this.insert_video,
 						},
-						'Point Cloud': {
+						Model: {
 							func: this.insert_model,
 						},
 						Text: { func: this.insert_text },
@@ -792,7 +792,7 @@ export default {
 				[
 					{
 						type: 'option',
-						options: ['particles', 'spheres', 'triangles'],
+						options: ['triangles', 'particles', 'spheres'],
 					},
 					{
 						type: 'file',

@@ -14,7 +14,7 @@ export default {
 	methods: {
 		async run() {
 			const getByID = (id) => document.getElementById(id);
-			const toolID = 'point-cloud-tool';
+			const toolID = 'obj-model-tool';
 
 			const allFiles = Array.from(getByID(`${toolID}-file`).files);
 			if (!allFiles.length) {
@@ -35,7 +35,7 @@ export default {
 
 			const level = createLevel(
 				nodes,
-				'Point Cloud',
+				'3D Model',
 				'Generated with GRAB Tools',
 				['.index', 'GRAB Tools'],
 			);
@@ -51,20 +51,20 @@ export default {
 
 <template>
 	<ToolTemplate>
-		<template #title>Point Cloud</template>
-		<template #info>Convert .obj 3D models into grab levels.</template>
+		<template #title>3D Model</template>
+		<template #info>Import a .obj 3D models into grab.</template>
 		<input
 			type="file"
-			id="point-cloud-tool-file"
+			id="obj-model-tool-file"
 			accept=".obj,.mtl"
 			multiple
 		/>
-		<select id="point-cloud-tool-mode">
-			<option value="particles" selected>particles</option>
+		<select id="obj-model-tool-mode">
+			<option value="triangles" selected>triangles</option>
+			<option value="particles">particles</option>
 			<option value="spheres">spheres</option>
-			<option value="triangles">triangles</option>
 		</select>
-		<button class="button" id="point-cloud-tool-btn" @click="run">
+		<button class="button" id="obj-model-tool-btn" @click="run">
 			Process
 		</button>
 	</ToolTemplate>
