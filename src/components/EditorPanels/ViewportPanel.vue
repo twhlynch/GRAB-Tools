@@ -72,6 +72,8 @@ export default defineComponent({
 				x: 0,
 				y: 0,
 			},
+			mousedown_pos: null,
+			deferred_context_menu: null,
 		};
 	},
 	components: {
@@ -293,6 +295,13 @@ export default defineComponent({
 			return intersect;
 		},
 		select_event(e) {
+			if (this.mousedown_pos) {
+				const dx = e.clientX - this.mousedown_pos.x;
+				const dy = e.clientY - this.mousedown_pos.y;
+				this.mousedown_pos = null;
+				if (dx * dx + dy * dy > 9) return;
+			}
+
 			if (this.free_movement) return;
 			if (this.active_tool?.on_click?.(e)) return;
 
@@ -510,6 +519,10 @@ export default defineComponent({
 			}
 		},
 		mousedown(e) {
+			this.deferred_context_menu = null;
+			if (e.target === this.renderer.domElement) {
+				this.mousedown_pos = { x: e.clientX, y: e.clientY };
+			}
 			if (this.active_tool?.on_mouse_down?.(e)) return;
 
 			if (
@@ -524,6 +537,21 @@ export default defineComponent({
 			}
 		},
 		mouseup(e) {
+			if (e.button === 2) {
+				if (this.deferred_context_menu) {
+					const dx = e.clientX - this.deferred_context_menu.x;
+					const dy = e.clientY - this.deferred_context_menu.y;
+					if (
+						dx * dx + dy * dy <= 9 &&
+						this.deferred_context_menu.menu
+					) {
+						this.contextmenu = this.deferred_context_menu.menu;
+					}
+					this.deferred_context_menu = null;
+				}
+				this.mousedown_pos = null;
+			}
+
 			if (this.active_tool?.on_mouse_up?.(e)) return;
 
 			this.controls.isMouseActive = false;
@@ -1341,13 +1369,7 @@ export default defineComponent({
 				)
 				.join(' ');
 		},
-		open_context_menu(x, y, e) {
-			if (e?.target !== this.renderer.domElement) return;
-
-			this.contextmenu_position.x = x;
-			this.contextmenu_position.y = y;
-			this.contextmenu = undefined;
-
+		build_context_menu(x, y) {
 			const clicked_object = this.cast_for_node(x, y);
 			if (!clicked_object) return;
 			const clicked_node = clicked_object.userData?.node;
@@ -1390,7 +1412,7 @@ export default defineComponent({
 				clicked_node.levelNodeStatic?.material === 3;
 			const clicked_is_sign = clicked_node.levelNodeSign;
 
-			this.contextmenu = {
+			const menu = {
 				...(clicked_is_selected && {
 					'Edit JSON': {
 						func: () => {
@@ -1664,12 +1686,16 @@ export default defineComponent({
 				}),
 			};
 
-			if (
-				this.contextmenu &&
-				Object.keys(this.contextmenu).length === 0
-			) {
-				e?.preventDefault?.();
-			}
+			if (Object.keys(menu).length === 0) return;
+			return menu;
+		},
+		open_context_menu(x, y, e) {
+			if (e?.target !== this.renderer.domElement) return;
+			this.contextmenu_position.x = x;
+			this.contextmenu_position.y = y;
+			this.contextmenu = undefined;
+			const menu = this.build_context_menu(x, y);
+			if (menu) this.contextmenu = menu;
 		},
 		copy_object_id(object) {
 			const id = object?.userData?.id;
@@ -1873,8 +1899,15 @@ export default defineComponent({
 		},
 		rightmousedown(e) {
 			if (this.active_tool?.on_contextmenu?.(e)) return;
-
-			this.open_context_menu(e.clientX, e.clientY, e);
+			e.preventDefault();
+			this.contextmenu = undefined;
+			this.contextmenu_position.x = e.clientX;
+			this.contextmenu_position.y = e.clientY;
+			this.deferred_context_menu = {
+				x: e.clientX,
+				y: e.clientY,
+				menu: this.build_context_menu(e.clientX, e.clientY),
+			};
 		},
 		run_in_scope(func) {
 			func(this);
