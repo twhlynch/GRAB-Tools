@@ -51,6 +51,7 @@ export default {
 		<select id="point-cloud-tool-mode">
 			<option value="particles" selected>particles</option>
 			<option value="spheres">spheres</option>
+			<option value="triangles">triangles</option>
 		</select>
 		<button class="button" id="point-cloud-tool-btn" @click="run">
 			Process

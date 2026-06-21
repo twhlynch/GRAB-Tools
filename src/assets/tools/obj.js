@@ -1,11 +1,27 @@
+import { levelNodeWithStatic } from '@/generated/nodes';
+import { LevelNodeMaterial, LevelNodeShape } from '@/generated/proto';
+import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { partition_into_isosceles, tri_to_node } from './triangle_partition';
+
 /**
  * @param {File} file - An obj file
- * @param {"spheres" | "particles"} mode - what is placed
+ * @param {"spheres" | "particles" | "triangles"} mode - what is placed
  * @returns {Promise<Array<Object>>} - A list of level nodes
  */
 async function obj(file, mode) {
-	const text = await file.text();
+	if (mode === 'triangles') {
+		const nodes = await parse_obj_nodes(file);
+		return nodes.map((node) =>
+			levelNodeWithStatic({
+				...node,
+				shape: LevelNodeShape.PRISM,
+				material: LevelNodeMaterial.DEFAULT_COLORED,
+			}),
+		);
+	}
 
+	const text = await file.text();
 	const model = obj_vertices(text);
 
 	const nodes = [];
@@ -131,6 +147,62 @@ function obj_vertices(text) {
 	if (mesh.length) model.push(mesh);
 
 	return model;
+}
+
+async function parse_obj_nodes(obj_file) {
+	const text = await obj_file.text();
+	const loader = new OBJLoader();
+	const object = loader.parse(text);
+	const nodes = [];
+
+	object.traverse((child) => {
+		if (!child.isMesh) return;
+
+		const posAttr = child.geometry.toNonIndexed().attributes.position;
+
+		for (let i = 0; i < posAttr.count; i += 3) {
+			const A = new THREE.Vector3().fromBufferAttribute(posAttr, i);
+			const B = new THREE.Vector3().fromBufferAttribute(posAttr, i + 1);
+			const C = new THREE.Vector3().fromBufferAttribute(posAttr, i + 2);
+
+			const axisX = new THREE.Vector3().subVectors(B, A).normalize();
+			const norm = new THREE.Vector3()
+				.crossVectors(axisX, new THREE.Vector3().subVectors(C, A))
+				.normalize();
+			const axisY = new THREE.Vector3().crossVectors(norm, axisX);
+
+			const to_2D = (p) => {
+				const r = new THREE.Vector3().subVectors(p, A);
+				return {
+					x: r.dot(axisX),
+					y: r.dot(axisY),
+				};
+			};
+			const to_3D = (p) => {
+				return new THREE.Vector3()
+					.addScaledVector(axisX, p.x)
+					.addScaledVector(axisY, p.y)
+					.add(A);
+			};
+
+			const tris2D = partition_into_isosceles([
+				to_2D(A),
+				to_2D(B),
+				to_2D(C),
+			]);
+
+			tris2D.forEach((tri) => {
+				const node = tri_to_node(
+					to_3D(tri[0]),
+					to_3D(tri[1]),
+					to_3D(tri[2]),
+				);
+				if (node) nodes.push(node);
+			});
+		}
+	});
+
+	return nodes;
 }
 
 export default {

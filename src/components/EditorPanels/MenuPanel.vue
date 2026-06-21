@@ -792,7 +792,7 @@ export default {
 				[
 					{
 						type: 'option',
-						options: ['particles', 'spheres'],
+						options: ['particles', 'spheres', 'triangles'],
 					},
 					{
 						type: 'file',

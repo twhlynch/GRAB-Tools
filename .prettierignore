@@ -1,3 +1,4 @@
 *.vert
 *.frag
 *.gltf
+**/triangle_partition.ts
