@@ -231,48 +231,63 @@ async function parse_obj_nodes(obj_file, mtl_colors) {
 	object.traverse((child) => {
 		if (!child.isMesh) return;
 
-		const color1 = get_material_color(child.material, mtl_colors);
 		const posAttr = child.geometry.toNonIndexed().attributes.position;
+		const groups = child.geometry.groups || [
+			{ start: 0, count: posAttr.count, materialIndex: 0 },
+		];
 
-		for (let i = 0; i < posAttr.count; i += 3) {
-			const A = new THREE.Vector3().fromBufferAttribute(posAttr, i);
-			const B = new THREE.Vector3().fromBufferAttribute(posAttr, i + 1);
-			const C = new THREE.Vector3().fromBufferAttribute(posAttr, i + 2);
+		for (const group of groups) {
+			const material = Array.isArray(child.material)
+				? child.material[group.materialIndex]
+				: child.material;
+			const color1 = get_material_color(material, mtl_colors);
 
-			const axisX = new THREE.Vector3().subVectors(B, A).normalize();
-			const norm = new THREE.Vector3()
-				.crossVectors(axisX, new THREE.Vector3().subVectors(C, A))
-				.normalize();
-			const axisY = new THREE.Vector3().crossVectors(norm, axisX);
-
-			const to_2D = (p) => {
-				const r = new THREE.Vector3().subVectors(p, A);
-				return {
-					x: r.dot(axisX),
-					y: r.dot(axisY),
-				};
-			};
-			const to_3D = (p) => {
-				return new THREE.Vector3()
-					.addScaledVector(axisX, p.x)
-					.addScaledVector(axisY, p.y)
-					.add(A);
-			};
-
-			const tris2D = partition_into_isosceles([
-				to_2D(A),
-				to_2D(B),
-				to_2D(C),
-			]);
-
-			tris2D.forEach((tri) => {
-				const node = tri_to_node(
-					to_3D(tri[0]),
-					to_3D(tri[1]),
-					to_3D(tri[2]),
+			for (let i = group.start; i < group.start + group.count; i += 3) {
+				const A = new THREE.Vector3().fromBufferAttribute(posAttr, i);
+				const B = new THREE.Vector3().fromBufferAttribute(
+					posAttr,
+					i + 1,
 				);
-				if (node) nodes.push({ ...node, color1 });
-			});
+				const C = new THREE.Vector3().fromBufferAttribute(
+					posAttr,
+					i + 2,
+				);
+
+				const axisX = new THREE.Vector3().subVectors(B, A).normalize();
+				const norm = new THREE.Vector3()
+					.crossVectors(axisX, new THREE.Vector3().subVectors(C, A))
+					.normalize();
+				const axisY = new THREE.Vector3().crossVectors(norm, axisX);
+
+				const to_2D = (p) => {
+					const r = new THREE.Vector3().subVectors(p, A);
+					return {
+						x: r.dot(axisX),
+						y: r.dot(axisY),
+					};
+				};
+				const to_3D = (p) => {
+					return new THREE.Vector3()
+						.addScaledVector(axisX, p.x)
+						.addScaledVector(axisY, p.y)
+						.add(A);
+				};
+
+				const tris2D = partition_into_isosceles([
+					to_2D(A),
+					to_2D(B),
+					to_2D(C),
+				]);
+
+				tris2D.forEach((tri) => {
+					const node = tri_to_node(
+						to_3D(tri[0]),
+						to_3D(tri[1]),
+						to_3D(tri[2]),
+					);
+					if (node) nodes.push({ ...node, color1 });
+				});
+			}
 		}
 	});
 
