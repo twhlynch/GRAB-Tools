@@ -232,9 +232,9 @@ async function parse_obj_nodes(obj_file, mtl_colors) {
 		if (!child.isMesh) return;
 
 		const posAttr = child.geometry.toNonIndexed().attributes.position;
-		const groups = child.geometry.groups || [
-			{ start: 0, count: posAttr.count, materialIndex: 0 },
-		];
+		const groups = child.geometry.groups.length
+			? child.geometry.groups
+			: [{ start: 0, count: posAttr.count, materialIndex: 0 }];
 
 		for (const group of groups) {
 			const material = Array.isArray(child.material)
