@@ -77,6 +77,10 @@ export default defineConfig({
 					if (name.includes('@lezer')) return 'editor';
 					if (name.includes('protobufjs')) return 'protobuf';
 					if (name.includes('jsfft')) return 'jsfft';
+					if (name.includes('sentry')) return 'sentry';
+					if (name.includes('jsfxr')) return 'jsfxr';
+					if (name.includes('tonejs')) return 'tonejs';
+					if (name.includes('vue')) return 'vue';
 				},
 				entryFileNames: 'assets/[name]-[hash].js',
 				chunkFileNames: 'assets/[name]-[hash].js',
