@@ -93,17 +93,17 @@ export function ungroupNode(
 			'scale' in data
 				? typeof data.scale === 'number'
 					? data.scale
-					: data.scale?.x ?? 0
+					: (data.scale?.x ?? 0)
 				: 0,
 			'scale' in data
 				? typeof data.scale === 'number'
 					? data.scale
-					: data.scale?.y ?? 0
+					: (data.scale?.y ?? 0)
 				: 0,
 			'scale' in data
 				? typeof data.scale === 'number'
 					? data.scale
-					: data.scale?.z ?? 0
+					: (data.scale?.z ?? 0)
 				: 0,
 		);
 

@@ -15,10 +15,11 @@
 	--background: #5f8bc2;
 	--font-weight-default: 400;
 	--font-weight-bold: 600;
-	--font-family-default: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana,
-		sans-serif;
-	--font-family-alt: 'JetBrains Mono', Menlo, Monaco, Consolas, 'Andale Mono',
-		'Ubuntu Mono', 'Courier New', monospace;
+	--font-family-default:
+		'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	--font-family-alt:
+		'JetBrains Mono', Menlo, Monaco, Consolas, 'Andale Mono', 'Ubuntu Mono',
+		'Courier New', monospace;
 	--border-radius: 0.375rem;
 	--border-radius-big: 23.8px;
 	--padding-main: 16px;

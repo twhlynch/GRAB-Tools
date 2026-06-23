@@ -63,7 +63,7 @@ async function build_particle_model(file: File, mtl_file?: File) {
 
 	for (const mesh of model) {
 		const particle_color = mtl_colors
-			? mtl_colors[mesh.material ?? ''] ?? { r: 1, g: 1, b: 1 }
+			? (mtl_colors[mesh.material ?? ''] ?? { r: 1, g: 1, b: 1 })
 			: { r: Math.random(), g: Math.random(), b: Math.random() };
 		const c = color(particle_color);
 		const size = { x: 0.1, y: 0.1 };

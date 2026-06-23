@@ -934,10 +934,10 @@ export default defineComponent({
 			if (related_objects === undefined) {
 				related_objects = [
 					...(this.show_trigger_connections
-						? this.level.nodes?.levelNodeTrigger ?? []
+						? (this.level.nodes?.levelNodeTrigger ?? [])
 						: []),
 					...(this.show_gasm_connections
-						? this.level.nodes?.levelNodeGASM ?? []
+						? (this.level.nodes?.levelNodeGASM ?? [])
 						: []),
 				];
 			}

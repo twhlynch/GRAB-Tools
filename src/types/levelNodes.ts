@@ -26,8 +26,8 @@ type MatchesAnyType<K, T extends LevelNodeTypes[]> = T extends [
 	? Exact<Required<Head>, Required<K>> extends true
 		? true
 		: Tail extends LevelNodeTypes[]
-		? MatchesAnyType<K, Tail>
-		: false
+			? MatchesAnyType<K, Tail>
+			: false
 	: false;
 
 // keys of LevelNode of type T

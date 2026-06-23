@@ -93,7 +93,9 @@ export default {
 	padding: 10px 20px;
 	border-radius: 10px;
 	opacity: 1;
-	transition: opacity 0.3s ease, transform 0.3s ease;
+	transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
 	cursor: pointer;
 	max-width: min(90svw, 50ch);
 
@@ -113,7 +115,9 @@ export default {
 
 .toast-enter-active,
 .toast-leave-active {
-	transition: opacity 0.3s ease, transform 0.3s ease;
+	transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
 }
 .toast-enter-from,
 .toast-leave-to {

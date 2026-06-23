@@ -223,9 +223,8 @@ export default {
 								);
 
 								if (is_challenge) {
-									metrics[
-										item.user_id
-									].challenge_records += 1;
+									metrics[item.user_id].challenge_records +=
+										1;
 								}
 								metrics[item.user_id].featured_records += 1;
 							}
@@ -246,9 +245,8 @@ export default {
 										item.timestamp,
 									);
 
-									metrics[
-										item.user_id
-									].challenge_finishes += 1;
+									metrics[item.user_id].challenge_finishes +=
+										1;
 								}
 							}
 						}
