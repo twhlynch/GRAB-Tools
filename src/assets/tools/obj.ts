@@ -32,7 +32,7 @@ export async function obj(
 	}
 
 	if (mode === 'particles') {
-		return await build_particle_model(obj_file);
+		return await build_particle_model(obj_file, mtl_file);
 	}
 
 	if (mode === 'spheres') {
@@ -54,26 +54,26 @@ async function build_model(obj_file: File, mtl_file?: File) {
 	);
 }
 
-async function build_particle_model(file: File) {
+async function build_particle_model(file: File, mtl_file?: File) {
 	const text = await file.text();
+	const mtl_colors = mtl_file ? parse_mtl(await mtl_file.text()) : null;
 	const model = obj_vertices(text);
 
 	const nodes: LevelNodeWith<LevelNodeParticleEmitter>[] = [];
 
 	for (const mesh of model) {
-		const random_color = color({
-			r: Math.random(),
-			g: Math.random(),
-			b: Math.random(),
-		});
+		const particle_color = mtl_colors
+			? mtl_colors[mesh.material ?? ''] ?? { r: 1, g: 1, b: 1 }
+			: { r: Math.random(), g: Math.random(), b: Math.random() };
+		const c = color(particle_color);
 		const size = { x: 0.1, y: 0.1 };
 		const zero_vec = { x: 0, y: 0, z: 0 };
 		const node = levelNodeWithParticleEmitter({
 			scale: { x: 0.01, y: 0.01, z: 0.01 },
 			particlesPerSecond: 999,
 			lifeSpan: { x: 5, y: 5 },
-			startColor: random_color,
-			endColor: random_color,
+			startColor: c,
+			endColor: c,
 			startSize: size,
 			endSize: size,
 			velocity: zero_vec,
@@ -84,9 +84,9 @@ async function build_particle_model(file: File) {
 		});
 		node.animations = [
 			animation({
-				frames: mesh.map((p, i) => {
+				frames: mesh.vertices.map((p, i) => {
 					return animationFrame({
-						time: i * (1 / mesh.length),
+						time: i * (1 / mesh.vertices.length),
 						position: { x: p[0], y: p[1], z: p[2] },
 					});
 				}),
@@ -103,7 +103,7 @@ async function build_point_cloud(file: File) {
 
 	const nodes: LevelNodeWith<LevelNodeStatic>[] = [];
 
-	for (const vert of model.flat()) {
+	for (const vert of model.flatMap((m) => m.vertices)) {
 		const node = levelNodeWithStatic({
 			material: LevelNodeMaterial.DEFAULT_COLORED,
 			shape: LevelNodeShape.SPHERE,
@@ -120,21 +120,25 @@ async function build_point_cloud(file: File) {
 function obj_vertices(text: string) {
 	const lines = text.split('\n');
 
-	const model: number[][][] = [];
+	const model: { vertices: number[][]; material?: string }[] = [];
 	let mesh: number[][] = [];
+	let currentMaterial: string | undefined;
 
 	for (const line of lines) {
+		if (line.startsWith('usemtl ')) {
+			currentMaterial = line.slice(7).trim();
+		}
 		if (line.startsWith('v ')) {
 			mesh.push(line.slice(2).trim().split(/\s+/).map(Number));
 		} else if (line.startsWith('usemtl ') || line.startsWith('o ')) {
 			if (mesh.length) {
-				model.push(mesh);
+				model.push({ vertices: mesh, material: currentMaterial });
 				mesh = [];
 			}
 		}
 	}
 
-	if (mesh.length) model.push(mesh);
+	if (mesh.length) model.push({ vertices: mesh, material: currentMaterial });
 
 	return model;
 }
