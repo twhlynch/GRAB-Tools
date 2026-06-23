@@ -111,11 +111,11 @@ function build_nodes(pixels, mode) {
 	if (mode === 'particles') {
 		let colors = [];
 		let colorsMap = [];
-		for (let i = 0; i < pixels.length; i++) {
+		for (const pixel of pixels) {
 			let color = {
-				r: Math.floor(pixels[i].r * 24) / 24,
-				g: Math.floor(pixels[i].g * 24) / 24,
-				b: Math.floor(pixels[i].b * 24) / 24,
+				r: Math.floor(pixel.r * 24) / 24,
+				g: Math.floor(pixel.g * 24) / 24,
+				b: Math.floor(pixel.b * 24) / 24,
 			};
 
 			let index = colorsMap.findIndex(
@@ -127,7 +127,7 @@ function build_nodes(pixels, mode) {
 				colors.push([]);
 			}
 
-			colors[index].push(pixels[i]);
+			colors[index].push(pixel);
 		}
 		for (let j = 0; j < colors.length; j++) {
 			let particlesNode = {

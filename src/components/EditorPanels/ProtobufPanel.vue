@@ -6,6 +6,7 @@ import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
 
 export default {
+	emits: ['set', 'close'],
 	mounted() {
 		this.view = build_editor(
 			this.$refs.code_container,
@@ -43,7 +44,6 @@ export default {
 			}
 		},
 	},
-	emits: ['set', 'close'],
 };
 </script>
 

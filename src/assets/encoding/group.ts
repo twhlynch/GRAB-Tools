@@ -16,9 +16,7 @@ import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
 import { node_data } from './utils';
 
-export function groupNodes(
-	nodes: Array<LevelNode>,
-): LevelNodeWith<LevelNodeGroup> {
+export function groupNodes(nodes: LevelNode[]): LevelNodeWith<LevelNodeGroup> {
 	const positions = nodes.map((node) => {
 		const data = node_data(node);
 
@@ -48,9 +46,7 @@ export function groupNodes(
 	return group;
 }
 
-export function ungroupNode(
-	group: LevelNodeWith<LevelNodeGroup>,
-): Array<LevelNode> {
+export function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): LevelNode[] {
 	const group_position = new Vector3(
 		group.levelNodeGroup.position?.x ?? 0,
 		group.levelNodeGroup.position?.y ?? 0,
@@ -141,7 +137,7 @@ export function ungroupNode(
 	return child_nodes;
 }
 
-export function recursiveUngroup(nodes: Array<LevelNode>): Array<LevelNode> {
+export function recursiveUngroup(nodes?: LevelNode[]): LevelNode[] {
 	if (!nodes || nodes.length === 0) return [];
 
 	let index = nodes.findIndex((node) =>

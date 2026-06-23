@@ -129,14 +129,13 @@
 				levelGrids[0].style.gridTemplateColumns =
 					'repeat(auto-fill, minmax(150px, 1fr))';
 				let levelCards = document.getElementsByClassName('level-card');
-				for (let i = 0; i < levelCards.length; i++) {
-					levelCards[i].style.padding = '3% 3% 30px';
-					levelCards[i].style.lineHeight = '20px';
-					levelCards[i].style.left = '3%';
+				for (const levelCard of levelCards) {
+					levelCard.style.padding = '3% 3% 30px';
+					levelCard.style.lineHeight = '20px';
+					levelCard.style.left = '3%';
 
-					let children = levelCards[i].childNodes;
-					for (let j = 0; j < children.length; j++) {
-						let child = children[j];
+					let children = levelCard.childNodes;
+					for (const child of children) {
 						if (
 							child.nodeType !== Node.COMMENT_NODE &&
 							((child.classList &&
@@ -148,15 +147,9 @@
 							console.log(child);
 							child.style.display = 'none';
 						}
-						if (
-							child.classList &&
-							child.classList.contains('play-button')
-						) {
+						if (child.classList?.contains('play-button')) {
 							//
-						} else if (
-							child.classList &&
-							child.classList.contains('title')
-						) {
+						} else if (child.classList?.contains('title')) {
 							child.style.fontSize = '12px';
 						}
 					}
@@ -326,9 +319,6 @@
 			const levelId = levelUrl
 				.split('?level=')[1]
 				.replace('&verify_queue', '');
-			const detailsUrl = `https://api.slin.dev/grab/v1/details/${levelId
-				.split(':')
-				.join('/')}`;
 
 			const editButton = document.createElement('a');
 			editButton.classList.add('gtl-btn');
@@ -359,8 +349,7 @@
 			card.style.left = '3%';
 
 			let children = card.childNodes;
-			for (let j = 0; j < children.length; j++) {
-				let child = children[j];
+			for (const child of children) {
 				if (
 					child.nodeType !== Node.COMMENT_NODE &&
 					((child.classList &&
@@ -372,15 +361,9 @@
 					console.log(child);
 					child.style.display = 'none';
 				}
-				if (
-					child.classList &&
-					child.classList.contains('play-button')
-				) {
+				if (child.classList?.contains('play-button')) {
 					//
-				} else if (
-					child.classList &&
-					child.classList.contains('title')
-				) {
+				} else if (child.classList?.contains('title')) {
 					child.style.fontSize = '12px';
 				}
 			}
@@ -391,10 +374,7 @@
 		mutations.forEach(function (mutation) {
 			if (mutation.type === 'childList') {
 				mutation.addedNodes.forEach(function (node) {
-					if (
-						node.classList &&
-						node.classList.contains('grid-item')
-					) {
+					if (node.classList?.contains('grid-item')) {
 						addButtonsToCard(node);
 					}
 				});

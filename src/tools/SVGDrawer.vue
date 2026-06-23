@@ -46,7 +46,7 @@ export default {
 		<template #info>
 			Convert simple SVG images into their built paths.
 		</template>
-		<input type="file" id="svg-tool-file" accept=".svg" />
-		<button class="button" id="svg-tool-btn" @click="draw">Process</button>
+		<input id="svg-tool-file" type="file" accept=".svg" />
+		<button id="svg-tool-btn" class="button" @click="draw">Process</button>
 	</ToolTemplate>
 </template>

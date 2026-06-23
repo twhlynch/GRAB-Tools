@@ -28,8 +28,8 @@ export default {
 			<p>
 				Welcome to GRAB Tools! A collection of tools, statistics and
 				more for the VR game
-				<a :href="this.$config.GRAB_PAGE_URL">GRAB</a>. Brought to you
-				by <a href="https://twhlynch.me">.index</a>.
+				<a :href="$config.GRAB_PAGE_URL">GRAB</a>. Brought to you by
+				<a href="https://twhlynch.me">.index</a>.
 			</p>
 			<p>
 				Here you will find many tools for editing, or generating levels,
@@ -38,12 +38,11 @@ export default {
 				as the unbeaten levels list, and most played levels list, and a
 				managed list of the top levels and players.<br />
 				We also have a community maintained
-				<a :href="`${this.$config.WIKI_URL}.index`">wiki page</a>
+				<a :href="`${$config.WIKI_URL}.index`">wiki page</a>
 				hosted with miraheze, and a chrome extension to add some extra
 				utility to the
-				<a :href="this.$config.GRAB_LEVELS_URL">level browser</a>. Also
-				check out
-				<a href="https://grab-tutorials.live">GRAB Tutorials</a>!
+				<a :href="$config.GRAB_LEVELS_URL">level browser</a>. Also check
+				out <a href="https://grab-tutorials.live">GRAB Tutorials</a>!
 			</p>
 		</section>
 		<section class="tools">
@@ -72,7 +71,7 @@ export default {
 					>Chrome extension</a
 				>
 				that adds a bunch of useful features like these right into the
-				<a :href="this.$config.GRAB_LEVELS_URL">level browser</a>.
+				<a :href="$config.GRAB_LEVELS_URL">level browser</a>.
 			</p>
 		</section>
 		<section class="bookmark-links">
@@ -140,19 +139,16 @@ export default {
 					<YoutubeIcon />
 					<span> @dotindex </span>
 				</a>
-				<a
-					:href="`mailto:${this.$config.SUPPORT_EMAIL}`"
-					class="social"
-				>
+				<a :href="`mailto:${$config.SUPPORT_EMAIL}`" class="social">
 					<MailIcon />
 					<span> Email </span>
 				</a>
 			</div>
 			<p>
 				If you need help with anything, you should join the
-				<a :href="this.$config.DISCORD_URL">discord server</a>, but feel
-				free to contact me on any of my socials, or if you prefer, you
-				can email me at {{ this.$config.SUPPORT_EMAIL }}.
+				<a :href="$config.DISCORD_URL">discord server</a>, but feel free
+				to contact me on any of my socials, or if you prefer, you can
+				email me at {{ $config.SUPPORT_EMAIL }}.
 			</p>
 		</section>
 	</main>

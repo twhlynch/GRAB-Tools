@@ -11,6 +11,7 @@ export default {
 	props: {
 		mini: Boolean,
 	},
+	emits: ['changed'],
 	data() {
 		return {
 			json: {},
@@ -78,7 +79,6 @@ export default {
 			redo(this.view);
 		},
 	},
-	emits: ['changed'],
 };
 </script>
 

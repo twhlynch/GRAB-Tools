@@ -7,6 +7,14 @@ export default {
 		},
 	},
 	emits: ['update:visible'],
+	watch: {
+		visible(value) {
+			this.sync(value);
+		},
+	},
+	mounted() {
+		this.sync(this.visible);
+	},
 	methods: {
 		sync(value) {
 			const dialog = this.$refs.popup;
@@ -19,21 +27,13 @@ export default {
 			this.$emit('update:visible', false);
 		},
 	},
-	mounted() {
-		this.sync(this.visible);
-	},
-	watch: {
-		visible(value) {
-			this.sync(value);
-		},
-	},
 };
 </script>
 
 <template>
 	<dialog
-		class="popup super-unique-popup-class"
 		ref="popup"
+		class="popup super-unique-popup-class"
 		@close="close"
 		@cancel="close"
 		@keydown.esc="close"

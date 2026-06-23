@@ -440,24 +440,24 @@ async function generate(pitchSamps, volumeSamps, file) {
 		trigs[index2].animations[0].frames.push(endframe);
 	};
 
-	for (let i = 0; i < notes.length; i++) {
+	for (const note of notes) {
 		makeStaticNote(
-			notes[i].pitch,
-			notes[i].intensity,
-			notes[i].startTime,
-			notes[i].endTime,
+			note.pitch,
+			note.intensity,
+			note.startTime,
+			note.endTime,
 		);
 	}
 
 	let best = 0;
 	let trigs = triggerGroup.levelNodeGroup.childNodes;
-	for (let i = 0; i < trigs.length; i++) {
-		if (trigs[i].animations[0].frames.length > best) {
-			best = trigs[i].animations[0].frames.length;
+	for (const trig of trigs) {
+		if (trig.animations[0].frames.length > best) {
+			best = trig.animations[0].frames.length;
 		}
 		const frm = animationFrame();
 		frm.time = last;
-		trigs[i].animations[0].frames.push(frm);
+		trig.animations[0].frames.push(frm);
 	}
 
 	const max = Math.max(

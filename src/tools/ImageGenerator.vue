@@ -50,8 +50,8 @@ export default {
 	<ToolTemplate>
 		<template #title>Pixel Art</template>
 		<template #info>Generate pixel art from an image.</template>
-		<input type="number" id="image-tool-width" placeholder="width (50)" />
-		<input type="number" id="image-tool-height" placeholder="height (50)" />
+		<input id="image-tool-width" type="number" placeholder="width (50)" />
+		<input id="image-tool-height" type="number" placeholder="height (50)" />
 		<select id="image-tool-mode">
 			<option value="cubes" selected>cubes</option>
 			<option value="particles">particles</option>
@@ -60,8 +60,8 @@ export default {
 			<option value="plane" selected>plane</option>
 			<option value="sphere">sphere</option>
 		</select>
-		<input type="file" id="image-tool-file" accept="image/*" />
-		<button class="button" id="image-tool-btn" @click="run">
+		<input id="image-tool-file" type="file" accept="image/*" />
+		<button id="image-tool-btn" class="button" @click="run">
 			Generate
 		</button>
 	</ToolTemplate>

@@ -3,6 +3,11 @@ import PauseIcon from '@/icons/PauseIcon.vue';
 import PlayIcon from '@/icons/PlayIcon.vue';
 
 export default {
+	components: {
+		PlayIcon,
+		PauseIcon,
+	},
+	emits: ['scope'],
 	data() {
 		return {
 			max: 0,
@@ -12,11 +17,6 @@ export default {
 			was_playing: true,
 		};
 	},
-	components: {
-		PlayIcon,
-		PauseIcon,
-	},
-	emits: ['scope'],
 	methods: {
 		scope(func) {
 			this.$emit('scope', func);
@@ -81,14 +81,14 @@ export default {
 				<PlayIcon v-else />
 			</div>
 			<input
-				@input="change"
-				@mousedown="down"
-				@mouseup="up"
 				type="range"
 				min="0"
 				:max="max"
 				step="0.01"
 				:value="time"
+				@input="change"
+				@mousedown="down"
+				@mouseup="up"
 			/>
 		</div>
 	</section>

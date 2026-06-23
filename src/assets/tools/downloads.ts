@@ -30,8 +30,8 @@ async function can_download_level(level_id: string) {
 
 	const { description, curated_listings } = level_details;
 
-	if (description?.includes?.('[gt-dl]')) return true;
-	if (description?.includes?.('[gt-nodl]')) {
+	if (description?.includes('[gt-dl]')) return true;
+	if (description?.includes('[gt-nodl]')) {
 		window.toast('Not permitted to download this level', 'warning');
 		return false;
 	}
@@ -45,16 +45,18 @@ async function can_download_level(level_id: string) {
 	}
 
 	// then challenge and ooak
-	if (curated_listings?.includes?.('challenge')) return true;
-	if (curated_listings?.includes?.('one_of_a_kind')) return true;
+	if (curated_listings?.includes('challenge')) return true;
+	if (curated_listings?.includes('one_of_a_kind')) return true;
 
 	// check hardest levels list
-	const hardest_list = (await get_hardest_levels_request()) as {
-		position: number;
-		level_id: string;
-		title: string;
-		creators: string;
-	}[];
+	const hardest_list = (await get_hardest_levels_request()) as
+		| {
+				position: number;
+				level_id: string;
+				title: string;
+				creators: string;
+		  }[]
+		| null;
 	if (hardest_list?.find((level) => level.level_id === level_id)) return true;
 
 	// if in doubt match username
@@ -74,7 +76,7 @@ async function download_level(level_id: string) {
 		const details = await level_details_request(level_id);
 		if (details === null) return null;
 
-		iteration = iteration || String(details.iteration);
+		iteration = String(details.iteration);
 	}
 
 	const download_id = [user_id, map_id, iteration].join(':');

@@ -4,15 +4,15 @@
 			class="title close"
 			@click="
 				() => {
-					this.$emit('close');
+					$emit('close');
 				}
 			"
 			>Close</span
 		>
 		<div
-			class="templates-section"
 			v-for="[name, templates_list] in Object.entries(templates)"
 			:key="name"
+			class="templates-section"
 		>
 			<span
 				class="title"
@@ -24,13 +24,13 @@
 				>{{ name }}</span
 			>
 			<div
+				v-show="active_sections.includes(name)"
 				class="templates-group"
-				v-show="this.active_sections.includes(name)"
 			>
 				<div
-					class="template"
 					v-for="(template, i) of templates_list"
 					:key="i"
+					class="template"
 				>
 					<span class="name">{{ template.name }}</span>
 					<button
@@ -65,61 +65,6 @@ import { add_nodes } from '@/assets/encoding/utils';
 import downloads from '@/assets/tools/downloads';
 
 export default {
-	methods: {
-		set(json) {
-			this.$emit('modifier', (_) => {
-				return json;
-			});
-		},
-		insert(json) {
-			this.$emit('modifier', (level) => {
-				add_nodes(level, json.levelNodes);
-				return level;
-			});
-		},
-		async open(template) {
-			const level = await this.load(template);
-			if (!level) return;
-			this.set(level);
-		},
-		async add(template) {
-			const level = await this.load(template);
-			if (!level) return;
-			this.insert(level);
-		},
-		async download(template) {
-			if (template.identifier) {
-				return await downloads.download_level(template.identifier);
-			} else if (template.path) {
-				const response = await fetch(`levels/${template.path}`);
-
-				if (response.status !== 200) {
-					window.toast(`Error: Failed to download`, 'error');
-					return null;
-				}
-
-				return await response.arrayBuffer();
-			}
-		},
-		async load(template) {
-			let level = await this.download(template);
-			if (!level) return null;
-
-			const blob = new Blob([level], {
-				type: 'application/octet-stream',
-			});
-			const json = await decodeLevel(blob);
-			return json;
-		},
-		toggle(name) {
-			const index = this.active_sections.indexOf(name);
-			if (index !== -1) {
-				this.active_sections.splice(index, 1);
-			} else {
-				this.active_sections.push(name);
-			}
-		},
-	},
 	emits: ['modifier', 'close'],
 	data() {
 		return {
@@ -266,6 +211,61 @@ export default {
 				],
 			},
 		};
+	},
+	methods: {
+		set(json) {
+			this.$emit('modifier', (_) => {
+				return json;
+			});
+		},
+		insert(json) {
+			this.$emit('modifier', (level) => {
+				add_nodes(level, json.levelNodes);
+				return level;
+			});
+		},
+		async open(template) {
+			const level = await this.load(template);
+			if (!level) return;
+			this.set(level);
+		},
+		async add(template) {
+			const level = await this.load(template);
+			if (!level) return;
+			this.insert(level);
+		},
+		async download(template) {
+			if (template.identifier) {
+				return await downloads.download_level(template.identifier);
+			} else if (template.path) {
+				const response = await fetch(`levels/${template.path}`);
+
+				if (response.status !== 200) {
+					window.toast(`Error: Failed to download`, 'error');
+					return null;
+				}
+
+				return await response.arrayBuffer();
+			}
+		},
+		async load(template) {
+			let level = await this.download(template);
+			if (!level) return null;
+
+			const blob = new Blob([level], {
+				type: 'application/octet-stream',
+			});
+			const json = await decodeLevel(blob);
+			return json;
+		},
+		toggle(name) {
+			const index = this.active_sections.indexOf(name);
+			if (index !== -1) {
+				this.active_sections.splice(index, 1);
+			} else {
+				this.active_sections.push(name);
+			}
+		},
 	},
 };
 </script>

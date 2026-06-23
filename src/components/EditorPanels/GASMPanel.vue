@@ -24,6 +24,29 @@ export default {
 	computed: {
 		...mapState(useConfigStore, ['vim_enabled']),
 	},
+	watch: {
+		vim_enabled() {
+			const asm = this.view.state.doc.toString();
+
+			this.view.dom.parentNode.removeChild(this.view.dom);
+			this.view.destroy();
+
+			this.create_editor();
+
+			this.view.dispatch({
+				changes: {
+					from: 0,
+					to: this.view.state.doc.length,
+					insert: asm,
+				},
+			});
+
+			if (this.json) {
+				update_json_completions(this.json);
+				update_text_completions('');
+			}
+		},
+	},
 	mounted() {
 		this.create_editor();
 	},
@@ -81,29 +104,6 @@ export default {
 		},
 	},
 	emits: ['set'],
-	watch: {
-		vim_enabled() {
-			const asm = this.view.state.doc.toString();
-
-			this.view.dom.parentNode.removeChild(this.view.dom);
-			this.view.destroy();
-
-			this.create_editor();
-
-			this.view.dispatch({
-				changes: {
-					from: 0,
-					to: this.view.state.doc.length,
-					insert: asm,
-				},
-			});
-
-			if (this.json) {
-				update_json_completions(this.json);
-				update_text_completions('');
-			}
-		},
-	},
 };
 </script>
 

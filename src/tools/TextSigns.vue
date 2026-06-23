@@ -53,7 +53,7 @@ export default {
 			<option value="simple" selected>simple</option>
 			<option value="animated">animated</option>
 		</select>
-		<button class="button" id="text-signs-tool-btn" @click="run">
+		<button id="text-signs-tool-btn" class="button" @click="run">
 			Generate
 		</button>
 	</ToolTemplate>

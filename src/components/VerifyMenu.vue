@@ -9,6 +9,45 @@ export default {
 	components: {
 		GeneralPopup,
 	},
+	props: {
+		visible: {
+			type: Boolean,
+			required: true,
+		},
+	},
+	emits: ['update:visible'],
+	data() {
+		return {
+			tab: 'bookmark',
+			access_token: '',
+			level_url: '',
+			code: null,
+			bookmarklet: 'javascript:(() => {})();',
+		};
+	},
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'user_name', 'grab_id']),
+	},
+	mounted() {
+		const userStore = useUserStore();
+		this.bookmarklet = `javascript:(async () => {
+			const token = JSON.parse(localStorage.user).user.access_token;
+			const url = '${this.$config.SERVER_URL}verify_account?token=' + token + '&access_token=${userStore.access_token}';
+
+			try {
+				const response = await fetch(url);
+
+				if (!response.ok) {
+					const text = await response.text();
+					window.toast('Error: ' + text, 'error');
+				} else {
+					window.toast('Successfully verified GRAB account!');
+				}
+			} catch {
+				window.toast('Request failed', 'error');
+			}
+		})();`;
+	},
 	methods: {
 		logout() {
 			const userStore = useUserStore();
@@ -37,45 +76,6 @@ export default {
 			e.preventDefault();
 		},
 	},
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'user_name', 'grab_id']),
-	},
-	data() {
-		return {
-			tab: 'bookmark',
-			access_token: '',
-			level_url: '',
-			code: null,
-			bookmarklet: 'javascript:(() => {})();',
-		};
-	},
-	mounted() {
-		const userStore = useUserStore();
-		this.bookmarklet = `javascript:(async () => {
-			const token = JSON.parse(localStorage.user).user.access_token;
-			const url = '${this.$config.SERVER_URL}verify_account?token=' + token + '&access_token=${userStore.access_token}';
-
-			try {
-				const response = await fetch(url);
-
-				if (!response.ok) {
-					const text = await response.text();
-					window.toast('Error: ' + text, 'error');
-				} else {
-					window.toast('Successfully verified GRAB account!');
-				}
-			} catch {
-				window.toast('Request failed', 'error');
-			}
-		})();`;
-	},
-	props: {
-		visible: {
-			type: Boolean,
-			required: true,
-		},
-	},
-	emits: ['update:visible'],
 };
 </script>
 
@@ -114,14 +114,14 @@ export default {
 				<li>Publish or update the level</li>
 				<li>
 					Find the level on the
-					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
+					<a :href="$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>Copy the URL, and paste it here</li>
 				<li>Once verified you can delete the level</li>
 			</ol>
 
 			<p v-if="code" class="code">GT-{{ code }}</p>
-			<button @click="generate_code" v-else>Generate Code</button>
+			<button v-else @click="generate_code">Generate Code</button>
 
 			<input v-model="level_url" type="text" placeholder="level url" />
 
@@ -133,7 +133,7 @@ export default {
 			<ol>
 				<li>
 					Login to the
-					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
+					<a :href="$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>
 					Open DevTools with CTRL+SHIFT+I, or right click, Inspect
@@ -166,7 +166,7 @@ export default {
 				<li>Drag the bookmarklet into your bookmarks</li>
 				<li>
 					Login to the
-					<a :href="this.$config.GRAB_VIEWER_URL">level browser</a>
+					<a :href="$config.GRAB_VIEWER_URL">level browser</a>
 				</li>
 				<li>Click the bookmark to run it</li>
 				<li>On success, login again to see changes</li>

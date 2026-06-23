@@ -192,6 +192,15 @@ export default {
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
+	created() {
+		document.title = 'Stats | GRAB Tools';
+	},
+	mounted() {
+		const params = new URLSearchParams(window.location.search);
+		const tab = params.get('tab');
+		const filter = params.get('filter');
+		this.set_tab(tab, filter);
+	},
 	methods: {
 		async set_tab(tab, filter = null) {
 			if (!tab || (tab === this.current_tab && !filter)) return;
@@ -224,15 +233,6 @@ export default {
 			}
 		},
 	},
-	created() {
-		document.title = 'Stats | GRAB Tools';
-	},
-	mounted() {
-		const params = new URLSearchParams(window.location.search);
-		const tab = params.get('tab');
-		const filter = params.get('filter');
-		this.set_tab(tab, filter);
-	},
 };
 </script>
 
@@ -249,6 +249,7 @@ export default {
 		<section id="sections">
 			<button
 				v-for="section of sections"
+				:id="section.name"
 				:key="section.name"
 				:class="
 					'button stats-button' +
@@ -256,7 +257,6 @@ export default {
 						? ' tab-active'
 						: '')
 				"
-				:id="section.name"
 				@click="
 					() => {
 						set_tab(section.name);
@@ -270,21 +270,21 @@ export default {
 		<section id="sorters">
 			<div
 				v-for="section of sections"
+				v-show="section.name === current_section?.name"
+				:id="section.name + '-sort'"
 				:key="section.name"
 				class="stats-sorting"
-				:id="section.name + '-sort'"
-				v-show="section.name === current_section?.name"
 			>
 				<button
 					v-for="list of section.lists.filter(
 						(list) => list.name !== 'Default',
 					)"
+					:id="section.name + '-sort-btn'"
 					:key="list.name"
 					:class="
 						'sort-btn button-sml' +
 						(current_list?.name === list.name ? ' sort-active' : '')
 					"
-					:id="section.name + '-sort-btn'"
 					@click="
 						() => {
 							set_tab(section.name, list.name);
@@ -293,8 +293,8 @@ export default {
 				>
 					{{ list.name }}
 					<component
-						v-if="list.icon"
 						:is="list.icon"
+						v-if="list.icon"
 						class="sort-icon"
 					/>
 				</button>

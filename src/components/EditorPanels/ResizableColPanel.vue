@@ -1,11 +1,11 @@
 <script>
 export default {
+	emits: ['resize'],
 	data() {
 		return {
 			down: false,
 		};
 	},
-	emits: ['resize'],
 	mounted() {
 		document.addEventListener('mouseup', this.mouseup);
 		document.addEventListener('mousemove', this.mousemove);
@@ -53,12 +53,12 @@ export default {
 </script>
 
 <template>
-	<section class="container" :ref="'container'">
-		<div class="first" :ref="'first'">
+	<section :ref="'container'" class="container">
+		<div :ref="'first'" class="first">
 			<slot name="first" />
 		</div>
-		<div class="thumb" :ref="'thumb'" @mousedown="mousedown"></div>
-		<div class="second" :ref="'second'">
+		<div :ref="'thumb'" class="thumb" @mousedown="mousedown"></div>
+		<div :ref="'second'" class="second">
 			<slot name="second" />
 		</div>
 	</section>

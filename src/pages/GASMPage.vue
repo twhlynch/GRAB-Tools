@@ -57,7 +57,7 @@ export default {
 				<h3>Samples</h3>
 				<p>
 					Suggest your own samples in
-					<a :href="this.$config.DISCORD_URL">the discord</a>!
+					<a :href="$config.DISCORD_URL">the discord</a>!
 				</p>
 				<button @click="sample('get_player_by_name')">
 					Get player by name

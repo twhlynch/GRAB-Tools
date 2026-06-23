@@ -81,7 +81,7 @@ export default {
 				const insert = compile_gasm(asm).join('\n');
 				const to = this.view.state.doc.length;
 				const changes = { from: 0, to, insert };
-				const change = this.view.dispatch({ changes });
+				const _change = this.view.dispatch({ changes });
 			} catch (e) {
 				window.toast(e.message, 'error');
 				return;
@@ -96,7 +96,7 @@ export default {
 		set(insert) {
 			const to = this.view.state.doc.length;
 			const changes = { from: 0, to, insert };
-			const change = this.view.dispatch({ changes });
+			const _change = this.view.dispatch({ changes });
 		},
 		async copy() {
 			try {
@@ -111,7 +111,7 @@ export default {
 				const insert = await navigator.clipboard.readText();
 				const to = this.view.state.doc.length;
 				const changes = { from: 0, to, insert };
-				const change = this.view.dispatch({ changes });
+				const _change = this.view.dispatch({ changes });
 			} catch (err) {
 				window.toast(err, 'error');
 			}

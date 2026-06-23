@@ -49,6 +49,9 @@ export default {
 		this.close_templates();
 		this.open_starting_level();
 	},
+	created() {
+		document.title = 'JSON Editor | GRAB Tools';
+	},
 	methods: {
 		close_templates() {
 			this.$refs.left_panel.size(0);
@@ -141,7 +144,7 @@ export default {
 			}
 
 			const text = dt.getData('text/plain');
-			if (text && text.includes('level=')) {
+			if (text?.includes('level=')) {
 				e.preventDefault();
 				const params = new URLSearchParams(text.split('?')[1]);
 				const level_id = params.get('level');
@@ -154,9 +157,6 @@ export default {
 				if (json) this.set_json(json);
 			}
 		},
-	},
-	created() {
-		document.title = 'JSON Editor | GRAB Tools';
 	},
 };
 </script>
@@ -171,12 +171,12 @@ export default {
 			@scope="scope"
 		/>
 		<ResizableRowPanel
-			class="main-panel"
 			:ref="'main_panel'"
+			class="main-panel"
 			@resize="resize_left"
 		>
 			<template #first>
-				<ResizableRowPanel class="left-panel" ref="left_panel">
+				<ResizableRowPanel ref="left_panel" class="left-panel">
 					<template #first>
 						<TemplatesPanel
 							@modifier="run_modifier"
@@ -185,8 +185,8 @@ export default {
 					</template>
 					<template #second>
 						<ViewportPanel
-							class="view-panel"
 							:ref="'viewport_panel'"
+							class="view-panel"
 							@changed="viewport_changed"
 							@modifier="run_modifier"
 							@scope="scope"
@@ -197,7 +197,7 @@ export default {
 				</ResizableRowPanel>
 			</template>
 			<template #second>
-				<ResizableColPanel class="side-panel" :ref="'side_panel'">
+				<ResizableColPanel :ref="'side_panel'" class="side-panel">
 					<template #first>
 						<JsonPanel
 							:ref="'json_panel'"
@@ -215,11 +215,11 @@ export default {
 		</footer>
 		<PopupPanel :inputs="popup_props.inputs" :func="popup_props.func" />
 		<ProtobufPanel
-			class="protobuf-panel"
 			v-show="show_protobuf_panel"
+			ref="protobuf_panel"
+			class="protobuf-panel"
 			@set="set_protobuf"
 			@close="close_protobuf"
-			ref="protobuf_panel"
 		/>
 	</main>
 </template>

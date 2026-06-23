@@ -76,22 +76,22 @@ export default {
 			the old version with 15 second max length.
 		</template>
 		<input
-			type="number"
 			id="video-generator-tool-width"
+			type="number"
 			placeholder="width (40)"
 		/>
 		<input
-			type="number"
 			id="video-generator-tool-height"
+			type="number"
 			placeholder="height (30)"
 		/>
 		<select id="video-generator-tool-mode">
 			<option value="animations" selected>animations</option>
 			<option value="code">code</option>
 		</select>
-		<input type="file" id="video-generator-tool-file" />
+		<input id="video-generator-tool-file" type="file" />
 		<ProgressBar :progress="progress" />
-		<button class="button" id="video-generator-tool-btn" @click="generate">
+		<button id="video-generator-tool-btn" class="button" @click="generate">
 			Process Video
 		</button>
 	</ToolTemplate>

@@ -43,7 +43,7 @@ export async function decodeLevel(buffer: Blob): Promise<Level | null> {
 	}
 }
 
-export async function encodeLevel(level: Level): Promise<ArrayBuffer | null> {
+export function encodeLevel(level: Level): ArrayBuffer | null {
 	const root = load();
 	const message = root.lookupType('COD.Level.Level');
 
@@ -85,10 +85,10 @@ export function downloadJSON(
 }
 
 export function createLevel(
-	nodes: Array<LevelNode> = [],
+	nodes: LevelNode[] = [],
 	title = 'New Level',
 	description = 'Made with GRAB Tools',
-	creators: Array<string> | string = [DOMAIN],
+	creators: string[] | string = [DOMAIN],
 	checkpoints = 10,
 	horizon = {
 		a: 1.0,
@@ -134,12 +134,12 @@ export function createLevel(
 }
 
 export function ambienceSettings(
-	horizon: Color,
-	zenith: Color,
-	sunAltitude: number,
-	sunAzimuth: number,
-	sunSize: number,
-	fogDensity: number,
+	horizon: Color | undefined,
+	zenith: Color | undefined,
+	sunAltitude: number | undefined,
+	sunAzimuth: number | undefined,
+	sunSize: number | undefined,
+	fogDensity: number | undefined,
 ) {
 	if (
 		!(

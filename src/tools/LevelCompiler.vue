@@ -68,35 +68,35 @@ export default {
 		<button class="button-sml" @click="showQuestMultiSelect">
 			Click me if you are on quest and can't select multiple files
 		</button>
-		<input type="text" id="level-compiler-tool-title" placeholder="Title" />
+		<input id="level-compiler-tool-title" type="text" placeholder="Title" />
 		<textarea
 			id="level-compiler-tool-description"
 			maxlength="300"
 			placeholder="Description"
 		></textarea>
 		<input
-			type="text"
 			id="level-compiler-tool-creators"
+			type="text"
 			placeholder="Creators"
 			maxlength="80"
 		/>
 		<input
-			type="number"
 			id="level-compiler-tool-checkpoints"
+			type="number"
 			placeholder="Checkpoints"
 		/>
 		<input
-			type="file"
 			id="level-compiler-tool-file"
+			type="file"
 			accept=".level"
 			multiple
 		/>
 		<div id="level-compiler-tool-quest-multi-select">
 			<input
 				v-for="i in 10"
-				type="file"
-				:key="i"
 				:id="'level-compiler-tool-file' + (i - 1)"
+				:key="i"
+				type="file"
 				accept=".level"
 			/>
 		</div>

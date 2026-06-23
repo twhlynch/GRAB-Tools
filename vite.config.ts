@@ -93,7 +93,7 @@ export default defineConfig({
 		https: {},
 		port: 5173,
 		strictPort: true,
-		host: host || false,
+		host: host ?? false,
 		hmr: host
 			? {
 					protocol: 'ws',

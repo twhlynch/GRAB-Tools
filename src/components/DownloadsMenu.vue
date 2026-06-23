@@ -13,9 +13,13 @@ export default {
 		GeneralPopup,
 		RefreshedIcon,
 	},
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
+	props: {
+		visible: {
+			type: Boolean,
+			required: true,
+		},
 	},
+	emits: ['update:visible'],
 	data() {
 		return {
 			allow_downloads: false,
@@ -23,10 +27,14 @@ export default {
 			loaded: false,
 		};
 	},
-	props: {
-		visible: {
-			type: Boolean,
-			required: true,
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
+	},
+	watch: {
+		visible(val) {
+			if (val && !this.loaded) {
+				this.load();
+			}
 		},
 	},
 	methods: {
@@ -105,14 +113,6 @@ export default {
 			level.allow_downloads = allow;
 		},
 	},
-	watch: {
-		visible(val) {
-			if (val && !this.loaded) {
-				this.load();
-			}
-		},
-	},
-	emits: ['update:visible'],
 };
 </script>
 
@@ -138,8 +138,8 @@ export default {
 			<div v-for="level in levels" :key="level.identifier" class="level">
 				<span class="title">{{ level.title }}</span>
 				<RefreshedIcon
-					class="reset"
 					v-if="level.can_reset && level.allow_downloads !== null"
+					class="reset"
 					@click="set_level_allow_downloads(level, null)"
 				/>
 				<button

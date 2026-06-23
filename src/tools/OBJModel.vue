@@ -54,8 +54,8 @@ export default {
 		<template #title>3D Model</template>
 		<template #info>Import a .obj 3D models into grab.</template>
 		<input
-			type="file"
 			id="obj-model-tool-file"
+			type="file"
 			accept=".obj,.mtl"
 			multiple
 		/>
@@ -64,7 +64,7 @@ export default {
 			<option value="particles">particles</option>
 			<option value="spheres">spheres</option>
 		</select>
-		<button class="button" id="obj-model-tool-btn" @click="run">
+		<button id="obj-model-tool-btn" class="button" @click="run">
 			Process
 		</button>
 	</ToolTemplate>

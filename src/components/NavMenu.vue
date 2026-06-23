@@ -36,27 +36,27 @@ export default {
 
 <template>
 	<nav class="nav-menu">
-		<a href="/" id="nav-button-home" class="nav-button">
+		<a id="nav-button-home" href="/" class="nav-button">
 			<span>Home</span>
 			<HouseIcon class="nav-hideable" />
 		</a>
-		<a href="/stats" id="nav-button-stats" class="nav-button">
+		<a id="nav-button-stats" href="/stats" class="nav-button">
 			<span>Stats</span>
 			<StatsIcon class="nav-hideable" />
 		</a>
-		<a href="/tools" id="nav-button-tools" class="nav-button">
+		<a id="nav-button-tools" href="/tools" class="nav-button">
 			<span>Tools</span>
 			<ToolsIcon class="nav-hideable" />
 		</a>
-		<a href="/games" id="nav-button-games" class="nav-button">
+		<a id="nav-button-games" href="/games" class="nav-button">
 			<span>Games</span>
 			<RocketIcon class="nav-hideable" />
 		</a>
-		<a :href="this.$config.DISCORD_URL" class="nav-button">
+		<a :href="$config.DISCORD_URL" class="nav-button">
 			<span>Discord</span>
 			<DiscordIcon class="nav-hideable" />
 		</a>
-		<a :href="this.$config.WIKI_URL" class="nav-button">
+		<a :href="$config.WIKI_URL" class="nav-button">
 			<span>Wiki</span>
 			<GlobeIcon class="nav-hideable" />
 		</a>

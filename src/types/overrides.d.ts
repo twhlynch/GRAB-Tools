@@ -5,7 +5,7 @@ type Severity = 'message' | 'info' | 'warn' | 'warning' | 'err' | 'error';
 
 declare global {
 	interface Window {
-		_root: Root;
+		_root?: Root;
 		toast: (
 			message: string | Error,
 			severity?: Severity,

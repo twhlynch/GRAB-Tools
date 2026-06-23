@@ -48,8 +48,8 @@ export default {
 			Convert a levels to readable JSON data and back.
 		</template>
 		<input
-			type="file"
 			id="level-json-tool-file"
+			type="file"
 			accept=".level,.json"
 			multiple
 		/>

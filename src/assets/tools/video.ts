@@ -18,8 +18,10 @@ async function video(
 	width: number,
 	height: number,
 	mode: 'animations' | 'code',
-	callback = (_: number) => {},
-): Promise<Array<LevelNode> | null> {
+	callback = (_: number) => {
+		// noop
+	},
+): Promise<LevelNode[] | null> {
 	if (!window.MediaStreamTrackProcessor) {
 		window.toast(
 			'MediaStreamTrackProcessor is not available on this browser. Chrome is required for this tool.',
@@ -47,7 +49,7 @@ async function read_video(file: File, callback: (percent: number) => void) {
 	try {
 		buffer = await new Promise((resolve, reject) => {
 			const reader = new FileReader();
-			reader.onload = async () => {
+			reader.onload = () => {
 				const buf = new Uint8Array(reader.result as ArrayBuffer);
 				resolve(buf);
 			};
@@ -233,11 +235,11 @@ function build_video(
 	return [...level_nodes, wall_node];
 }
 
-type Instruction = {
+interface Instruction {
 	line: string;
 	x: number;
 	y: number;
-};
+}
 
 function build_code_video(
 	bitmaps: ImageBitmap[],
@@ -341,7 +343,7 @@ function build_code_video(
 
 		create_connection(
 			block,
-			static_nodes[pixel_index]!,
+			static_nodes[pixel_index],
 			pixel_index + 1,
 			'color',
 			`P_${x}_${y}`,
@@ -391,13 +393,13 @@ function build_code_video(
 	return [...static_nodes, ...code_nodes];
 }
 
-type Pixel = {
+interface Pixel {
 	x: number;
 	y: number;
 	r: number;
 	g: number;
 	b: number;
-};
+}
 
 type Frame = Pixel[];
 

@@ -49,6 +49,12 @@ export default {
 			'is_list_moderator',
 		]),
 	},
+	created() {
+		document.title = 'GRAB Hardest Levels | GRAB Tools';
+	},
+	mounted() {
+		this.init();
+	},
 	methods: {
 		selectTab(id) {
 			document
@@ -236,9 +242,7 @@ export default {
 							if (is_challenge) {
 								metrics[id].challenge_created += 1;
 
-								for (let i = 0; i < leaderboard.length; i++) {
-									const item = leaderboard[i];
-
+								for (const item of leaderboard) {
 									checkMetric(
 										item.user_id,
 										item.user_name,
@@ -279,15 +283,15 @@ export default {
 						Object.values(metrics).forEach((values) => {
 							const { max, min } = adjustments[key];
 							const value = values[key];
-							const alpha = 0.7;
+							const _alpha = 0.7;
 							const weight = this.weights[key];
 							const t = (value - min) / (max - min);
 
-							const inverse_power =
+							const _inverse_power =
 								(1 - Math.pow(1 - t, 0.6)) * weight;
-							const step = t * t * (3 - 2 * t) * weight;
+							const _step = t * t * (3 - 2 * t) * weight;
 							const power = Math.pow(t, 0.6) * weight;
-							const stepp =
+							const _stepp =
 								t * t * t * (t * (t * 6 - 15) + 10) * weight;
 
 							values[key] = power;
@@ -413,12 +417,6 @@ export default {
 			});
 		},
 	},
-	created() {
-		document.title = 'GRAB Hardest Levels | GRAB Tools';
-	},
-	mounted() {
-		this.init();
-	},
 };
 </script>
 
@@ -431,16 +429,16 @@ export default {
 		<section id="sorters">
 			<div class="list-sorting">
 				<button
-					class="sort-btn button-sml sort-active"
 					id="maps-sort-btn"
+					class="sort-btn button-sml sort-active"
 					@click="selectTab('maps')"
 				>
 					Maps
 					<MapIcon class="sort-icon" />
 				</button>
 				<button
-					class="sort-btn button-sml"
 					id="players-sort-btn"
+					class="sort-btn button-sml"
 					@click="selectTab('players')"
 				>
 					Players
@@ -449,37 +447,37 @@ export default {
 			</div>
 		</section>
 		<section id="list-section">
-			<div class="ghl-list-data" id="data">
+			<div id="data" class="ghl-list-data">
 				<div
-					class="controls"
 					v-show="tab === 'maps' && is_list_moderator"
+					class="controls"
 				>
 					<input
+						v-model="add_level_id"
 						type="text"
 						placeholder="Level ID or URL"
 						autocapitalize="false"
 						autocorrect="false"
-						v-model="add_level_id"
 						@keyup.enter="add_level"
 					/>
 					<input
+						v-model="add_level_position"
 						type="number"
 						placeholder="Position"
-						v-model="add_level_position"
 						@keyup.enter="add_level"
 					/>
 					<button @click="add_level">Add Level</button>
 				</div>
 				<HardestLevelsList
-					class="LeaderboardOutput"
 					v-show="tab === 'maps'"
+					class="LeaderboardOutput"
 					:list="hardest_levels"
 					@update="update_levels"
 				/>
 				<div
-					class="LeaderboardOutput"
 					v-show="tab === 'players'"
 					ref="players"
+					class="LeaderboardOutput"
 				>
 					<ListRow
 						v-for="{
@@ -492,6 +490,7 @@ export default {
 							position,
 						} in top_metrics"
 						:key="user_id"
+						ref="row"
 						:position="position"
 						:user_id="user_id"
 						:user_name="user_name"
@@ -501,13 +500,12 @@ export default {
 						:raw="raw"
 						:weights="weights"
 						@expand="on_expand"
-						ref="row"
 					/>
 				</div>
 				<div v-show="tab === 'players'" class="query-container">
 					<input
-						type="text"
 						v-model="query"
+						type="text"
 						placeholder="User ID or username"
 						autocapitalize="false"
 						autocorrect="false"

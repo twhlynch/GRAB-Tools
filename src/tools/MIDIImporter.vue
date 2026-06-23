@@ -60,25 +60,25 @@ export default {
 		<template #info>
 			Generate songs with triggers and sound blocks.
 		</template>
-		<input type="file" id="midi-tool-file" accept=".mid,.midi" />
+		<input id="midi-tool-file" type="file" accept=".mid,.midi" />
 		<label>
 			Start active:
-			<input type="checkbox" id="midi-tool-start-active" checked="true" />
+			<input id="midi-tool-start-active" type="checkbox" checked="true" />
 		</label>
 		<label>
-			Loop: <input type="checkbox" id="midi-tool-loop" checked="true" />
+			Loop: <input id="midi-tool-loop" type="checkbox" checked="true" />
 		</label>
 		<label>
 			Optimize complexity:
-			<input type="checkbox" id="midi-tool-optimize" />
+			<input id="midi-tool-optimize" type="checkbox" />
 		</label>
 		<input
-			type="number"
 			id="midi-tool-volume"
+			type="number"
 			min="0"
 			max="100"
 			placeholder="Volume (0-100, default 30)"
 		/>
-		<button class="button" id="midi-tool-btn" @click="run">Generate</button>
+		<button id="midi-tool-btn" class="button" @click="run">Generate</button>
 	</ToolTemplate>
 </template>

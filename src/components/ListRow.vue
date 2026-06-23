@@ -13,6 +13,7 @@ export default {
 		raw: Object,
 		weights: Object,
 	},
+	emits: ['expand'],
 	data() {
 		return {
 			expanded: false,
@@ -30,7 +31,6 @@ export default {
 			},
 		};
 	},
-	emits: ['expand'],
 	methods: {
 		getSuffix(number) {
 			const suffixes = ['th', 'st', 'nd', 'rd'];

@@ -56,6 +56,8 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 
 export default {
+	components: {},
+	emits: ['modifier', 'function', 'viewport', 'popup', 'scope'],
 	data() {
 		return {
 			menu: {
@@ -337,8 +339,20 @@ export default {
 			},
 		};
 	},
-	components: {},
-	emits: ['modifier', 'function', 'viewport', 'popup', 'scope'],
+	computed: {
+		...mapState(useConfigStore, ['vim_enabled']),
+	},
+	mounted() {
+		const buttons = document.querySelectorAll('.menu-btn');
+		buttons.forEach((button) => {
+			const file_input = button.querySelector('input[type="file"]');
+			if (file_input) {
+				button.onclick = () => {
+					file_input.click();
+				};
+			}
+		});
+	},
 	methods: {
 		select_by_material(material) {
 			this.$emit('viewport', (scope) => {
@@ -1460,20 +1474,6 @@ export default {
 		},
 		...mapActions(useConfigStore, ['set_vim']),
 	},
-	computed: {
-		...mapState(useConfigStore, ['vim_enabled']),
-	},
-	mounted() {
-		const buttons = document.querySelectorAll('.menu-btn');
-		buttons.forEach((button) => {
-			const file_input = button.querySelector('input[type="file"]');
-			if (file_input) {
-				button.onclick = () => {
-					file_input.click();
-				};
-			}
-		});
-	},
 };
 </script>
 
@@ -1489,23 +1489,23 @@ export default {
 					<ul class="menu-dropdown">
 						<li
 							v-for="[button, data] of Object.entries(buttons)"
-							:key="category + button"
 							:id="'menu-' + category + button"
+							:key="category + button"
 						>
 							<a
-								class="menu-btn"
 								v-if="data.href"
+								class="menu-btn"
 								:href="data.href"
 								>{{ button }}</a
 							>
 							<button
+								v-else
 								:class="
 									'menu-btn' +
 									(data.hasOwnProperty('func') && !data.func
 										? ' unimplemented'
 										: '')
 								"
-								v-else
 								@click="
 									() => {
 										!data.file && data.func && data.func();
@@ -1520,35 +1520,35 @@ export default {
 								/>
 							</button>
 							<ul
-								class="menu-dropdown"
 								v-if="
 									!data.hasOwnProperty('func') && !data.href
 								"
+								class="menu-dropdown"
 							>
 								<li
 									v-for="[
 										sub_button,
 										sub_data,
 									] of Object.entries(data)"
-									:key="category + button + sub_button"
 									:id="
 										'menu-' + category + button + sub_button
 									"
+									:key="category + button + sub_button"
 								>
 									<a
-										class="menu-btn"
 										v-if="sub_data.href"
+										class="menu-btn"
 										:href="sub_data.href"
 										>{{ sub_button }}</a
 									>
 									<button
+										v-else
 										:class="
 											'menu-btn' +
 											(!sub_data.func
 												? ' unimplemented'
 												: '')
 										"
-										v-else
 										@click="
 											() => {
 												!sub_data.file &&

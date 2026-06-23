@@ -100,7 +100,7 @@ export function partition_into_isosceles(pts: [Vec2, Vec2, Vec2]) {
 	} else {
 		// Obtuse: 4 isosceles triangles via altitude foot + hypotenuse midpoints
 		const oi = obtuse_vertex_index(pts);
-		const Cv = pts[oi]!;
+		const Cv = pts[oi];
 		const Av = pts[(oi + 1) % 3]!;
 		const Bv = pts[(oi + 2) % 3]!;
 		const H  = altitude_foot(Cv, Av, Bv);

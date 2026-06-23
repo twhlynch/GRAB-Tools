@@ -15,16 +15,6 @@ export default {
 			show_menu: false,
 		};
 	},
-	methods: {
-		logout() {
-			const userStore = useUserStore();
-			userStore.logout();
-			this.show_menu = false;
-		},
-		open_menu() {
-			this.show_menu = true;
-		},
-	},
 
 	async mounted() {
 		this.origin = location.origin + '/';
@@ -42,6 +32,16 @@ export default {
 			}
 		}
 	},
+	methods: {
+		logout() {
+			const userStore = useUserStore();
+			userStore.logout();
+			this.show_menu = false;
+		},
+		open_menu() {
+			this.show_menu = true;
+		},
+	},
 
 	computed: {
 		...mapState(useUserStore, ['is_logged_in', 'user_name']),
@@ -56,8 +56,8 @@ export default {
 			{{ user_name }}
 		</button>
 		<a
-			:href="`https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=${origin}`"
 			v-else
+			:href="`https://auth.oculus.com/sso/?organization_id=264907536624075&redirect_uri=${origin}`"
 			class="button-sml"
 		>
 			<UserIcon class="user-icon" />

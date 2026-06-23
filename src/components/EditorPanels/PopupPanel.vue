@@ -9,6 +9,25 @@ export default {
 			visible: false,
 		};
 	},
+	watch: {
+		inputs(value) {
+			if (value) {
+				this.visible = true;
+			} else {
+				this.visible = false;
+			}
+		},
+	},
+	mounted() {
+		document.addEventListener('mousedown', this.click);
+		document.addEventListener('touchstart', this.click);
+		document.addEventListener('keydown', this.keydown);
+	},
+	unmounted() {
+		document.removeEventListener('mousedown', this.click);
+		document.removeEventListener('touchstart', this.click);
+		document.removeEventListener('keydown', this.keydown);
+	},
 	methods: {
 		run() {
 			const data = this.inputs.map((input, index) => {
@@ -40,25 +59,6 @@ export default {
 			}
 		},
 	},
-	mounted() {
-		document.addEventListener('mousedown', this.click);
-		document.addEventListener('touchstart', this.click);
-		document.addEventListener('keydown', this.keydown);
-	},
-	unmounted() {
-		document.removeEventListener('mousedown', this.click);
-		document.removeEventListener('touchstart', this.click);
-		document.removeEventListener('keydown', this.keydown);
-	},
-	watch: {
-		inputs(value) {
-			if (value) {
-				this.visible = true;
-			} else {
-				this.visible = false;
-			}
-		},
-	},
 };
 </script>
 
@@ -78,15 +78,15 @@ export default {
 			</select>
 			<textarea
 				v-else-if="input.type === 'textarea'"
+				:ref="`input-${i}`"
 				cols="30"
 				rows="5"
-				:ref="`input-${i}`"
 				:placeholder="input.text"
 			></textarea>
 			<input
 				v-else-if="input.type === 'range'"
-				:type="input.type"
 				:ref="`input-${i}`"
+				:type="input.type"
 				:min="input.min"
 				:value="input.value"
 				:max="input.max"
@@ -100,15 +100,15 @@ export default {
 			<label v-else-if="input.type === 'checkbox'">
 				{{ input.text }}
 				<input
+					:ref="`input-${i}`"
 					type="checkbox"
 					:checked="input.default"
-					:ref="`input-${i}`"
 				/>
 			</label>
 			<input
 				v-else
-				:type="input.type"
 				:ref="`input-${i}`"
+				:type="input.type"
 				:placeholder="input.text"
 				:accept="input.accept"
 				:multiple="input.multiple"

@@ -19,7 +19,7 @@ export default {
 			const res = await fetch(path);
 			const code = await res.text();
 			this.bookmarklet = encodeURIComponent(code);
-		} catch (e) {
+		} catch (_) {
 			console.error('Bookmarklet not found:', path);
 		}
 	},

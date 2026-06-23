@@ -20,12 +20,20 @@ export default {
 	props: {
 		list: Array,
 	},
+	emits: ['update'],
 	data() {
 		return {
 			edit_level_id: null,
 			remove_level_id: null,
 			edit_level_position: null,
 		};
+	},
+	computed: {
+		...mapState(useUserStore, [
+			'is_logged_in',
+			'grab_id',
+			'is_list_moderator',
+		]),
 	},
 	methods: {
 		async edit_level(level_id) {
@@ -77,14 +85,6 @@ export default {
 			downloadLevel(level, level_id);
 		},
 	},
-	computed: {
-		...mapState(useUserStore, [
-			'is_logged_in',
-			'grab_id',
-			'is_list_moderator',
-		]),
-	},
-	emits: ['update'],
 };
 </script>
 
@@ -97,20 +97,20 @@ export default {
 		>
 			<p>{{ position }}</p>
 			<a :href="level_url(level_id)" target="_blank">{{ title }}</a>
-			<span @click="download(level_id)" class="divider">
+			<span class="divider" @click="download(level_id)">
 				<DownloadIcon class="icon" />
 			</span>
 			<p v-if="edit_level_id !== level_id">
 				{{ creators.split(/[,\s]/)[0] }}
 			</p>
 			<div
-				class="container"
 				v-if="edit_level_id === level_id && is_list_moderator"
+				class="container"
 			>
 				<input
+					v-model="edit_level_position"
 					type="number"
 					placeholder="Position"
-					v-model="edit_level_position"
 					@keyup.enter="edit_level(level_id)"
 				/>
 				<button class="btn" @click="edit_level(level_id)">
@@ -118,8 +118,8 @@ export default {
 				</button>
 			</div>
 			<div
-				class="container"
 				v-if="edit_level_id !== level_id && is_list_moderator"
+				class="container"
 			>
 				<button class="btn edit" @click="edit_level(level_id)">
 					<EditIcon />
@@ -128,7 +128,7 @@ export default {
 					:class="[
 						'btn',
 						'remove',
-						this.remove_level_id === level_id && 'active',
+						remove_level_id === level_id && 'active',
 					]"
 					@click="remove_level(level_id)"
 				>

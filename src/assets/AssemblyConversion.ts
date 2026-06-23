@@ -47,10 +47,10 @@ export const DIRECTIVES = {
 };
 
 // helper
-type SafeNode = {
+interface SafeNode {
 	program: Required<ProgramData>;
 	connections: LevelNodeGASMConnection[];
-};
+}
 function safe_node(object: LevelNodeWith<LevelNodeGASM>): SafeNode {
 	const node = object.levelNodeGASM;
 
@@ -207,7 +207,7 @@ function parse_lines(strings: string[]): Line[] {
 		if (!string.length) continue;
 
 		const number = i + 1;
-		const is_macro = string[0] === '#';
+		const is_macro = string.startsWith('#');
 
 		// split words and 'characters'
 		const parts = string.match(/'.*'|\S+/g) ?? [];
@@ -312,7 +312,7 @@ function preprocess_characters(lines: Line[]) {
 
 			const operand = line.operands[j]!;
 
-			if (operand[0] === "'" && operand[operand.length - 1] === "'") {
+			if (operand.startsWith("'") && operand.endsWith("'")) {
 				if (operand.length === 3) {
 					line.operands[j] = String(operand.charCodeAt(1));
 				} else {
@@ -548,7 +548,7 @@ function preprocess_scopes(
 		} else if (directive === DIRECTIVES.END) {
 			continue;
 		} else if (
-			directive[0] === '#' &&
+			directive.startsWith('#') &&
 			!context[directive.replace('#', '')]
 		) {
 			throw err(`Unknown directive`, line);
@@ -575,7 +575,7 @@ function instruction_asm_to_json(
 		return undefined;
 	}
 
-	const count = operand_counts[type]!;
+	const count = operand_counts[type];
 	// handle labels with spaces (they must be the last operand)
 	operands.push(operands.splice(count - 1, operands.length).join(' '));
 

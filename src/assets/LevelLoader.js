@@ -392,7 +392,9 @@ class LevelLoader {
 			sun: undefined,
 			complexity: 0,
 			scene: new THREE.Scene(),
-			update: () => {},
+			update: () => {
+				// noop
+			},
 			meta: {
 				time: 0.0,
 			},
@@ -475,31 +477,31 @@ class LevelLoader {
 				decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 			];
 
-			this.skyMaterial.uniforms['cameraFogColor0'] = {
+			this.skyMaterial.uniforms.cameraFogColor0 = {
 				value: [
 					decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
 					decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
 					decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 				],
 			};
-			this.skyMaterial.uniforms['cameraFogColor1'] = {
+			this.skyMaterial.uniforms.cameraFogColor1 = {
 				value: [
 					decoded.ambienceSettings.skyZenithColor?.r ?? 0,
 					decoded.ambienceSettings.skyZenithColor?.g ?? 0,
 					decoded.ambienceSettings.skyZenithColor?.b ?? 0,
 				],
 			};
-			this.skyMaterial.uniforms['sunSize'] = {
+			this.skyMaterial.uniforms.sunSize = {
 				value: decoded.ambienceSettings.sunSize ?? 0,
 			};
 		} else {
-			this.skyMaterial.uniforms['cameraFogColor0'] = {
+			this.skyMaterial.uniforms.cameraFogColor0 = {
 				value: [0.916, 0.9574, 0.9574],
 			};
-			this.skyMaterial.uniforms['cameraFogColor1'] = {
+			this.skyMaterial.uniforms.cameraFogColor1 = {
 				value: [0.28, 0.476, 0.73],
 			};
-			this.skyMaterial.uniforms['sunSize'] = { value: 1.0 };
+			this.skyMaterial.uniforms.sunSize = { value: 1.0 };
 		}
 
 		const sunDirection = new THREE.Vector3(0, 0, 1);
@@ -524,8 +526,8 @@ class LevelLoader {
 			horizonColor[2] * (1.0 - sunColorFactor) + sunColorFactor,
 		];
 
-		this.skyMaterial.uniforms['sunDirection'] = { value: skySunDirection };
-		this.skyMaterial.uniforms['sunColor'] = { value: sunColor };
+		this.skyMaterial.uniforms.sunDirection = { value: skySunDirection };
+		this.skyMaterial.uniforms.sunColor = { value: sunColor };
 
 		const sky = new THREE.Mesh(this.shapes[1], this.skyMaterial);
 		sky.frustumCulled = false;
@@ -539,43 +541,43 @@ class LevelLoader {
 		for (let material of allMaterials) {
 			let density = 0.0;
 			if (decoded.ambienceSettings) {
-				material.uniforms['cameraFogColor0'] = {
+				material.uniforms.cameraFogColor0 = {
 					value: [
 						decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
 						decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
 						decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
 					],
 				};
-				material.uniforms['cameraFogColor1'] = {
+				material.uniforms.cameraFogColor1 = {
 					value: [
 						decoded.ambienceSettings.skyZenithColor?.r ?? 0,
 						decoded.ambienceSettings.skyZenithColor?.g ?? 0,
 						decoded.ambienceSettings.skyZenithColor?.b ?? 0,
 					],
 				};
-				material.uniforms['sunSize'] = {
+				material.uniforms.sunSize = {
 					value: decoded.ambienceSettings.sunSize ?? 0,
 				};
 				density = decoded.ambienceSettings.fogDensity ?? 0;
 			} else {
-				material.uniforms['cameraFogColor0'] = {
+				material.uniforms.cameraFogColor0 = {
 					value: [0.916, 0.9574, 0.9574],
 				};
-				material.uniforms['cameraFogColor1'] = {
+				material.uniforms.cameraFogColor1 = {
 					value: [0.28, 0.476, 0.73],
 				};
-				material.uniforms['sunSize'] = { value: 1.0 };
+				material.uniforms.sunSize = { value: 1.0 };
 			}
 
-			material.uniforms['sunDirection'] = { value: skySunDirection };
-			material.uniforms['sunColor'] = { value: sunColor };
+			material.uniforms.sunDirection = { value: skySunDirection };
+			material.uniforms.sunColor = { value: sunColor };
 
 			let densityFactor = density * density * density * density;
 			let fogDensityX =
 				0.5 * densityFactor + 0.000001 * (1.0 - densityFactor);
 			let fogDensityY = 1.0 / (1.0 - Math.exp(-1500.0 * fogDensityX));
 
-			material.uniforms['cameraFogDistance'] = {
+			material.uniforms.cameraFogDistance = {
 				value: [fogDensityX, fogDensityY],
 			};
 		}
@@ -1272,10 +1274,7 @@ class LevelLoader {
 					if (node.levelNodeTrigger.triggerTargets) {
 						for (const target of node.levelNodeTrigger
 							.triggerTargets) {
-							if (
-								target.triggerTargetSubLevel &&
-								target.triggerTargetSubLevel.levelIdentifier
-							) {
+							if (target.triggerTargetSubLevel?.levelIdentifier) {
 								isSublevelTrigger = true;
 							}
 						}

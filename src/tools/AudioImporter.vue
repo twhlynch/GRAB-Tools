@@ -52,12 +52,12 @@ export default {
 			Generate audio with triggers and sound blocks.
 		</template>
 		<input
-			type="number"
 			id="audio-tool-pitch-samples"
+			type="number"
 			placeholder="samples (40)"
 		/>
-		<input type="file" id="audio-tool-file" accept="audio/*" />
-		<button class="button" id="audio-tool-btn" @click="run">
+		<input id="audio-tool-file" type="file" accept="audio/*" />
+		<button id="audio-tool-btn" class="button" @click="run">
 			Generate
 		</button>
 	</ToolTemplate>

@@ -41,9 +41,7 @@ type KeysOfType<T> = {
 }[keyof NodesMapping];
 
 // LevelNode with specified LevelNodeX key required
-export type LevelNodeWith<T> = LevelNode & {
-	[L in KeysOfType<T>]: T;
-};
+export type LevelNodeWith<T> = LevelNode & Record<KeysOfType<T>, T>;
 
 // all LevelNodeX types
 export type LevelNodeTypes = NonNullable<
@@ -88,11 +86,8 @@ export function isLevelNode<T extends LevelNodeTypes>(
 // bidirectional map from enum
 type EnumMap<E> = {
 	[K in keyof E as K extends string ? K : never]: E[K];
-} & {
-	[V in E[keyof E] & number]: keyof E;
-} & {
-	[key: string]: number | keyof E;
-};
+} & Record<E[keyof E] & number, keyof E> &
+	Record<string, number | keyof E>;
 
 // protobuf.Root with assumed
 export type Root = PBRoot & {

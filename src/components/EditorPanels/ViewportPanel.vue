@@ -40,6 +40,22 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
+	components: {
+		CursorIcon,
+		KeyboardIcon,
+		TranslateIcon,
+		RotateIcon,
+		ScaleIcon,
+		SpaceIcon,
+		OneSidedScaleIcon,
+		ContextMenu,
+		JsonPanel,
+		GASMPanel,
+		AnimationPanel,
+		ResizableColPanel,
+		KeyHint,
+	},
+	emits: ['changed', 'modifier', 'scope', 'undo', 'redo'],
 	data() {
 		return {
 			zoom_to_cursor: true,
@@ -80,22 +96,6 @@ export default defineComponent({
 			right_click_dragged: false,
 		};
 	},
-	components: {
-		CursorIcon,
-		KeyboardIcon,
-		TranslateIcon,
-		RotateIcon,
-		ScaleIcon,
-		SpaceIcon,
-		OneSidedScaleIcon,
-		ContextMenu,
-		JsonPanel,
-		GASMPanel,
-		AnimationPanel,
-		ResizableColPanel,
-		KeyHint,
-	},
-	emits: ['changed', 'modifier', 'scope', 'undo', 'redo'],
 	async mounted() {
 		if (!window._levelLoader) window._levelLoader = new LevelLoader();
 
@@ -2000,35 +2000,35 @@ export default defineComponent({
 					@close="close_context_menu"
 				/>
 				<GASMPanel
-					ref="gasm_editor"
 					v-show="show_gasm_editor"
+					ref="gasm_editor"
 					class="gasm-editor"
 					@set="save_gasm_code"
 				/>
 				<button
+					v-show="show_gasm_editor"
 					class="close-gasm-editor"
 					@click="close_gasm_editor"
-					v-show="show_gasm_editor"
 				>
 					Save
 				</button>
 				<JsonPanel
-					:mini="true"
-					ref="mini_editor"
 					v-show="show_mini_editor"
+					ref="mini_editor"
+					:mini="true"
 					class="mini-editor"
 				/>
 				<button
+					v-show="show_mini_editor"
 					class="close-mini-editor"
 					@click="close_mini_editor"
-					v-show="show_mini_editor"
 				>
 					Save
 				</button>
-				<div class="group-depth" v-show="group_depth">
+				<div v-show="group_depth" class="group-depth">
 					<span>Depth: {{ group_depth }}</span>
 				</div>
-				<div class="tool-indicator" v-show="active_tool">
+				<div v-show="active_tool" class="tool-indicator">
 					<span>
 						{{ active_tool?.name }} active
 						<KeyHint :bind="'Esc'" />

@@ -60,7 +60,7 @@ export default {
 <template>
 	<transition-group class="toasts" name="toast" tag="div">
 		<div
-			v-for="message in this.messages"
+			v-for="message in messages"
 			:key="message.id"
 			:class="`toast toast-${message.severity}`"
 			@click="copyMessage(message)"

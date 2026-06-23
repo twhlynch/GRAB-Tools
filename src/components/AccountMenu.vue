@@ -11,22 +11,6 @@ export default {
 		VerifyMenu,
 		DownloadsMenu,
 	},
-	methods: {
-		logout() {
-			const userStore = useUserStore();
-			userStore.logout();
-			this.$emit('update:visible', false);
-		},
-	},
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'user_name', 'grab_id']),
-	},
-	data() {
-		return {
-			show_verify_menu: false,
-			show_downloads_menu: false,
-		};
-	},
 	props: {
 		visible: {
 			type: Boolean,
@@ -34,6 +18,22 @@ export default {
 		},
 	},
 	emits: ['update:visible'],
+	data() {
+		return {
+			show_verify_menu: false,
+			show_downloads_menu: false,
+		};
+	},
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'user_name', 'grab_id']),
+	},
+	methods: {
+		logout() {
+			const userStore = useUserStore();
+			userStore.logout();
+			this.$emit('update:visible', false);
+		},
+	},
 };
 </script>
 
@@ -47,12 +47,12 @@ export default {
 			<span class="grab-id">{{ grab_id ?? 'unverified' }}</span>
 		</div>
 		<button class="logout" @click="logout">Logout</button>
-		<button class="verify" v-if="!grab_id" @click="show_verify_menu = true">
+		<button v-if="!grab_id" class="verify" @click="show_verify_menu = true">
 			Verify Account
 		</button>
 		<button
-			class="downloads"
 			v-if="grab_id"
+			class="downloads"
 			@click="show_downloads_menu = true"
 		>
 			Manage Downloads

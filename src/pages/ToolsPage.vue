@@ -45,6 +45,16 @@ export default {
 		MIDIImporter,
 		MusicIcon,
 	},
+	created() {
+		document.title = 'Tools | GRAB Tools';
+	},
+	mounted() {
+		const urlParams = new URLSearchParams(window.location.search);
+		const tab = urlParams.get('tab');
+		if (tab) {
+			this.selectTool(tab);
+		}
+	},
 	methods: {
 		setTab(tab) {
 			const urlParams = new URLSearchParams(window.location.search);
@@ -72,16 +82,6 @@ export default {
 			toolButton.classList.add('active-tool-button');
 		},
 	},
-	created() {
-		document.title = 'Tools | GRAB Tools';
-	},
-	mounted() {
-		const urlParams = new URLSearchParams(window.location.search);
-		const tab = urlParams.get('tab');
-		if (tab) {
-			this.selectTool(tab);
-		}
-	},
 };
 </script>
 
@@ -96,72 +96,72 @@ export default {
 		</section>
 		<section id="tools-buttons">
 			<button
-				class="button"
 				id="level-compiler-tool-button"
+				class="button"
 				@click="selectTool('level-compiler')"
 			>
 				Compiler
 				<ShrinkIcon />
 			</button>
 			<button
-				class="button"
 				id="image-generator-tool-button"
+				class="button"
 				@click="selectTool('image-generator')"
 			>
 				Pixel Art
 				<BrushIcon />
 			</button>
 			<button
-				class="button"
 				id="svg-tool-button"
+				class="button"
 				@click="selectTool('svg')"
 			>
 				Draw SVG
 				<PencilIcon />
 			</button>
 			<button
-				class="button"
 				id="video-generator-tool-button"
+				class="button"
 				@click="selectTool('video-generator')"
 			>
 				Video Gen
 				<PlayIcon />
 			</button>
 			<button
-				class="button"
 				id="download-tool-button"
+				class="button"
 				@click="selectTool('download')"
 			>
 				Download
 				<DownloadsIcon />
 			</button>
 			<button
-				class="button"
 				id="custom-colors-tool-button"
+				class="button"
 				@click="selectTool('custom-colors')"
 			>
 				Custom Colors
 				<PalletteIcon />
 			</button>
 			<button
-				class="button"
 				id="level-json-tool-button"
+				class="button"
 				@click="selectTool('level-json')"
 			>
 				JSON
 				<XMLIcon />
 			</button>
 			<button
-				class="button"
 				id="text-signs-tool-button"
+				class="button"
 				@click="selectTool('text-signs')"
 			>
 				Text To Signs
 				<ChatIcon />
 			</button>
 			<button
-				class="button"
 				id="object-model-tool-button"
+				class="button"
 				@click="selectTool('object-model')"
 			>
 				3D Model
@@ -176,8 +176,8 @@ export default {
 			<!-- 	<MusicIcon /> -->
 			<!-- </button> -->
 			<button
-				class="button"
 				id="midi-importer-tool-button"
+				class="button"
 				@click="selectTool('midi-importer')"
 			>
 				MIDI
@@ -200,8 +200,8 @@ export default {
 				<p>
 					Drag this to your bookmarks bar or click it to copy it and
 					paste it into a bookmark. Then go to
-					<a :href="this.$config.GRAB_VIEWER_URL">the level browser</a
-					>, log in, and click it to run.
+					<a :href="$config.GRAB_VIEWER_URL">the level browser</a>,
+					log in, and click it to run.
 				</p>
 				<div id="bookmark-links">
 					<Bookmarklet

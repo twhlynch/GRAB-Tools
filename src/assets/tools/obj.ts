@@ -30,16 +30,10 @@ export async function obj(
 	if (mode === 'triangles') {
 		return await build_model(obj_file, mtl_file);
 	}
-
 	if (mode === 'particles') {
 		return await build_particle_model(obj_file, mtl_file);
 	}
-
-	if (mode === 'spheres') {
-		return await build_point_cloud(obj_file);
-	}
-
-	return [];
+	return await build_point_cloud(obj_file);
 }
 
 async function build_model(obj_file: File, mtl_file?: File) {
@@ -233,7 +227,7 @@ async function parse_obj_nodes(
 	const nodes: (TriNode & { color1: Color })[] = [];
 
 	const is_mesh = (o: THREE.Object3D): o is THREE.Mesh =>
-		(o as THREE.Mesh).isMesh === true;
+		(o as THREE.Object3D & { isMesh?: boolean }).isMesh === true;
 
 	object.traverse((child) => {
 		if (!is_mesh(child)) return;
@@ -249,7 +243,7 @@ async function parse_obj_nodes(
 		for (const group of groups) {
 			const material = Array.isArray(child.material)
 				? child.material[group.materialIndex ?? 0]!
-				: child.material!;
+				: child.material;
 			const color1 = get_material_color(material, mtl_colors);
 
 			for (let i = group.start; i < group.start + group.count; i += 3) {

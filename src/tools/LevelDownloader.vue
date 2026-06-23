@@ -40,7 +40,7 @@ export default {
 			placeholder="link, link, link, link"
 			@change="change"
 		></textarea>
-		<a class="button" id="download-tool-btn" :href="download_link">
+		<a id="download-tool-btn" class="button" :href="download_link">
 			Download
 		</a>
 	</ToolTemplate>

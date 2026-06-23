@@ -9,6 +9,9 @@ export default {
 		MoonIcon,
 		SunIcon,
 	},
+	computed: {
+		...mapState(useConfigStore, ['dark_mode']),
+	},
 	methods: {
 		...mapActions(useConfigStore, ['set_dark_mode']),
 
@@ -16,14 +19,11 @@ export default {
 			this.set_dark_mode(!this.dark_mode);
 		},
 	},
-	computed: {
-		...mapState(useConfigStore, ['dark_mode']),
-	},
 };
 </script>
 
 <template>
-	<div @click="toggle" class="dark-mode-toggle">
+	<div class="dark-mode-toggle" @click="toggle">
 		<MoonIcon v-show="dark_mode" />
 		<SunIcon v-show="!dark_mode" />
 	</div>

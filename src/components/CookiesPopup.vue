@@ -12,6 +12,17 @@ export default {
 			decided: false,
 		};
 	},
+	computed: {
+		...mapState(useCookiesStore, ['allow_cookies', 'timestamp']),
+	},
+	created() {
+		if (this.allow_cookies) {
+			this.close();
+			this.init_google_analytics();
+		} else if ((Date.now() - this.timestamp) / (24 * 60 * 60 * 1000) < 1) {
+			this.close();
+		}
+	},
 	methods: {
 		init_google_analytics() {
 			const script = document.createElement('script');
@@ -45,22 +56,11 @@ export default {
 
 		...mapActions(useCookiesStore, ['set_allow_cookies']),
 	},
-	computed: {
-		...mapState(useCookiesStore, ['allow_cookies', 'timestamp']),
-	},
-	created() {
-		if (this.allow_cookies) {
-			this.close();
-			this.init_google_analytics();
-		} else if ((Date.now() - this.timestamp) / (24 * 60 * 60 * 1000) < 1) {
-			this.close();
-		}
-	},
 };
 </script>
 
 <template>
-	<div v-if="!decided && !this.allow_cookies" class="cookie-popup">
+	<div v-if="!decided && !allow_cookies" class="cookie-popup">
 		<div class="info">
 			<p>
 				I use cookies for analytics and error tracking. You can accept

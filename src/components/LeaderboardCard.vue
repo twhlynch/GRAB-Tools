@@ -13,11 +13,6 @@ export default {
 			image_error: false,
 		};
 	},
-	methods: {
-		error() {
-			this.image_error = true;
-		},
-	},
 	computed: {
 		creator_url() {
 			const creator_id = this.data.identifier.split(':')[0];
@@ -38,6 +33,11 @@ export default {
 			return this.data.creators.join(', ');
 		},
 	},
+	methods: {
+		error() {
+			this.image_error = true;
+		},
+	},
 };
 </script>
 
@@ -51,8 +51,8 @@ export default {
 		<img
 			v-else
 			:src="image_url"
-			@error="error"
 			:alt="data.title + '\'s thumbnail'"
+			@error="error"
 		/>
 		<div class="leaderboard-item-info">
 			<a :href="level_url" target="_blank">{{ data.title }}</a

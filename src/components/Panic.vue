@@ -49,9 +49,9 @@ export default {
 					<KeyHint :bind="'R'" /> ), using another browser, or coming
 					back later. If this continues to happen, please report it to
 					the
-					<a :href="this.$config.REPO_URL">GitHub</a>
+					<a :href="$config.REPO_URL">GitHub</a>
 					or
-					<a :href="this.$config.DISCORD_URL">Discord server</a>.
+					<a :href="$config.DISCORD_URL">Discord server</a>.
 					<span class="details">
 						<button class="tech" @click="toggle_technicals">
 							Technical details:

@@ -199,17 +199,6 @@ function get_unique_pitches(track) {
 	});
 	return unique_pitches;
 }
-function get_unique_pitches_tracks(tracks) {
-	let unique_pitches = [];
-	tracks.forEach((track) => {
-		track.notes.forEach((note) => {
-			if (!unique_pitches.includes(note.frequency_hertz)) {
-				unique_pitches.push(note.frequency_hertz);
-			}
-		});
-	});
-	return unique_pitches;
-}
 function get_notes_by_pitch(track) {
 	let notes_by_pitch = {};
 	track.notes.forEach((note) => {
@@ -268,7 +257,7 @@ function split_overlapping_notes(initial_track) {
 	let new_tracks = [initial_track];
 
 	let splitted_index = 0;
-	// eslint-disable-next-line no-constant-condition
+
 	while (true) {
 		let origin = [];
 		let splitted = [];
@@ -451,20 +440,20 @@ async function generate(
 			let hz = unique_pitches[i];
 
 			let notes = notes_by_pitch[hz.toString()];
-			for (let x = 0; x < notes.length; x++) {
+			for (const note of notes) {
 				let previous_frame = animationFrame();
-				previous_frame.time = notes[x].start - 0.05;
+				previous_frame.time = note.start - 0.05;
 				previous_frame.position.x = 0;
 				current_trigger_animation.frames.push(previous_frame);
 
 				let frame = animationFrame();
-				frame.time = notes[x].start;
+				frame.time = note.start;
 				frame.position.x = 1;
 				current_trigger_animation.frames.push(frame);
 
 				let next_frame = animationFrame();
 				// Note duration is multipled by 2 because only half of the animation is spent inside the colliding block
-				next_frame.time = notes[x].start + notes[x].duration * 2 + 0.05;
+				next_frame.time = note.start + note.duration * 2 + 0.05;
 				next_frame.position.x = 0;
 				current_trigger_animation.frames.push(next_frame);
 			}

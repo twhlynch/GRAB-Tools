@@ -27,14 +27,14 @@ export type PropertyType = {
 		: never;
 }[keyof ProgrammablePropertyData];
 
-type RegisterMetaType = {
+interface RegisterMetaType {
 	index: keyof ProgrammablePropertyDataComponent;
 	type: RegisterType;
-};
-type RegisterMeta = {
+}
+interface RegisterMeta {
 	name: string;
 	type: RegisterMetaType;
-};
+}
 
 /**
  * @brief Create a connection for specific objects.
@@ -367,44 +367,6 @@ function component_is_disabled(
 	component: ProgrammablePropertyDataComponent,
 ): boolean {
 	return Object.values(component).every((v) => v === -1);
-}
-
-/**
- * @brief Two components point to the same register.
- */
-function components_are_same(
-	comp1: ProgrammablePropertyDataComponent,
-	comp2: ProgrammablePropertyDataComponent,
-): boolean {
-	for (const key of Object.keys(
-		comp1,
-	) as (keyof ProgrammablePropertyDataComponent)[]) {
-		if (comp1[key] !== comp2[key]) return false;
-	}
-	return true;
-}
-
-/**
- * @brief Two components have the same register type.
- */
-function components_are_same_type(
-	comp1: ProgrammablePropertyDataComponent,
-	comp2: ProgrammablePropertyDataComponent,
-): boolean {
-	return component_type(comp1) === component_type(comp2);
-}
-
-/**
- * @brief Register type used by component
- */
-function component_type(
-	component: ProgrammablePropertyDataComponent,
-): string | null {
-	for (const [key, value] of Object.entries(component)) {
-		if (value !== -1) return key;
-	}
-
-	return null;
 }
 
 /**

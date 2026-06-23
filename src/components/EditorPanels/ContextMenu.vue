@@ -12,29 +12,29 @@ export default {
 		<ul class="menu-dropdown">
 			<li v-for="[button, data] of Object.entries(menu)" :key="button">
 				<a
-					class="menu-btn"
 					v-if="data.href"
+					class="menu-btn"
 					:href="data.href"
 					@click="
 						() => {
-							this.$emit('close');
+							$emit('close');
 						}
 					"
 					>{{ button }}</a
 				>
 				<button
+					v-else
 					:class="
 						'menu-btn' +
 						(data.hasOwnProperty('func') && !data.func
 							? ' unimplemented'
 							: '')
 					"
-					v-else
 					@click="
 						() => {
 							if (!data.file && data.func) {
 								data.func();
-								this.$emit('close');
+								$emit('close');
 							}
 						}
 					"
@@ -43,30 +43,30 @@ export default {
 					}}<input v-if="data.file" type="file" @change="data.func" />
 				</button>
 				<ul
-					class="menu-dropdown"
 					v-if="!data.hasOwnProperty('func') && !data.href"
+					class="menu-dropdown"
 				>
 					<li
 						v-for="[sub_button, sub_data] of Object.entries(data)"
 						:key="button + sub_button"
 						@click="
 							() => {
-								this.$emit('close');
+								$emit('close');
 							}
 						"
 					>
 						<a
-							class="menu-btn"
 							v-if="sub_data.href"
+							class="menu-btn"
 							:href="sub_data.href"
 							>{{ sub_button }}</a
 						>
 						<button
+							v-else
 							:class="
 								'menu-btn' +
 								(!sub_data.func ? ' unimplemented' : '')
 							"
-							v-else
 							@click="
 								() => {
 									!sub_data.file &&
