@@ -6,7 +6,7 @@ Built with Vue 3, Vite, Tauri, Three.js, and CodeMirror.
 
 ## Setup
 
-Requires `Node.js` 18 and `npm`.
+Requires `Node.js` 24 and `npm`.
 
 ```sh
 npm install

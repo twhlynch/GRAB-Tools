@@ -9,7 +9,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # linux
       - name: install linux dependencies
@@ -19,14 +19,14 @@ jobs:
 
       # java
       - name: setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       # android sdk
       - name: setup android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       # android ndk
       - name: install android NDK
@@ -34,9 +34,9 @@ jobs:
 
       # node
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          node-version: 24
           cache: 'npm'
 
       # npm
@@ -78,7 +78,7 @@ jobs:
 
       # release
       - name: publish release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           name: GRAB Tools v${{ steps.package-version.outputs.version }}
