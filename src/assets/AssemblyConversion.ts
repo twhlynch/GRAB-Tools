@@ -456,7 +456,7 @@ function preprocess_scopes(
 				.join('');
 			const expr = `(() => {${setup} return ${rest.join(' ')}})();`;
 			try {
-				context[variable] = eval(expr);
+				context[variable] = (0, eval)(expr); // indirect eval
 			} catch (e) {
 				if (e instanceof Error) {
 					throw err(e.message, line);

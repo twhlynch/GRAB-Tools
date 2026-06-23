@@ -1,9 +1,9 @@
 <script>
 import build_editor from '@/assets/EditorSetup';
+import encoding from '@/assets/encoding/encoding';
 import { javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import encoding from '@/assets/encoding/encoding'; // for eval // organize-imports-ignore
 
 export default {
 	data() {
@@ -21,7 +21,7 @@ export default {
 			this.last_command = content;
 			this.$emit('command', (level) => {
 				try {
-					eval(content);
+					new Function('encoding', 'level', content)(encoding, level);
 				} catch (e) {
 					console.error(e);
 				}
