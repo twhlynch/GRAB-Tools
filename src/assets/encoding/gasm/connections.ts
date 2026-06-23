@@ -17,7 +17,7 @@ import {
 import { LevelNodeWith } from '@/types/levelNodes';
 
 // props on ProgrammablePropertyData that are {}
-type PropertyType = {
+export type PropertyType = {
 	[K in keyof ProgrammablePropertyData]-?: NonNullable<
 		ProgrammablePropertyData[K]
 	> extends object
