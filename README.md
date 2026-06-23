@@ -53,7 +53,7 @@ npm run nodes    # node builders
 
 ## Shell Scripts
 
-Development helper scripts in `meta/scripts/`:
+Development helper scripts in `scripts/`:
 
 | Script                                | Description                         |
 | ------------------------------------- | ----------------------------------- |
@@ -74,7 +74,7 @@ Development helper scripts in `meta/scripts/`:
 
 ```sh
 .
-├─ meta/             # tools for development
+├─ scripts/          # scripts for development
 ├─ public/           # public website assets
 │  ├─ fonts/           # fonts
 │  ├─ images/          # images
