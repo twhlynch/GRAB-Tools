@@ -339,6 +339,9 @@ export default defineComponent({
 		},
 		async set_json(json) {
 			if (!json) return;
+			const selected_nodes = this.gizmo.selection
+				.map((o) => o.userData.node)
+				.filter(Boolean);
 			this.gizmo.clear();
 			if (this.level) {
 				this.scene.remove(this.level.scene);
@@ -374,6 +377,12 @@ export default defineComponent({
 			if (this.show_shadows) this.update_shadows();
 			this.scene.add(this.level.scene);
 			this.enter_specific_group(this.level.scene);
+			for (const node of selected_nodes) {
+				const obj = this.level.nodes.all.find(
+					(o) => o.userData.node === node,
+				);
+				if (obj) this.gizmo.add(obj);
+			}
 			this.$emit('scope', (scope) => {
 				scope.$refs.statistics.set_level(this.level);
 			});
