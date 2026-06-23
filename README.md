@@ -20,6 +20,14 @@ Run the Vite website at `https://127.0.0.1:5173`:
 npm run dev
 ```
 
+## Testing
+
+```sh
+npm test
+```
+
+Tests are in `test/` and use [Vitest](https://vitest.dev).
+
 ## Linting & Formatting
 
 ```sh
