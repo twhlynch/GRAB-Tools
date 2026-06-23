@@ -1,12 +1,12 @@
-import { fileURLToPath, URL } from 'node:url';
-import process from 'node:process';
-import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import mkcert from 'vite-plugin-mkcert';
+import fs from 'fs/promises';
+import process from 'node:process';
+import { fileURLToPath, URL } from 'node:url';
+import path from 'path';
 import postcssNesting from 'postcss-nesting';
 import { minify } from 'terser';
-import fs from 'fs/promises';
-import path from 'path';
+import { defineConfig } from 'vite';
+import mkcert from 'vite-plugin-mkcert';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -61,15 +61,16 @@ export default defineConfig({
 		sourcemap: !!process.env.TAURI_ENV_DEBUG,
 		rollupOptions: {
 			output: {
-				manualChunks(path) {
-					if (!path.includes('node_modules')) return;
-					const name = path
+				manualChunks(filepath) {
+					if (!filepath.includes('node_modules')) return;
+					const name = filepath
 						.toString()
-						.split('node_modules/')[1]
-						.split('/')[0]
+						.split('node_modules/')[1]!
+						.split('/')[0]!
 						.toString();
 
-					if (path.includes('three/src/math')) return 'three-math';
+					if (filepath.includes('three/src/math'))
+						return 'three-math';
 					if (name.includes('three')) return 'three';
 					if (name.includes('codemirror')) return 'editor';
 					if (name.includes('@replit')) return 'editor';
