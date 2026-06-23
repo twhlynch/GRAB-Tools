@@ -1,7 +1,7 @@
 ; keep Obj on the players head
 
 ; properties to copy from the player to the object
-#DEFINE keys ["Pos.x", "Pos.y", "Pos.z", "Rot.x", "Rot.y", "Rot.z"] ; list of keys to copy
+#DEFINE keys ["Pos.X", "Pos.Y", "Pos.Z", "Rot.X", "Rot.Y", "Rot.Z"] ; list of keys to copy
 #DEFINE len keys.length - 1 ; length of the list of keys
 
 ; setup once
