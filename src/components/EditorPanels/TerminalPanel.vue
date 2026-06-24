@@ -1,62 +1,44 @@
-<script>
-import build_editor from '@/editor/EditorSetup';
-import { javascript } from '@codemirror/lang-javascript';
-import { EditorSelection } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+<script lang="ts">
+import { Terminal } from '@/editor/Terminal';
+import { Level } from '@/generated/proto';
+import { defineComponent, markRaw } from 'vue';
 
-export default {
+export default defineComponent({
 	components: {},
 	emits: ['command'],
 	data() {
-		return { last_command: '' };
+		return {
+			terminal: null! as Terminal,
+		};
+	},
+	computed: {
+		refs() {
+			return this.$refs as Record<'terminal', HTMLElement>;
+		},
 	},
 	mounted() {
-		this.view = build_editor(this.$refs.terminal, '', javascript(), [
-			EditorView.lineWrapping,
-		]);
+		this.terminal = markRaw(new Terminal(this.refs.terminal));
 	},
 	methods: {
-		run_command(content) {
-			this.last_command = content;
-			this.$emit('command', (level) => {
-				try {
-					new Function('level', content)(level);
-				} catch (e) {
-					console.error(e);
-				}
-				return level;
-			});
-		},
-		keydown(e) {
-			const { code, shiftKey } = e;
-			if (code === 'Enter') {
-				if (!shiftKey) {
-					e.preventDefault();
-					const content = this.view.state.doc.toString();
-					this.run_command(content);
-					this.view.dispatch({
-						changes: {
-							from: 0,
-							to: this.view.state.doc.length,
-							insert: '',
-						},
-					});
-				}
-			}
-		},
-		click(e) {
-			if (e.target === this.$refs.terminal) {
-				this.view.focus();
-				this.view.dispatch({
-					selection: EditorSelection.cursor(
-						this.view.state.doc.length,
-					),
-					scrollIntoView: true,
+		keydown(e: KeyboardEvent) {
+			if (e.code === 'Enter') {
+				if (e.shiftKey) return;
+
+				e.preventDefault();
+
+				this.$emit('command', (level: Level) => {
+					this.terminal.run(level);
+					return level;
 				});
 			}
 		},
+		click(e: MouseEvent) {
+			if (e.target === this.refs.terminal) {
+				this.terminal.focus();
+			}
+		},
 	},
-};
+});
 </script>
 
 <template>

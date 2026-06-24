@@ -6,7 +6,7 @@ import {
 } from '@codemirror/commands';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { Extension } from '@codemirror/state';
-import { keymap, ViewUpdate } from '@codemirror/view';
+import { KeyBinding, keymap, ViewUpdate } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { EditorView } from 'codemirror';
 
@@ -147,8 +147,8 @@ export default function build_editor(
 	parent: Element,
 	doc = '',
 	lang?: Extension,
-	extensions = [],
-	keymaps = [],
+	extensions: Extension[] = [],
+	keymaps: KeyBinding[] = [],
 	changed = (_: ViewUpdate) => {
 		// noop
 	},
