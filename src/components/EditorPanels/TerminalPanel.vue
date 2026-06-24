@@ -1,5 +1,4 @@
 <script>
-import encoding from '@/common/encoding';
 import build_editor from '@/editor/EditorSetup';
 import { javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
@@ -21,7 +20,7 @@ export default {
 			this.last_command = content;
 			this.$emit('command', (level) => {
 				try {
-					new Function('encoding', 'level', content)(encoding, level);
+					new Function('level', content)(level);
 				} catch (e) {
 					console.error(e);
 				}
