@@ -31,6 +31,14 @@ export default {
 			},
 		};
 	},
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
+		user_class() {
+			return (
+				this.is_logged_in && this.grab_id === this.user_id && 'personal'
+			);
+		},
+	},
 	methods: {
 		getSuffix(number) {
 			const suffixes = ['th', 'st', 'nd', 'rd'];
@@ -62,14 +70,6 @@ export default {
 			this.expanded = true;
 		},
 	},
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'grab_id']),
-		user_class() {
-			return (
-				this.is_logged_in && this.grab_id === this.user_id && 'personal'
-			);
-		},
-	},
 };
 </script>
 <template>
@@ -79,35 +79,31 @@ export default {
 			{{ user_name }}
 		</a>
 		<div class="list-chart">
-			<div
-				v-for="(position, key) in positions"
-				:key="key"
-				class="metric-bar"
-			>
+			<div v-for="(pos, key) in positions" :key="key" class="metric-bar">
 				<div
-					:class="metric_bar_class(position)"
+					:class="metric_bar_class(pos)"
 					:style="`height: ${(100 * metrics[key]) / weights[key]}%`"
 				></div>
 				<span class="metric-bar-label">
 					{{ labels[key] }}
 					<br />
-					{{ format_position(position) }}
+					{{ format_position(pos) }}
 				</span>
 			</div>
 		</div>
 		<p>{{ format_score(score) }}</p>
 		<div v-if="expanded" class="list-item-expanded-content">
 			<div class="list-chart">
-				<template v-for="(position, key) in positions" :key="key">
+				<template v-for="(pos, key) in positions" :key="key">
 					<span class="metric-bar-label">
 						{{ labels[key] }}:
-						{{ format_position(position) }}
+						{{ format_position(pos) }}
 						{{ `[+${format_score(metrics[key])}]` }}
 						{{ `(${raw[key]})` }}
 					</span>
 					<div class="metric-bar">
 						<div
-							:class="metric_bar_class(position)"
+							:class="metric_bar_class(pos)"
 							:style="`width: ${
 								(100 * metrics[key]) / weights[key]
 							}%`"

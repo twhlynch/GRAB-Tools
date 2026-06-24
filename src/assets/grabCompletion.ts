@@ -1,15 +1,45 @@
 import { autocompletion, startCompletion } from '@codemirror/autocomplete';
+import { Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { ReflectionObject, Root, Type } from 'protobufjs';
 import { unmodded_root } from './encoding/root';
 import { materials } from './encoding/utils';
 
-function get_field_name(doc, pos) {
-	const text = doc.sliceString(0, pos);
-	const match = /"([^"]+)"\s*:\s*([\d]*)$/.exec(text);
-	return match ? [match[1], match[2]] : [null, null];
+interface EnumData {
+	name: string;
+	type: string;
+	parent: string;
+	values: Record<string, number>;
 }
 
-function build_completion(name, num, type, parent) {
+interface CompletionData {
+	label: string;
+	type: string;
+	detail: string;
+	apply: string;
+	meta: {
+		name: string;
+		num: number;
+		type: string;
+		parent: string;
+	};
+}
+
+function get_field_name(
+	doc: Text,
+	pos: number,
+): [string, string] | [null, null] {
+	const text = doc.sliceString(0, pos);
+	const match = /"([^"]+)"\s*:\s*([\d]*)$/.exec(text);
+	return match ? [match[1]!, match[2]!] : [null, null];
+}
+
+function build_completion(
+	name: string,
+	num: number,
+	type: string,
+	parent: string,
+): CompletionData {
 	return {
 		label: `${name} (${num})`,
 		type: 'enum',
@@ -19,11 +49,12 @@ function build_completion(name, num, type, parent) {
 	};
 }
 
-function collect_enums(type) {
-	const enums = [];
-	if (type.fields) {
+function collect_enums(type: Type | Root | ReflectionObject) {
+	const enums: EnumData[] = [];
+
+	if ('fields' in type) {
 		for (const [name, field] of Object.entries(type.fields)) {
-			if (field.resolvedType?.values) {
+			if (field.resolvedType && 'values' in field.resolvedType) {
 				enums.push({
 					name,
 					type: field.type,
@@ -34,8 +65,8 @@ function collect_enums(type) {
 		}
 	}
 
-	if (type.nested) {
-		for (const nested of Object.values(type.nested)) {
+	if ('nested' in type) {
+		for (const nested of Object.values(type.nested ?? {})) {
 			enums.push(...collect_enums(nested));
 		}
 	}
@@ -43,38 +74,40 @@ function collect_enums(type) {
 	return enums;
 }
 
-function collect_completions(enums) {
-	const completions = {};
+function collect_completions(enums: EnumData[]) {
+	const completions: Record<string, CompletionData[]> = {};
 	enums.forEach((field) => {
 		const { values, type, parent } = field;
 
 		Object.entries(values).forEach(([name, num]) => {
 			if (
 				type === 'LevelNodeShape' &&
-				num <= materials().__END_OF_SPECIAL_PARTS__
+				num <= materials().__END_OF_SPECIAL_PARTS__!
 			)
 				return;
 			if (type === 'LevelNodeMaterial' && num === materials().TRIGGER)
 				return;
-			completions[field.name] ??= [];
+			const cmps = (completions[field.name] ??= []);
 			if (
-				!completions[field.name].find(
+				!cmps.find(
 					(other) =>
 						other.meta.type === field.type &&
 						other.meta.num === num &&
 						other.meta.name === name,
 				)
 			) {
-				completions[field.name].push(
-					build_completion(name, num, type, parent),
-				);
+				cmps.push(build_completion(name, num, type, parent));
 			}
 		});
 	});
 	return completions;
 }
 
-function get_completions(completions, doc, pos) {
+function get_completions(
+	completions: Record<string, CompletionData[]>,
+	doc: Text,
+	pos: number,
+) {
 	const [field_name, progress] = get_field_name(doc, pos);
 	if (!field_name) return null;
 

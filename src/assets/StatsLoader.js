@@ -1,5 +1,7 @@
 import { stats_data_request } from '@/requests/StatsDataRequest';
 
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 const stats = {};
 
 /**
@@ -244,6 +246,7 @@ function format_number(x) {
 	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 	return parts.join('.');
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function number_suffix(number) {
 	const num = Math.abs(number) | 0;
 	const mod100 = num % 100;

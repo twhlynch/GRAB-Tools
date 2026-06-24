@@ -5,7 +5,15 @@ import { setUser } from '@sentry/vue';
 import { defineStore } from 'pinia';
 
 export const useUserStore = defineStore('user', {
-	state: () => ({
+	state: (): {
+		user_name: string | undefined;
+		grab_id: string | undefined;
+		access_token: string | undefined;
+		user: UserInfo | undefined | null;
+		is_site_admin: boolean;
+		is_list_moderator: boolean;
+		logged_in: boolean;
+	} => ({
 		user_name: undefined,
 		grab_id: undefined,
 		access_token: undefined,
@@ -46,7 +54,7 @@ export const useUserStore = defineStore('user', {
 	},
 
 	actions: {
-		async login(auth_info) {
+		async login(auth_info: { org_scoped_id: string; code: string }) {
 			const { org_scoped_id, code } = auth_info;
 			const response = await fetch(
 				`${SERVER_URL}get_access_token?service_token=${org_scoped_id}:${code}`,
@@ -75,7 +83,7 @@ export const useUserStore = defineStore('user', {
 		},
 		async logout() {
 			this.$reset();
-			setUser({ username: null });
+			setUser({ username: undefined });
 		},
 	},
 	persist: true,

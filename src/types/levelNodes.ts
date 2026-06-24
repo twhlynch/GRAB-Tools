@@ -4,6 +4,7 @@ import {
 	OperandDataType,
 } from '@/generated/proto';
 import { Root as PBRoot } from 'protobufjs';
+import { Object3D, Quaternion, Vector3 } from 'three';
 
 // helpers
 type PropsStartingWith<T, Prefix extends string> = T[Extract<
@@ -104,3 +105,20 @@ export type Root = PBRoot & {
 		};
 	};
 };
+
+// object type
+export type LevelNodeObject = Object3D & {
+	initialPosition: Vector3;
+	initialRotation: Quaternion;
+	userData: {
+		id: number;
+		node: LevelNode;
+	};
+};
+
+// type guards for LevelNodeObjects
+export function isLevelNodeObject(
+	object: Object3D | undefined,
+): object is LevelNodeObject {
+	return object?.userData.node;
+}

@@ -1,4 +1,12 @@
-import { acceptCompletion, autocompletion } from '@codemirror/autocomplete';
+import { LevelNodeGASM } from '@/generated/proto';
+import { LevelNodeWith } from '@/types/levelNodes';
+import {
+	acceptCompletion,
+	autocompletion,
+	Completion,
+	CompletionContext,
+	CompletionResult,
+} from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { EditorView } from 'codemirror';
 import { DIRECTIVES } from './AssemblyConversion';
@@ -22,23 +30,24 @@ const directives = Object.values(DIRECTIVES).map((label) => ({
 	type: 'function',
 }));
 
-let node_completions = [];
-let json_completions = [];
+let node_completions: Completion[] = [];
+let json_completions: Completion[] = [];
 
-export function update_json_completions(node) {
-	const labels = node.levelNodeGASM.program.labels;
-	const iregisters = node.levelNodeGASM.program.inputRegisters;
-	const oregisters = node.levelNodeGASM.program.outputRegisters;
-	const ioregisters = node.levelNodeGASM.program.inoutRegisters;
+export function update_json_completions(node: LevelNodeWith<LevelNodeGASM>) {
+	const program = (node.levelNodeGASM.program ??= {});
+	const labels = program.labels ?? [];
+	const iregisters = program.inputRegisters ?? [];
+	const oregisters = program.outputRegisters ?? [];
+	const ioregisters = program.inoutRegisters ?? [];
 	json_completions = [...labels, ...iregisters, ...oregisters, ...ioregisters]
-		.map((e) => e.name)
+		.map((e) => e.name ?? '')
 		.map((label) => ({
 			label,
 			type: 'variable',
 		}));
 }
 
-export function update_text_completions(text) {
+export function update_text_completions(text: string) {
 	node_completions = text
 		.trim()
 		.split(/\s+/)
@@ -48,9 +57,9 @@ export function update_text_completions(text) {
 		}));
 }
 
-function completion(context) {
-	let word = context.matchBefore(/[^\s]*/);
-	if (word.from === word.to && !context.explicit) return null;
+function completion(context: CompletionContext): CompletionResult | null {
+	const word = context.matchBefore(/[^\s]*/);
+	if (!word || (word.from === word.to && !context.explicit)) return null;
 
 	const completions_list = [
 		...new Map(

@@ -15,7 +15,9 @@ export default {
 			show_menu: false,
 		};
 	},
-
+	computed: {
+		...mapState(useUserStore, ['is_logged_in', 'user_name']),
+	},
 	async mounted() {
 		this.origin = location.origin + '/';
 
@@ -41,10 +43,6 @@ export default {
 		open_menu() {
 			this.show_menu = true;
 		},
-	},
-
-	computed: {
-		...mapState(useUserStore, ['is_logged_in', 'user_name']),
 	},
 };
 </script>

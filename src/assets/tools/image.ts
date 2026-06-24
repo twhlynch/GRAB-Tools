@@ -1,41 +1,59 @@
+import { LevelNode } from '@/generated/proto';
 import { groupNodes } from '../encoding/group';
 
-/**
- * @param {File} file - An image file
- * @param {Number} width - Width of output
- * @param {Number} height - Height of output
- * @param {"cubes" | "particles"} mode - Mode
- * @param {"plane" | "sphere"} shape - Shape
- * @returns {Promise<Object>} - A group level node
- */
-async function image(file, width, height, mode, shape) {
-	const result = await new Promise((resolve, reject) => {
+type Mode = 'cubes' | 'particles';
+type Shape = 'plane' | 'sphere';
+
+interface Pixel {
+	r: number;
+	g: number;
+	b: number;
+	a: number;
+	x: number;
+	y: number;
+	z: number;
+}
+
+async function image(
+	file: File,
+	width: number,
+	height: number,
+	mode: Mode,
+	shape: Shape,
+) {
+	const result: HTMLImageElement = await new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = () => {
 			const img = new Image();
 			img.onload = () => resolve(img);
 			img.onerror = reject;
-			img.src = reader.result;
+			img.src = reader.result as string;
 		};
 		reader.onerror = reject;
 		reader.readAsDataURL(file);
 	});
 
 	const pixels = compute_pixels(result, width, height, shape);
-	let level_nodes = build_nodes(pixels, mode);
+	const level_nodes = build_nodes(pixels, mode);
 
 	return groupNodes(level_nodes);
 }
 
-function compute_pixels(img, width, height, shape) {
+function compute_pixels(
+	img: HTMLImageElement,
+	width: number,
+	height: number,
+	shape: Shape,
+) {
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d', { willReadFrequently: true });
+	if (!ctx) return [];
 
 	canvas.width = img.width;
 	canvas.height = img.height;
 	ctx.drawImage(img, 0, 0);
 
-	const pixels = [];
+	const pixels: Pixel[] = [];
 
 	if (shape === 'plane') {
 		for (let x = 0; x < width; x++) {
@@ -47,17 +65,17 @@ function compute_pixels(img, width, height, shape) {
 					1,
 				);
 				pixels.push({
-					r: pixel.data[0] / 255,
-					g: pixel.data[1] / 255,
-					b: pixel.data[2] / 255,
-					a: pixel.data[3],
+					r: pixel.data[0]! / 255,
+					g: pixel.data[1]! / 255,
+					b: pixel.data[2]! / 255,
+					a: pixel.data[3]!,
 					x: x,
 					y: y * -1,
 					z: 10,
 				});
 			}
 		}
-	} else if (shape === 'sphere') {
+	} else {
 		const image_data = ctx.getImageData(
 			0,
 			0,
@@ -68,7 +86,7 @@ function compute_pixels(img, width, height, shape) {
 		for (let x = -radius; x <= radius; x++) {
 			for (let y = -radius; y <= radius; y++) {
 				for (let z = 0 - radius; z <= 0 + radius; z++) {
-					let distance = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+					const distance = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
 					if (distance > radius - 0.5 && distance < radius + 0.5) {
 						const phi = Math.atan2(z, x);
 						const theta = Math.acos(y / radius);
@@ -81,9 +99,9 @@ function compute_pixels(img, width, height, shape) {
 
 						const index =
 							(y_rounded * canvas.width + x_rounded) * 4;
-						const r = image_data[index] / 255;
-						const g = image_data[index + 1] / 255;
-						const b = image_data[index + 2] / 255;
+						const r = image_data[index]! / 255;
+						const g = image_data[index + 1]! / 255;
+						const b = image_data[index + 2]! / 255;
 
 						const color = gammaToLinear(r, g, b);
 
@@ -105,14 +123,14 @@ function compute_pixels(img, width, height, shape) {
 	return pixels;
 }
 
-function build_nodes(pixels, mode) {
-	let level_nodes = [];
+function build_nodes(pixels: Pixel[], mode: Mode) {
+	let level_nodes: LevelNode[] = [];
 
 	if (mode === 'particles') {
-		let colors = [];
-		let colorsMap = [];
+		const colors: Pixel[][] = [];
+		const colorsMap = [];
 		for (const pixel of pixels) {
-			let color = {
+			const color = {
 				r: Math.floor(pixel.r * 24) / 24,
 				g: Math.floor(pixel.g * 24) / 24,
 				b: Math.floor(pixel.b * 24) / 24,
@@ -127,10 +145,13 @@ function build_nodes(pixels, mode) {
 				colors.push([]);
 			}
 
-			colors[index].push(pixel);
+			colors[index]!.push(pixel);
 		}
 		for (let j = 0; j < colors.length; j++) {
-			let particlesNode = {
+			const color = colors[j]!;
+			const colorMap = colorsMap[j]!;
+
+			const particlesNode = {
 				levelNodeParticleEmitter: {
 					position: {},
 					scale: {
@@ -141,21 +162,21 @@ function build_nodes(pixels, mode) {
 					rotation: {
 						w: 1,
 					},
-					particlesPerSecond: colors[j].length,
+					particlesPerSecond: color.length,
 					lifeSpan: {
 						x: 5,
 						y: 5,
 					},
 					startColor: {
-						r: colorsMap[j].r,
-						g: colorsMap[j].g,
-						b: colorsMap[j].b,
+						r: colorMap.r,
+						g: colorMap.g,
+						b: colorMap.b,
 						a: 1,
 					},
 					endColor: {
-						r: colorsMap[j].r,
-						g: colorsMap[j].g,
-						b: colorsMap[j].b,
+						r: colorMap.r,
+						g: colorMap.g,
+						b: colorMap.b,
 						a: 1,
 					},
 					startSize: {
@@ -175,10 +196,10 @@ function build_nodes(pixels, mode) {
 				animations: [
 					{
 						name: 'idle',
-						frames: colors[j].flatMap((p, i) => {
+						frames: color.flatMap((p, i) => {
 							return [
 								{
-									time: i * (1 / colors[j].length),
+									time: i * (1 / color.length),
 									position: {
 										x: p.x * 0.1,
 										y: p.y * 0.1,
@@ -189,7 +210,7 @@ function build_nodes(pixels, mode) {
 									},
 								},
 								{
-									time: (i + 1) * (1 / colors[j].length),
+									time: (i + 1) * (1 / color.length),
 									position: {
 										x: p.x * 0.1,
 										y: p.y * 0.1,
@@ -207,7 +228,7 @@ function build_nodes(pixels, mode) {
 			};
 			level_nodes.push(particlesNode);
 		}
-	} else if (mode === 'cubes') {
+	} else {
 		level_nodes = pixels.map((pixel) => {
 			return {
 				levelNodeStatic: {
@@ -241,7 +262,7 @@ function build_nodes(pixels, mode) {
 	return level_nodes;
 }
 
-function gammaToLinear(r, g, b) {
+function gammaToLinear(r: number, g: number, b: number) {
 	r = r <= 0.04045 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
 	g = g <= 0.04045 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
 	b = b <= 0.04045 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);

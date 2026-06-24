@@ -49,8 +49,8 @@ export default {
 		);
 	},
 	methods: {
-		set_json(json) {
-			this.json = json;
+		set_json(data) {
+			this.json = data;
 			this.ignore_change = true;
 			this.view.dispatch({
 				changes: {

@@ -258,7 +258,7 @@ function build_code_video(
 
 	// parse video data
 	const vid = bitmaps_to_frames(bitmaps, width, height);
-	if (!vid) return null;
+	if (!vid.length) return null;
 
 	callback(95);
 
@@ -354,13 +354,9 @@ function build_code_video(
 	const asm: string[][] = [];
 
 	// distribute code somewhat evenly
-	for (let frame_index = 0; frame_index < frames_asm.length; frame_index++) {
-		const frame_asm = frames_asm[frame_index]!;
-
+	for (const frame_asm of frames_asm) {
 		// distribute pixel change lines to their assigned block
-		for (let line_index = 0; line_index < frame_asm.length; line_index++) {
-			const line = frame_asm[line_index]!;
-
+		for (const line of frame_asm) {
 			const block_index = Math.floor(
 				(line.y + line.x * height) / PIXELS_PER_CODE_BLOCK,
 			);

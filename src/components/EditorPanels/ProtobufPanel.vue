@@ -23,12 +23,12 @@ export default {
 		close() {
 			this.$emit('close');
 		},
-		set(protobuf) {
+		set(proto) {
 			this.view.dispatch({
 				changes: {
 					from: 0,
 					to: this.view.state.doc.length,
-					insert: protobuf,
+					insert: proto,
 				},
 			});
 		},

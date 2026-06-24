@@ -1,30 +1,35 @@
+import { Level, LevelNode, LevelNodeGroup } from '@/generated/proto';
+import { LevelNodeWith } from '@/types/levelNodes';
 import { groupNodes } from '../encoding/group';
 
-function traverseNode(node, func, parent = null) {
+function traverseNode(
+	node: LevelNode,
+	func: (
+		node: LevelNode,
+		parent: LevelNodeWith<LevelNodeGroup> | null,
+	) => void,
+	parent: LevelNodeWith<LevelNodeGroup> | null = null,
+) {
 	func(node, parent);
 	if (node.levelNodeGroup?.childNodes) {
 		node.levelNodeGroup.childNodes.forEach((child) => {
-			traverseNode(child, func, node);
+			traverseNode(child, func, node as LevelNodeWith<LevelNodeGroup>);
 		});
 	}
 }
 
-/**
- * @param {Array<Object>} levels - A list of levels
- * @returns {Array<Object>} - A list of level nodes
- */
-function compile(levels) {
+function compile(levels: Level[]) {
 	const values = levels
 		.filter((level) => level.levelNodes?.length)
 		.map((level) => {
-			return groupNodes(level.levelNodes);
+			return groupNodes(level.levelNodes ?? []);
 		});
 
-	let finalNodes = [];
+	const finalNodes: LevelNode[] = [];
 	let offset = 0;
-	for (let group of values) {
+	for (const group of values) {
 		// starts and finishes
-		let startIds = [];
+		const startIds: number[] = [];
 		let id = 0;
 		traverseNode(group, (node, parent) => {
 			if (
@@ -36,21 +41,20 @@ function compile(levels) {
 			}
 			id++;
 		});
-		group.levelNodeGroup.childNodes =
-			group.levelNodeGroup.childNodes.filter(
-				(n) => !n.levelNodeStart && !n.levelNodeFinish,
-			);
+		group.levelNodeGroup.childNodes = (
+			group.levelNodeGroup.childNodes ?? []
+		).filter((n) => !n.levelNodeStart && !n.levelNodeFinish);
 
 		// deleted target trigger targets
 		traverseNode(group, (node, _) => {
 			if (node.levelNodeTrigger?.triggerTargets) {
-				let deletedTargets = [];
+				const deletedTargets = [];
 				for (
 					let i = 0;
 					i < node.levelNodeTrigger.triggerTargets.length;
 					i++
 				) {
-					let target = node.levelNodeTrigger.triggerTargets[i];
+					const target = node.levelNodeTrigger.triggerTargets[i]!;
 					if (target.triggerTargetAnimation) {
 						const originalId =
 							target.triggerTargetAnimation.objectID || 0;
@@ -61,7 +65,7 @@ function compile(levels) {
 				}
 				for (let i = deletedTargets.length - 1; i >= 0; i--) {
 					node.levelNodeTrigger.triggerTargets.splice(
-						deletedTargets[i],
+						deletedTargets[i]!,
 						1,
 					);
 				}
@@ -72,14 +76,14 @@ function compile(levels) {
 		let count = 0;
 		traverseNode(group, (node, _) => {
 			if (node.levelNodeTrigger?.triggerTargets) {
-				for (let target of node.levelNodeTrigger.triggerTargets) {
+				for (const target of node.levelNodeTrigger.triggerTargets) {
 					if (target.triggerTargetAnimation) {
 						if (!target.triggerTargetAnimation.objectID) {
 							target.triggerTargetAnimation.objectID = 0;
 						}
 						const originalId =
 							target.triggerTargetAnimation.objectID;
-						for (let sID of startIds) {
+						for (const sID of startIds) {
 							if (originalId >= sID) {
 								target.triggerTargetAnimation.objectID--;
 							}

@@ -3,12 +3,15 @@ import { setUser } from '@sentry/vue';
 import { defineStore } from 'pinia';
 
 export const useCookiesStore = defineStore('cookies', {
-	state: () => ({
+	state: (): {
+		allow_cookies: boolean;
+		timestamp: number;
+	} => ({
 		allow_cookies: false,
 		timestamp: 0,
 	}),
 	actions: {
-		set_allow_cookies(value) {
+		set_allow_cookies(value: boolean) {
 			this.allow_cookies = value;
 			if (value) {
 				const user = useUserStore();
@@ -17,7 +20,7 @@ export const useCookiesStore = defineStore('cookies', {
 				}
 			} else {
 				this.timestamp = Date.now();
-				setUser({ username: null });
+				setUser({ username: undefined });
 			}
 		},
 	},

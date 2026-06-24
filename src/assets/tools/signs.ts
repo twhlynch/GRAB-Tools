@@ -1,10 +1,8 @@
-/**
- * @param {String} text - Some text
- * @param {Boolean} animated - Toggle animated mode
- * @returns {Array<Object>} - A list of level nodes
- */
-function signs(text, animated) {
-	let nodes = animated
+import { LevelNodeSign } from '@/generated/proto';
+import { LevelNodeWith } from '@/types/levelNodes';
+
+function signs(text: string, animated: boolean) {
+	const nodes = animated
 		? text_to_signs_animated(text)
 		: text_to_signs(text, 16, 'horizontal');
 
@@ -12,17 +10,21 @@ function signs(text, animated) {
 }
 
 // TODO: refactor this whole file
-function text_to_signs(text, wpm, direction) {
-	let words = text.split(' ');
+function text_to_signs(
+	text: string,
+	wpm: number,
+	direction: 'horizontal' | 'vertical',
+) {
+	const words = text.split(' ');
 
-	let splitStrings = [];
+	const splitStrings = [];
 	for (let i = 0; i < words.length; i += wpm) {
-		let chunk = words.slice(i, i + wpm);
+		const chunk = words.slice(i, i + wpm);
 		splitStrings.push(chunk.join(' '));
 	}
-	let signs = [];
+	const nodes: LevelNodeWith<LevelNodeSign>[] = [];
 	splitStrings.forEach((str, i) => {
-		let sign = {
+		const sign = {
 			levelNodeSign: {
 				position: { x: 0, y: 0, z: 0 },
 				rotation: { w: 1.0 },
@@ -34,34 +36,34 @@ function text_to_signs(text, wpm, direction) {
 		} else {
 			sign.levelNodeSign.position.y = -i;
 		}
-		signs.push(sign);
+		nodes.push(sign);
 	});
 
-	return signs;
+	return nodes;
 }
 
-function text_to_signs_animated(text) {
+function text_to_signs_animated(text: string) {
 	// config
+	const char_width = 0.05;
+	const appearance_time = 2;
+	const interval = 0.1;
+	const visible_length = 40;
+	const foreward_pos = 1;
+	const levelNodes: LevelNodeWith<LevelNodeSign>[] = [];
+	const last_10 = [];
 	let count = 0;
-	let char_width = 0.05;
-	let appearance_time = 2;
-	let interval = 0.1;
 	let active_position = 0;
-	let visible_length = 40;
-	let foreward_pos = 1;
 	let height = 0;
-	let levelNodes = [];
-	let last_10 = [];
 
 	let wants_return = false;
 
 	for (let i = 0; i < text.split('').length; i++) {
-		let char = text.charAt(i);
+		const char = text.charAt(i);
 		if (char == '\n') {
 			wants_return = true;
 		}
 		let sign_iter = find_char(char, last_10, levelNodes);
-		if (!sign_iter) {
+		if (sign_iter === -1) {
 			levelNodes.push({
 				levelNodeSign: {
 					position: {},
@@ -91,10 +93,12 @@ function text_to_signs_animated(text) {
 		last_10.push(sign_iter);
 
 		if (last_10.length > appearance_time / interval) {
-			last_10.pop(0);
+			last_10.pop();
 		}
 
-		levelNodes[sign_iter].animations[0].frames.push({
+		const frames = levelNodes[sign_iter]!.animations![0]!.frames!;
+
+		frames.push({
 			position: {
 				z: 1 * foreward_pos,
 				y: height * char_width * -2,
@@ -106,7 +110,7 @@ function text_to_signs_animated(text) {
 			time: count * interval,
 		});
 
-		levelNodes[sign_iter].animations[0].frames.push({
+		frames.push({
 			position: {
 				z: 1 * foreward_pos,
 				y: height * char_width * -2,
@@ -118,7 +122,7 @@ function text_to_signs_animated(text) {
 			time: count * interval + appearance_time,
 		});
 
-		levelNodes[sign_iter].animations[0].frames.push({
+		frames.push({
 			position: {},
 			rotation: {
 				w: 1.0,
@@ -139,8 +143,8 @@ function text_to_signs_animated(text) {
 		count++;
 	}
 
-	for (let i = 0; i < levelNodes.length; i++) {
-		levelNodes[i].animations[0].frames.push({
+	for (const node of levelNodes) {
+		node.animations![0]!.frames!.push({
 			position: {
 				x: 0,
 				y: 0,
@@ -155,13 +159,17 @@ function text_to_signs_animated(text) {
 	return levelNodes;
 }
 
-function find_char(char, last_10, nodes) {
+function find_char(
+	char: string,
+	last_10: number[],
+	nodes: LevelNodeWith<LevelNodeSign>[],
+) {
 	for (let i = 0; i < nodes.length; i++) {
-		if (nodes[i].levelNodeSign.text == char && !last_10.includes(i)) {
+		if (nodes[i]!.levelNodeSign.text == char && !last_10.includes(i)) {
 			return i;
 		}
 	}
-	return false;
+	return -1;
 }
 
 export default {

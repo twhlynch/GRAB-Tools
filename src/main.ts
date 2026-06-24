@@ -13,8 +13,6 @@ import '@/assets/globals.css';
 const app = createApp(App);
 app.config.globalProperties.$config = config;
 
-app.config.unwrapInjectedRef = true;
-
 init({
 	app,
 	// dummy dsn

@@ -1,4 +1,4 @@
-import { obj } from '@/assets/tools/obj.js';
+import { obj } from '@/assets/tools/obj';
 import { color } from '@/generated/helpers';
 import { describe, expect, it } from 'vitest';
 

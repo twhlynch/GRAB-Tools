@@ -1,9 +1,45 @@
+import { isLevelNodeObject, LevelNodeObject } from '@/types/levelNodes';
 import * as THREE from 'three';
-import { TransformControls } from 'three/addons/controls/TransformControls';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { node_data } from './encoding/utils';
 
+interface DragData {
+	pivot_matrix: THREE.Matrix4;
+	pivot_inverse: THREE.Matrix4;
+	objects: {
+		object: THREE.Object3D;
+		parent: THREE.Object3D;
+		original_matrix: THREE.Matrix4;
+		original_quaternion: THREE.Quaternion;
+	}[];
+	selection_size: THREE.Vector3;
+	start_scale: THREE.Vector3;
+	start_position: THREE.Vector3;
+	scale_dir: number;
+}
+
+type TransformControlsEvent<T extends string> = THREE.Event<
+	T,
+	TransformControls
+> & { value?: unknown };
+
 class GizmoControls {
-	constructor(camera, domElement, scene, changing_event, changed_event) {
+	camera: THREE.Camera;
+	domElement: HTMLElement;
+	scene: THREE.Scene;
+	selection: LevelNodeObject[];
+	dragData: DragData | null;
+	pivot: THREE.Object3D;
+	controls: TransformControls;
+	one_sided: boolean;
+
+	constructor(
+		camera: THREE.Camera,
+		domElement: HTMLElement,
+		scene: THREE.Scene,
+		changing_event: (e: TransformControlsEvent<'change'>) => void,
+		changed_event: (e: TransformControlsEvent<'dragging-changed'>) => void,
+	) {
 		this.camera = camera;
 		this.domElement = domElement;
 		this.scene = scene;
@@ -34,15 +70,15 @@ class GizmoControls {
 			}
 		});
 
-		this.scene.add(this.controls);
+		this.scene.add(this.controls as unknown as THREE.Object3D);
 	}
 
-	set_one_sided(one_sided) {
+	set_one_sided(one_sided: boolean) {
 		this.one_sided = one_sided;
 	}
 
-	handle_dragging_changed(event) {
-		const isDragging = event.value;
+	handle_dragging_changed(event: TransformControlsEvent<'dragging-changed'>) {
+		const isDragging = event.value as boolean;
 
 		if (isDragging) {
 			this.pivot.updateMatrixWorld(true);
@@ -60,7 +96,7 @@ class GizmoControls {
 			if (
 				this.controls.mode === 'scale' &&
 				this.one_sided &&
-				axis.length === 1 &&
+				axis?.length === 1 &&
 				'XYZ'.includes(axis)
 			) {
 				const ray = this.controls.getRaycaster().ray;
@@ -72,7 +108,7 @@ class GizmoControls {
 
 				scale_dir =
 					Math.sign(
-						v.addScaledVector(d, -v.dot(d))[axis.toLowerCase()],
+						v.addScaledVector(d, -v.dot(d))[this.get_axis()],
 					) || 1;
 			}
 
@@ -83,7 +119,7 @@ class GizmoControls {
 					obj.updateMatrixWorld(true);
 					return {
 						object: obj,
-						parent: obj.parent,
+						parent: obj.parent!,
 						original_matrix: obj.matrixWorld.clone(),
 						original_quaternion: obj.quaternion.clone(),
 					};
@@ -105,28 +141,35 @@ class GizmoControls {
 			object.updateMatrixWorld(true);
 
 			const node = node_data(object);
-			if (!node) return;
 
 			if (node.position) {
 				node.position.x = object.position.x;
 				node.position.y = object.position.y;
 				node.position.z = object.position.z;
 			}
-			if (node.rotation) {
+			if ('rotation' in node && node.rotation) {
 				node.rotation.x = object.quaternion.x;
 				node.rotation.y = object.quaternion.y;
 				node.rotation.z = object.quaternion.z;
 				node.rotation.w = object.quaternion.w;
 			}
-			if (node.scale && typeof node.scale === 'object') {
+			if (
+				'scale' in node &&
+				node.scale &&
+				typeof node.scale === 'object'
+			) {
 				node.scale.x = object.scale.x;
 				node.scale.y = object.scale.y;
 				node.scale.z = object.scale.z;
 			}
-			if (node.scale && typeof node.scale === 'number') {
+			if (
+				'scale' in node &&
+				node.scale &&
+				typeof node.scale === 'number'
+			) {
 				node.scale = object.scale.x;
 			}
-			if (node.radius) {
+			if ('radius' in node && node.radius) {
 				node.radius = object.scale.x / 2;
 			}
 
@@ -141,7 +184,7 @@ class GizmoControls {
 		this.pivot.updateMatrixWorld(true);
 
 		if (this.dragData.scale_dir) {
-			const axis = this.controls.axis.toLowerCase();
+			const axis = this.get_axis();
 			const { selection_size, start_scale, start_position, scale_dir } =
 				this.dragData;
 
@@ -186,13 +229,13 @@ class GizmoControls {
 			obj.updateMatrixWorld(true);
 		}
 	}
-	applyNodeConstraints(object) {
-		const node = object?.userData?.node;
+	applyNodeConstraints(object: THREE.Object3D | undefined) {
+		const node = object?.userData.node;
 		const axis = this.controls.axis;
 		if (!node || !axis) return;
 
 		const mode = this.controls.mode;
-		const override_axis = axis.charAt(0).toLowerCase();
+		const override_axis = this.get_axis();
 
 		if (node.levelNodeStart || node.levelNodeFinish) {
 			if (mode === 'rotate') {
@@ -268,8 +311,8 @@ class GizmoControls {
 		this.controls.attach(this.pivot);
 	}
 
-	add(object) {
-		if (!object?.userData?.node) return;
+	add(object: THREE.Object3D | undefined) {
+		if (!isLevelNodeObject(object)) return;
 		if (this.selection.includes(object)) return;
 
 		this.selection.push(object);
@@ -277,7 +320,8 @@ class GizmoControls {
 		this.recenter();
 	}
 
-	remove(object) {
+	remove(object: THREE.Object3D) {
+		if (!isLevelNodeObject(object)) return;
 		if (!this.selection.includes(object)) return;
 
 		this.selection = this.selection.filter((o) => o !== object);
@@ -289,7 +333,8 @@ class GizmoControls {
 		[...this.selection].forEach((obj) => this.remove(obj));
 	}
 
-	includes(object) {
+	includes(object: THREE.Object3D) {
+		if (!isLevelNodeObject(object)) return;
 		return this.selection.includes(object);
 	}
 
@@ -297,15 +342,17 @@ class GizmoControls {
 		return this.selection.length === 0;
 	}
 
-	update_visuals(object, isSelected) {
+	update_visuals(object: THREE.Object3D, isSelected: boolean) {
 		object.traverse((obj) => {
-			if (obj.material?.uniforms?.isSelected) {
-				obj.material.uniforms.isSelected.value = isSelected;
+			if (obj instanceof THREE.Mesh) {
+				if (obj.material?.uniforms?.isSelected) {
+					obj.material.uniforms.isSelected.value = isSelected;
+				}
 			}
 		});
 	}
 
-	set_mode(mode) {
+	set_mode(mode: 'scale' | 'rotate' | 'translate') {
 		this.controls.setMode(mode);
 		this.recenter();
 	}
@@ -314,7 +361,7 @@ class GizmoControls {
 		return this.controls.mode;
 	}
 
-	set_space(space) {
+	set_space(space: 'local' | 'world') {
 		this.controls.setSpace(space);
 		this.recenter();
 	}
@@ -323,12 +370,16 @@ class GizmoControls {
 		return this.controls.space;
 	}
 
-	set_snapping(enabled) {
+	set_snapping(enabled: boolean) {
 		this.controls.setRotationSnap(
 			enabled ? 5 * THREE.MathUtils.DEG2RAD : null,
 		);
 		this.controls.setScaleSnap(enabled ? 0.25 : null);
 		this.controls.setTranslationSnap(enabled ? 0.25 : null);
+	}
+
+	get_axis() {
+		return this.controls.axis?.charAt(0).toLowerCase() as 'x' | 'y' | 'z';
 	}
 }
 

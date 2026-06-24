@@ -16,6 +16,7 @@ import { basicSetup } from 'codemirror';
 import { mapState } from 'pinia';
 
 export default {
+	emits: ['set'],
 	data() {
 		return {
 			json: undefined,
@@ -103,7 +104,6 @@ export default {
 			}
 		},
 	},
-	emits: ['set'],
 };
 </script>
 

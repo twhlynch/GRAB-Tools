@@ -5,7 +5,8 @@ import {
 	indentWithTab,
 } from '@codemirror/commands';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { keymap } from '@codemirror/view';
+import { Extension } from '@codemirror/state';
+import { keymap, ViewUpdate } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { EditorView } from 'codemirror';
 
@@ -142,13 +143,15 @@ const themeExtension = EditorView.theme(themeOptions, {
 const highlightStyle = HighlightStyle.define(themeStyle);
 const theme = [themeExtension, syntaxHighlighting(highlightStyle)];
 
-function build_editor(
-	parent,
+export default function build_editor(
+	parent: Element,
 	doc = '',
-	lang,
+	lang?: Extension,
 	extensions = [],
 	keymaps = [],
-	changed = (_) => {},
+	changed = (_: ViewUpdate) => {
+		// noop
+	},
 ) {
 	return new EditorView({
 		parent: parent,
@@ -168,5 +171,3 @@ function build_editor(
 		],
 	});
 }
-
-export default build_editor;

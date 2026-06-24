@@ -86,7 +86,7 @@ export default class BrushTool implements Tool {
 		const clones = this.brush.map((item) => {
 			const cloned = deepClone(item.node);
 			const data = node_data(cloned);
-			const pos = data?.position;
+			const pos = data.position;
 			if (pos) {
 				pos.x = hit_point.x + item.offset.x;
 				pos.y = hit_point.y + item.offset.y;

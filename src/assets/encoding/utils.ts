@@ -3,8 +3,10 @@ import { LevelNodeTypes } from '@/types/levelNodes';
 import { Object3D } from 'three';
 import { unmodded_root } from './root';
 
-export function isObject3D(object: LevelNode | Object3D): object is Object3D {
-	return object && 'userData' in object;
+export function isObject3D(
+	object: LevelNode | Object3D | undefined,
+): object is Object3D {
+	return !!(object && 'userData' in object);
 }
 
 export function materials(): Record<string, number> {
@@ -55,7 +57,7 @@ export function random_shape() {
 	return 1000 + Math.floor(Math.random() * length);
 }
 
-export function add_nodes(level: Level, nodes: LevelNode[]) {
+export function add_nodes(level: Level, nodes: LevelNode[] | undefined) {
 	(level.levelNodes ??= []).push(...(nodes ?? []));
 }
 

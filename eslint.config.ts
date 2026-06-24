@@ -67,13 +67,13 @@ export default [
 				},
 			],
 
-			'@typescript-eslint/no-empty-function': 'warn',
+			'@typescript-eslint/no-empty-function': 'error',
 
-			'no-shadow': 'warn',
-			'@typescript-eslint/no-shadow': 'warn',
+			'no-shadow': 'error',
+			'@typescript-eslint/no-shadow': 'error',
 
-			'no-constant-binary-expression': 'warn',
-			'@typescript-eslint/prefer-for-of': 'warn',
+			'no-constant-binary-expression': 'error',
+			'@typescript-eslint/prefer-for-of': 'error',
 
 			'vue/multi-word-component-names': 'off',
 			'vue/require-default-prop': 'off',
@@ -85,8 +85,8 @@ export default [
 		files: ['**/*.ts'],
 
 		rules: {
-			'@typescript-eslint/no-unnecessary-condition': 'warn',
-			'@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+			'@typescript-eslint/no-unnecessary-condition': 'error',
+			'@typescript-eslint/no-unnecessary-type-assertion': 'error',
 		},
 	},
 ];

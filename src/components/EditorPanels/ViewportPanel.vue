@@ -1821,7 +1821,7 @@ export default defineComponent({
 						const node = object.userData.node;
 						const data = node_data(node);
 
-						const x = -object.initialPosition?.x ?? 0;
+						const x = -(object.initialPosition?.x ?? 0);
 						object.position.x = x;
 						object.initialPosition.x = x;
 						data.position.x = x;
@@ -1854,7 +1854,7 @@ export default defineComponent({
 						const node = object.userData.node;
 						const data = node_data(node);
 
-						const y = -object.initialPosition?.y ?? 0;
+						const y = -(object.initialPosition?.y ?? 0);
 						object.position.y = y;
 						object.initialPosition.y = y;
 						data.position.y = y;
@@ -1887,7 +1887,7 @@ export default defineComponent({
 						const node = object.userData.node;
 						const data = node_data(node);
 
-						const z = -object.initialPosition?.z ?? 0;
+						const z = -(object.initialPosition?.z ?? 0);
 						object.position.z = z;
 						object.initialPosition.z = z;
 						data.position.z = z;
@@ -1936,7 +1936,7 @@ export default defineComponent({
 			this.is_touch_interaction = false;
 			clearTimeout(this.hold.timeout);
 		},
-		pointercancel(e) {
+		pointercancel(_) {
 			this.is_touch_interaction = false;
 			clearTimeout(this.hold.timeout);
 		},

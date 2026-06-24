@@ -134,7 +134,7 @@ interface Line {
 	operator_id?: InstructionDataType; // also used as 'is macro'
 }
 
-interface CompilerError extends Error {
+export interface CompilerError extends Error {
 	line?: number;
 }
 
@@ -172,6 +172,7 @@ function verify_lengths(lines: Line[]) {
 		if (operator_id === undefined) continue;
 
 		const count = operand_counts[operator_id];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (count === undefined) {
 			throw err(`Invalid operator '${operator}'`, line);
 		}
@@ -232,6 +233,7 @@ function parse_lines(strings: string[]): Line[] {
 			}
 
 			const count = operand_counts[operator_id];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (count === undefined) {
 				throw err(`Invalid operator '${operator}'`, line);
 			}
@@ -328,6 +330,7 @@ function regroup_operands(line: Line) {
 	if (operator_id === undefined) return;
 
 	const count = operand_counts[operator_id];
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (count === undefined) return;
 
 	const has_label =
@@ -570,6 +573,7 @@ function instruction_asm_to_json(
 
 	const dirty = dirty_instruction(operator);
 	const type = instruction_map[dirty] as InstructionDataType;
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (type === undefined) {
 		window.toast(`Invalid instruction: ${instruction}`, 'error');
 		return undefined;
@@ -700,6 +704,7 @@ function instruction_json_to_asm(
 	);
 
 	const errors = [];
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (mapped === undefined) errors.push('; ERROR: Invalid operator');
 	if (operands.includes('')) errors.push('; ERROR: Invalid operand');
 
