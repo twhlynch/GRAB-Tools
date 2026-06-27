@@ -1,9 +1,6 @@
 import { SERVER_URL } from '@/config';
 
-/**
- * @returns {Promise<Array | null>}
- */
-export async function get_allow_downloads_request(user_id) {
+export async function get_allow_downloads_request(user_id: string) {
 	const url = `${SERVER_URL}get_allow_downloads?user_id=${user_id}`;
 
 	try {
@@ -11,7 +8,13 @@ export async function get_allow_downloads_request(user_id) {
 
 		if (!response.ok) return null;
 
-		return await response.json();
+		return (await response.json()) as {
+			user: boolean;
+			levels: {
+				level_id: string;
+				allow: boolean;
+			}[];
+		};
 	} catch {
 		return null;
 	}

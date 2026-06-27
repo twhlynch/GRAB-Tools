@@ -1,10 +1,6 @@
 import { GRAB_SERVER_URL } from '@/config';
 
-/**
- * @param {String} level_id
- * @returns {Promise<ArrayBuffer | null>}
- */
-export async function download_level_request(level_id) {
+export async function download_level_request(level_id: string) {
 	const level_path = level_id.split(/[:/]/).slice(0, 3).join('/');
 	const url = `${GRAB_SERVER_URL}download/${level_path}`;
 

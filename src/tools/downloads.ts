@@ -49,14 +49,7 @@ async function can_download_level(level_id: string) {
 	if (curated_listings?.includes('one_of_a_kind')) return true;
 
 	// check hardest levels list
-	const hardest_list = (await get_hardest_levels_request()) as
-		| {
-				position: number;
-				level_id: string;
-				title: string;
-				creators: string;
-		  }[]
-		| null;
+	const hardest_list = await get_hardest_levels_request();
 	if (hardest_list?.find((level) => level.level_id === level_id)) return true;
 
 	// if in doubt match username

@@ -1,8 +1,12 @@
 import { SERVER_URL } from '@/config';
 
-/**
- * @returns {Promise<Array | null>}
- */
+interface ListRow {
+	position: number;
+	level_id: string;
+	title: string;
+	creators: string;
+}
+
 export async function get_hardest_levels_request() {
 	const url = `${SERVER_URL}get_hardest_levels`;
 
@@ -11,7 +15,7 @@ export async function get_hardest_levels_request() {
 
 		if (!response.ok) return null;
 
-		return await response.json();
+		return (await response.json()) as ListRow[];
 	} catch {
 		return null;
 	}

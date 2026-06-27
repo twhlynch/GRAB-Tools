@@ -1,12 +1,12 @@
 import { SERVER_URL } from '@/config';
 import { useUserStore } from '@/stores/user';
 
-/**
- * @returns {Promise<boolean | null>}
- */
-export async function remove_hardest_level_request(level_id) {
+export async function add_hardest_level_request(
+	level_id: string,
+	position: number,
+) {
 	const user = useUserStore();
-	const url = `${SERVER_URL}remove_hardest_level?level_id=${level_id}&access_token=${user.access_token}`;
+	const url = `${SERVER_URL}add_hardest_level?level_id=${level_id}&position=${position}&access_token=${user.access_token}`;
 
 	try {
 		const response = await fetch(url);

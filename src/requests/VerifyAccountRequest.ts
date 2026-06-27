@@ -1,12 +1,10 @@
 import { SERVER_URL } from '@/config';
 import { useUserStore } from '@/stores/user';
 
-/**
- * @param {String | null} level_url
- * @param {String | null} access_token
- * @returns {Promise<Boolean>}
- */
-export async function verify_account_request(level_url, access_token) {
+export async function verify_account_request(
+	level_url: string | null,
+	access_token: string | null,
+) {
 	if (!level_url && !access_token) return;
 
 	let url = `${SERVER_URL}verify_account`;
@@ -30,7 +28,7 @@ export async function verify_account_request(level_url, access_token) {
 			return false;
 		}
 
-		const json = await response.json();
+		const json: { grab_id: string } = await response.json();
 		userStore.grab_id = json.grab_id;
 
 		return true;

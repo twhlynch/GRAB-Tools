@@ -1,10 +1,11 @@
 import { SERVER_URL } from '@/config';
 import { useUserStore } from '@/stores/user';
 
-/**
- * @returns {Promise<Array | null>}
- */
-export async function set_allow_downloads_request(level_id, user_id, allow) {
+export async function set_allow_downloads_request(
+	level_id: string,
+	user_id: string,
+	allow: boolean,
+) {
 	const user = useUserStore();
 
 	if (!level_id) level_id = '';
@@ -16,7 +17,8 @@ export async function set_allow_downloads_request(level_id, user_id, allow) {
 
 		if (!response.ok) return null;
 
-		return await response.text();
+		const success = await response.text();
+		return success === 'Success';
 	} catch {
 		return null;
 	}

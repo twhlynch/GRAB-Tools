@@ -1,10 +1,6 @@
 import { STATS_URL } from '@/config';
 
-/**
- * @param {String} key
- * @returns {Promise<object | null>}
- */
-export async function stats_data_request(key) {
+export async function stats_data_request(key: string) {
 	const update_hour = 5 + 1;
 	const now = Date.now();
 	const current_date = new Date(now);

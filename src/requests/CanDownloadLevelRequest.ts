@@ -1,10 +1,6 @@
 import { SERVER_URL } from '@/config';
 
-/**
- * @param {String} level_id
- * @returns {Promise<Boolean | null>}
- */
-export async function can_download_level_request(level_id) {
+export async function can_download_level_request(level_id: string) {
 	const url = `${SERVER_URL}can_download_level?level_id=${level_id}`;
 
 	try {
@@ -14,7 +10,11 @@ export async function can_download_level_request(level_id) {
 			return null;
 		}
 
-		return (await response.json()).allow;
+		const result: {
+			allow: boolean | null;
+		} = await response.json();
+
+		return result.allow as boolean;
 	} catch {
 		return null;
 	}

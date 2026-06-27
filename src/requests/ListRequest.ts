@@ -1,10 +1,6 @@
 import { FORMAT_VERSION, GRAB_SERVER_URL } from '@/config';
 
-/**
- * @param {String} user_id
- * @returns {Promise<JSON | null>}
- */
-export async function list_request(type) {
+export async function list_request(type: string) {
 	const url = `${GRAB_SERVER_URL}list?type=${type}&max_format_version=${FORMAT_VERSION}`;
 
 	try {
@@ -16,7 +12,7 @@ export async function list_request(type) {
 			return null;
 		}
 
-		return await response.json();
+		return (await response.json()) as LevelDetails[];
 	} catch {
 		window.toast(`Error: Failed to load levels`, 'error');
 		return null;
