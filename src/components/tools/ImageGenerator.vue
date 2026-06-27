@@ -23,6 +23,7 @@ export default {
 			const height = parseInt(getByID(`${toolID}-height`).value) || 50;
 			const mode = getByID(`${toolID}-mode`).value;
 			const shape = getByID(`${toolID}-shape`).value;
+			const greedy = getByID(`${toolID}-greedy`).checked;
 
 			const node = await generate_pixel_art(
 				file,
@@ -30,6 +31,7 @@ export default {
 				height,
 				mode,
 				shape,
+				greedy,
 			);
 
 			const obj = createLevel(
@@ -62,6 +64,10 @@ export default {
 			<option value="plane" selected>plane</option>
 			<option value="sphere">sphere</option>
 		</select>
+		<label>
+			optimise
+			<input id="image-tool-greedy" type="checkbox" />
+		</label>
 		<input id="image-tool-file" type="file" accept="image/*" />
 		<button id="image-tool-btn" class="button" @click="run">
 			Generate

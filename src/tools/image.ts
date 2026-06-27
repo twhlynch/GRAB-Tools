@@ -10,6 +10,7 @@ import {
 	LevelNodeMaterial,
 	LevelNodeShape,
 } from '@/generated/proto';
+import { greedy_mesh } from './greedy_mesh';
 
 type Mode = 'cubes' | 'particles';
 type Shape = 'plane' | 'sphere';
@@ -25,6 +26,7 @@ export async function generate_pixel_art(
 	height: number,
 	mode: Mode,
 	shape: Shape,
+	greedy?: boolean,
 ) {
 	const result: HTMLImageElement = await new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -39,7 +41,7 @@ export async function generate_pixel_art(
 	});
 
 	const pixels = compute_pixels(result, width, height, shape);
-	const level_nodes = build_nodes(pixels, mode);
+	const level_nodes = build_nodes(pixels, mode, greedy);
 
 	return groupNodes(level_nodes);
 }
@@ -154,16 +156,16 @@ function gamma_to_linear(value: number) {
 		: Math.pow((value + 0.055) / 1.055, 2.4);
 }
 
-function build_nodes(pixels: Pixel[], mode: Mode) {
+function build_nodes(pixels: Pixel[], mode: Mode, greedy?: boolean) {
 	if (mode === 'particles') {
 		return build_particles(pixels);
 	} else {
-		return build_pixels(pixels);
+		return build_pixels(pixels, greedy);
 	}
 }
 
-function build_pixels(pixels: Pixel[]) {
-	return pixels.map((pixel) => {
+function build_pixels(pixels: Pixel[], greedy?: boolean) {
+	const nodes = pixels.map((pixel) => {
 		return levelNodeWithStatic({
 			material: LevelNodeMaterial.DEFAULT_COLORED,
 			shape: LevelNodeShape.CUBE,
@@ -172,6 +174,10 @@ function build_pixels(pixels: Pixel[]) {
 			isNeon: true,
 		});
 	});
+
+	if (greedy) return greedy_mesh(nodes);
+
+	return nodes;
 }
 
 function build_particles(pixels: Pixel[]) {

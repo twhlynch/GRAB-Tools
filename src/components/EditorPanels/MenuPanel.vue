@@ -721,11 +721,16 @@ export default {
 						options: ['plane', 'sphere'],
 					},
 					{
+						type: 'checkbox',
+						text: 'Optimise',
+						default: true,
+					},
+					{
 						type: 'file',
 						accept: 'image/*',
 					},
 				],
-				async (width, height, mode, shape, files) => {
+				async (width, height, mode, shape, greedy, files) => {
 					if (!files.length) {
 						window.toast('No image file chosen', 'error');
 						return;
@@ -741,6 +746,7 @@ export default {
 						height,
 						mode,
 						shape,
+						greedy,
 					);
 
 					this.insert_selection_nodes([node]);
