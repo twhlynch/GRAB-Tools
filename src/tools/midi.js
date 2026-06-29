@@ -37,7 +37,7 @@ async function midi(
 	optimize,
 	volume,
 ) {
-	console.log(inst_type);
+	//console.log(inst_type);
 	if (start_active && !loop) {
 		// Can't make a non-looping start active animation in grab.
 		window.toast(
@@ -81,7 +81,7 @@ const wave_type_map = {
 
 // Node helpers
 function get_basic_sound_block(position, pitch, amplitude, instrument) {
-	console.log(instrument.name);
+	//console.log(instrument.name);
 	const node = levelNodeWithSound();
 	node.levelNodeSound.position = position;
 	node.levelNodeSound.name = unique_sound_name(
@@ -110,7 +110,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 	return node;
 }
 function get_basic_sound_block_drums(position, amplitude, instrument) {
-	console.log(instrument.name);
+	//console.log(instrument.name);
 	const node = levelNodeWithSound();
 	node.levelNodeSound.position = position;
 	node.levelNodeSound.name = unique_sound_name(instrument.name, null);
@@ -266,7 +266,7 @@ function parse_unparsed_tracks(tracks) {
 				track_volume;
 		});
 
-		console.log(average_note_volumes);
+		//console.log(average_note_volumes);
 
 		new_tracks.push({
 			channel: track.channel,
