@@ -529,7 +529,7 @@ const instrument_map = [
     "decay": 0.35,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -542,7 +542,7 @@ const instrument_map = [
     "decay": 0.35,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -555,7 +555,7 @@ const instrument_map = [
     "decay": 0.35,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -841,7 +841,7 @@ const instrument_map = [
     "decay": 0.25,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -854,7 +854,7 @@ const instrument_map = [
     "decay": 0.25,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -867,7 +867,7 @@ const instrument_map = [
     "decay": 0.25,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -880,7 +880,7 @@ const instrument_map = [
     "decay": 0.25,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -958,7 +958,7 @@ const instrument_map = [
     "decay": 0.2,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
@@ -984,7 +984,7 @@ const instrument_map = [
     "decay": 0.2,
     "freqRamp": 0,
     "freqDeltaRamp": 0,
-    "vibratoDepth": 0.2,
+    "vibratoDepth": 0.02,
     "vibratoRate": 5.5
   },
   {
