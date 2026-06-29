@@ -9,7 +9,7 @@ import modelCubeURL from '@/assets/models/cube.gltf';
 import modelCylinderURL from '@/assets/models/cylinder.gltf';
 import modelPrismURL from '@/assets/models/prism.gltf';
 import modelPyramidURL from '@/assets/models/pyramid.gltf';
-import modelPyramid4URL from '@/assets/models/pyramid4.glb';
+import modelPyramid4URL from '@/assets/models/pyramid4.gltf';
 import modelSignURL from '@/assets/models/sign.gltf';
 import modelSphereURL from '@/assets/models/sphere.gltf';
 import modelStartDirectionURL from '@/assets/models/start_direction.glb';
