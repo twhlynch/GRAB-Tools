@@ -491,7 +491,7 @@ async function generate(
 						get_basic_sound_block_drums(
 							{ x: 0, y: t, z: -1 },
 							track.note_volumes[String(hz)] * volume,
-							get_instrument(hz), // hz is a preserved midi value for drum tracks
+							get_instrument(hz, true), // hz is a preserved midi value for drum tracks
 						),
 					);
 				} else {
