@@ -625,10 +625,10 @@ export default {
 					{
 						type: 'option',
 						options: [
-							"Auto Instrument",
-							"Sine (Classic)",
-							"Saw (Classic)",
-							"Square (Classic)",
+							'Auto Instrument',
+							'Sine (Classic)',
+							'Saw (Classic)',
+							'Square (Classic)',
 						],
 					},
 					{
@@ -651,7 +651,14 @@ export default {
 						text: 'Volume (0-100, default 30)',
 					},
 				],
-				async (files, instrument, start_active, loop, optimize, volume) => {
+				async (
+					files,
+					instrument,
+					start_active,
+					loop,
+					optimize,
+					volume,
+				) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
