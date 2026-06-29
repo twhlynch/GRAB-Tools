@@ -328,8 +328,10 @@ export default {
 					},
 					Credit: {
 						Slin: { href: 'https://slin.dev' },
-						EBSpark: { href: 'https://ebspark.github.io/' },
-						TheTrueFax: { href: 'https://thetruefax.github.io/' },
+						EBSpark: { href: 'https://ebspark.github.io' },
+						TheTrueFax: { href: 'https://thetruefax.github.io' },
+						Vestria: { href: 'https://github.com/vestriaaa' },
+						MerelyMiserable: { href: 'https://merely.is-a.dev' },
 					},
 					[`v${this.$config.VERSION}`]: {
 						href: this.$config.REPO_URL,
