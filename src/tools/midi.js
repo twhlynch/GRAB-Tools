@@ -585,10 +585,14 @@ async function generate(
 				current_trigger_animation.frames.push(frame);
 
 				let next_frame = animationFrame();
-				// Note duration is multipled by 2 because only half of the animation is spent inside the colliding block
-				next_frame.time = note.start + note.duration * 2 + 0.05;
-				next_frame.position.x = 0;
+				next_frame.time = note.start + note.duration - 0.05;
+				next_frame.position.x = 1;
 				current_trigger_animation.frames.push(next_frame);
+
+				let next_next_frame = animationFrame();
+				next_next_frame.time = note.start + note.duration;
+				next_next_frame.position.x = 0;
+				current_trigger_animation.frames.push(next_next_frame);
 			}
 
 			// Last frame for each block has to be at the same time to ensure sync
