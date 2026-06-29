@@ -82,6 +82,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 		vibratoSpeed: instrument.vibratoRate,
 		pitchJumpMod: 0.10000000149011612,
 		lowPassFilterFrequency: 10000,
+		dutyCycle: (instrument.wave == "square") ? 0.5 : 0, // Duty cycle required for square waves
 	};
 	return node;
 }
