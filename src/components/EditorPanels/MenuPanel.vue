@@ -119,22 +119,18 @@ export default {
 						Finish: { func: this.insert_finish },
 						Gravity: { func: this.insert_gravity },
 						Particle: { func: this.insert_particle },
-						Trigger: { func: this.insert_trigger },
+						Trigger: {
+							Default: { func: this.insert_trigger },
+							Ambience: { func: this.insert_ambience_trigger },
+							Animation: { func: this.insert_animation_trigger },
+							Sound: { func: this.insert_sound_trigger },
+							Light: { func: this.insert_light_trigger },
+							Sublevel: { func: this.insert_sublevel_trigger },
+						},
 						Sound: { func: this.insert_sound },
 						Light: { func: this.insert_light },
 						Code: { func: this.insert_gasm },
 						'Colored Lava': { func: this.insert_colored_lava },
-						'Ambience Trigger': {
-							func: this.insert_ambience_trigger,
-						},
-						'Animation Trigger': {
-							func: this.insert_animation_trigger,
-						},
-						'Sound Trigger': { func: this.insert_sound_trigger },
-						'Light Trigger': { func: this.insert_light_trigger },
-						'Sublevel Trigger': {
-							func: this.insert_sublevel_trigger,
-						},
 					},
 					Media: {
 						Image: {
