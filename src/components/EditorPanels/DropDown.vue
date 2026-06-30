@@ -3,7 +3,7 @@ import { defineComponent, PropType } from 'vue';
 
 type MenuLeaf =
 	| {
-			func: () => void;
+			func: (e?: Event) => void;
 			file?: boolean;
 	  }
 	| {
@@ -12,7 +12,6 @@ type MenuLeaf =
 
 type MenuItem = MenuLeaf | Menu;
 export interface Menu {
-	_scroll?: boolean;
 	[key: string]: MenuItem;
 }
 
@@ -32,9 +31,9 @@ export default defineComponent({
 		is_leaf(item: MenuItem): item is MenuLeaf {
 			return 'func' in item || 'href' in item;
 		},
-		call(func: () => void) {
-			func();
+		call(func: (e?: Event) => void, e?: Event) {
 			this.callback?.();
+			func(e);
 		},
 	},
 });
@@ -57,7 +56,7 @@ export default defineComponent({
 					<input
 						v-if="item.file"
 						type="file"
-						@change="call(item.func)"
+						@change="call(item.func, $event)"
 					/>
 				</button>
 			</template>
