@@ -81,56 +81,50 @@ const wave_type_map = {
 
 // Node helpers
 function get_basic_sound_block(position, pitch, amplitude, instrument) {
-	//console.log(instrument.name);
-	const node = levelNodeWithSound();
-	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = generate_sound_name(
-		instrument.name,
-		Math.floor(pitch),
-	);
-	node.levelNodeSound.volume = amplitude * instrument.velocity;
-	node.levelNodeSound.maxRangeFactor = 1000;
-	node.levelNodeSound.parameters = {
-		...node.levelNodeSound.parameters,
-		waveType: wave_type_map[instrument.wave],
-		envelopeAttack: instrument.attack,
-		envelopeSustain: instrument.sustain,
-		envelopeRelease: instrument.decay,
-		envelopePunch: instrument.sustainPunch,
-		frequencyBase: pitch,
-		frequencyLimit: 35,
-		frequencyRamp: instrument.freqRamp,
-		frequencyDeltaRamp: instrument.freqDeltaRamp,
-		vibratoStrength: instrument.vibratoDepth,
-		vibratoSpeed: instrument.vibratoRate,
-		pitchJumpMod: 0.10000000149011612,
-		lowPassFilterFrequency: 10000,
-		dutyCycle: instrument.wave == 'square' ? 0.5 : 0, // Duty cycle required for square waves
-	};
-	return node;
+	return levelNodeWithSound({
+		position: position,
+		name: generate_sound_name(instrument.name, Math.floor(pitch)),
+		volume: amplitude * instrument.velocity,
+		maxRangeFactor: 1000,
+		parameters: {
+			...node.levelNodeSound.parameters,
+			waveType: wave_type_map[instrument.wave],
+			envelopeAttack: instrument.attack,
+			envelopeSustain: instrument.sustain,
+			envelopeRelease: instrument.decay,
+			envelopePunch: instrument.sustainPunch,
+			frequencyBase: pitch,
+			frequencyLimit: 35,
+			frequencyRamp: instrument.freqRamp,
+			frequencyDeltaRamp: instrument.freqDeltaRamp,
+			vibratoStrength: instrument.vibratoDepth,
+			vibratoSpeed: instrument.vibratoRate,
+			pitchJumpMod: 0.10000000149011612,
+			lowPassFilterFrequency: 10000,
+			dutyCycle: instrument.wave == 'square' ? 0.5 : 0, // Duty cycle required for square waves
+		},
+	});
 }
 function get_basic_sound_block_drums(position, amplitude, instrument) {
-	//console.log(instrument.name);
-	const node = levelNodeWithSound();
-	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = generate_sound_name(instrument.name, null);
-	node.levelNodeSound.volume = amplitude * instrument.velocity;
-	node.levelNodeSound.maxRangeFactor = 1000;
-	node.levelNodeSound.parameters = {
-		...node.levelNodeSound.parameters,
-		waveType: SoundGeneratorParametersWaveType.Noise,
-		envelopeAttack: instrument.attack,
-		envelopeSustain: instrument.sustain,
-		envelopeRelease: instrument.decay,
-		envelopePunch: instrument.sustainPunch,
-		frequencyBase: midi_to_hz(instrument.basePitch),
-		frequencyLimit: 35,
-		frequencyRamp: instrument.freqRamp,
-		frequencyDeltaRamp: instrument.freqDeltaRamp,
-		pitchJumpMod: 0.10000000149011612,
-		lowPassFilterFrequency: 10000,
-	};
-	return node;
+	return levelNodeWithSound({
+		position,
+		name: unique_sound_name(instrument.name, null),
+		volume: amplitude * instrument.velocity,
+		maxRangeFactor: 1000,
+		parameters: {
+			waveType: SoundGeneratorParametersWaveType.Noise,
+			envelopeAttack: instrument.attack,
+			envelopeSustain: instrument.sustain,
+			envelopeRelease: instrument.decay,
+			envelopePunch: instrument.sustainPunch,
+			frequencyBase: midi_to_hz(instrument.basePitch),
+			frequencyLimit: 35,
+			frequencyRamp: instrument.freqRamp,
+			frequencyDeltaRamp: instrument.freqDeltaRamp,
+			pitchJumpMod: 0.10000000149011612,
+			lowPassFilterFrequency: 10000,
+		},
+	});
 }
 function get_basic_sound_block_classic(
 	position,
@@ -139,27 +133,27 @@ function get_basic_sound_block_classic(
 	isNoise,
 	waveType,
 ) {
-	const node = levelNodeWithSound();
-	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = generate_sound_name(null, Math.floor(pitch));
-	node.levelNodeSound.volume = amplitude * (isNoise ? 0.3 : 1);
-	node.levelNodeSound.maxRangeFactor = 1000;
-	node.levelNodeSound.parameters = {
-		...node.levelNodeSound.parameters,
-		waveType: isNoise
-			? SoundGeneratorParametersWaveType.Noise
-			: wave_type_map[waveType],
-		envelopeAttack: 0,
-		envelopeSustain: 0,
-		envelopeRelease: isNoise ? 0.3 : 5,
-		envelopePunch: isNoise ? 100 : 0,
-		frequencyBase: pitch,
-		frequencyLimit: 35,
-		pitchJumpMod: 0.10000000149011612,
-		lowPassFilterFrequency: 10000,
-		dutyCycle: waveType == 'square' ? 0.5 : 0, // Duty cycle required for square waves
-	};
-	return node;
+	return levelNodeWithSound({
+		position: position,
+		name: generate_sound_name(null, Math.floor(pitch)),
+		volume: amplitude * (isNoise ? 0.3 : 1),
+		maxRangeFactor: 1000,
+		parameters: {
+			...node.levelNodeSound.parameters,
+			waveType: isNoise
+				? SoundGeneratorParametersWaveType.Noise
+				: wave_type_map[waveType],
+			envelopeAttack: 0,
+			envelopeSustain: 0,
+			envelopeRelease: isNoise ? 0.3 : 5,
+			envelopePunch: isNoise ? 100 : 0,
+			frequencyBase: pitch,
+			frequencyLimit: 35,
+			pitchJumpMod: 0.10000000149011612,
+			lowPassFilterFrequency: 10000,
+			dutyCycle: waveType == 'square' ? 0.5 : 0, // Duty cycle required for square waves
+		},
+	});
 }
 function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 	const node = levelNodeWithTrigger();
