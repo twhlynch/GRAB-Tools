@@ -75,9 +75,7 @@ export default {
 							func: this.open_json_file,
 							file: true,
 						},
-						Default: {
-							func: this.load_default_level,
-						},
+						Default: { func: this.load_default_level },
 						Template: { func: this.open_templates },
 						'Cheat Sheet': { func: this.open_cheat_sheet },
 					},
@@ -85,29 +83,15 @@ export default {
 						Level: { func: this.save_level },
 						JSON: { func: this.save_json },
 						glTF: { func: this.save_gltf },
-						'Set Default': {
-							func: this.set_default_level,
-						},
+						'Set Default': { func: this.set_default_level },
 					},
 				},
 				Insert: {
 					Level: {
-						Level: {
-							func: this.insert_level,
-							file: true,
-						},
-						JSON: {
-							func: this.insert_json,
-							file: true,
-						},
-						Nodes: {
-							func: this.insert_nodes,
-							file: true,
-						},
-						Diff: {
-							func: this.diff_level,
-							file: true,
-						},
+						Level: { func: this.insert_level, file: true },
+						JSON: { func: this.insert_json, file: true },
+						Nodes: { func: this.insert_nodes, file: true },
+						Diff: { func: this.diff_level, file: true },
 					},
 					Node: {
 						Static: { func: this.insert_static },
@@ -133,15 +117,9 @@ export default {
 						'Colored Lava': { func: this.insert_colored_lava },
 					},
 					Media: {
-						Image: {
-							func: this.insert_image,
-						},
-						Video: {
-							func: this.insert_video,
-						},
-						Model: {
-							func: this.insert_model,
-						},
+						Image: { func: this.insert_image },
+						Video: { func: this.insert_video },
+						Model: { func: this.insert_model },
 						Text: { func: this.insert_text },
 						SVG: { func: this.insert_svg },
 						MIDI: { func: this.insert_midi },
@@ -150,9 +128,7 @@ export default {
 				},
 				Edit: {
 					Tools: {
-						Brush: {
-							func: this.activate_brush,
-						},
+						Brush: { func: this.activate_brush },
 					},
 					Functions: {
 						Duplicate: { func: this.duplicate_level },
@@ -196,9 +172,7 @@ export default {
 					},
 				},
 				Select: {
-					All: {
-						func: this.select_all,
-					},
+					All: { func: this.select_all },
 					Shape: {
 						...Object.fromEntries(
 							Array.from(
@@ -269,9 +243,7 @@ export default {
 							),
 						),
 					},
-					Color: {
-						func: this.select_by_color,
-					},
+					Color: { func: this.select_by_color },
 				},
 				View: {
 					Teleport: {
@@ -306,26 +278,18 @@ export default {
 					'Save Config': { func: this.save_config },
 					'Edit Protobuf': { func: this.edit_protobuf },
 					Controls: {
-						'Fly Speed': {
-							func: this.set_fly_speed,
-						},
-						'Vim Mode': {
-							func: this.toggle_vim_mode,
-						},
+						'Fly Speed': { func: this.set_fly_speed },
+						'Vim Mode': { func: this.toggle_vim_mode },
 					},
 					Experimental: {
-						'Toggle Shadows': {
-							func: this.toggle_shadows,
-						},
+						'Toggle Shadows': { func: this.toggle_shadows },
 					},
 				},
 				Help: {
 					Tutorial: { href: 'https://youtube.com/@dotindex' },
 					Discord: { href: this.$config.DISCORD_URL },
 					'Clear Storage': { func: this.clear_storage },
-					'Show Keybinds': {
-						func: this.show_keybinds,
-					},
+					'Show Keybinds': { func: this.show_keybinds },
 					Credit: {
 						Slin: { href: 'https://slin.dev' },
 						EBSpark: { href: 'https://ebspark.github.io' },
