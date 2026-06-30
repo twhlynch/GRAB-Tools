@@ -72,55 +72,38 @@ async function midi(
 	}
 }
 
-const wave_type_map = {
-	sine: SoundGeneratorParametersWaveType.Sine,
-	square: SoundGeneratorParametersWaveType.Square,
-	sawtooth: SoundGeneratorParametersWaveType.Sawtooth,
-	noise: SoundGeneratorParametersWaveType.Noise,
-};
-
 // Node helpers
 function get_basic_sound_block(position, pitch, amplitude, instrument) {
 	return levelNodeWithSound({
 		position: position,
 		name: generate_sound_name(instrument.name, Math.floor(pitch)),
-		volume: amplitude * instrument.velocity,
+		volume: amplitude * instrument.volume,
 		maxRangeFactor: 1000,
 		parameters: {
 			...levelNodeWithSound().levelNodeSound.parameters,
-			waveType: wave_type_map[instrument.wave],
-			envelopeAttack: instrument.attack,
-			envelopeSustain: instrument.sustain,
-			envelopeRelease: instrument.decay,
-			envelopePunch: instrument.sustainPunch,
+			...instrument.parameters,
 			frequencyBase: pitch,
 			frequencyLimit: 35,
-			frequencyRamp: instrument.freqRamp,
-			frequencyDeltaRamp: instrument.freqDeltaRamp,
-			vibratoStrength: instrument.vibratoDepth,
-			vibratoSpeed: instrument.vibratoRate,
 			pitchJumpMod: 0.10000000149011612,
 			lowPassFilterFrequency: 10000,
-			dutyCycle: instrument.wave == 'square' ? 0.5 : 0, // Duty cycle required for square waves
+			dutyCycle:
+				instrument.wave == SoundGeneratorParametersWaveType.Square
+					? 0.5
+					: 0, // Duty cycle required for square waves
 		},
 	});
 }
 function get_basic_sound_block_drums(position, amplitude, instrument) {
 	return levelNodeWithSound({
-		position,
+		position: position,
 		name: generate_sound_name(instrument.name, null),
-		volume: amplitude * instrument.velocity,
+		volume: amplitude * instrument.volume,
 		maxRangeFactor: 1000,
 		parameters: {
+			...instrument.parameters,
 			waveType: SoundGeneratorParametersWaveType.Noise,
-			envelopeAttack: instrument.attack,
-			envelopeSustain: instrument.sustain,
-			envelopeRelease: instrument.decay,
-			envelopePunch: instrument.sustainPunch,
-			frequencyBase: midi_to_hz(instrument.basePitch),
+			frequencyBase: 440,
 			frequencyLimit: 35,
-			frequencyRamp: instrument.freqRamp,
-			frequencyDeltaRamp: instrument.freqDeltaRamp,
 			pitchJumpMod: 0.10000000149011612,
 			lowPassFilterFrequency: 10000,
 		},
@@ -142,7 +125,7 @@ function get_basic_sound_block_classic(
 			...levelNodeWithSound().levelNodeSound.parameters,
 			waveType: isNoise
 				? SoundGeneratorParametersWaveType.Noise
-				: wave_type_map[waveType],
+				: waveType,
 			envelopeAttack: 0,
 			envelopeSustain: 0,
 			envelopeRelease: isNoise ? 0.3 : 5,
@@ -151,7 +134,8 @@ function get_basic_sound_block_classic(
 			frequencyLimit: 35,
 			pitchJumpMod: 0.10000000149011612,
 			lowPassFilterFrequency: 10000,
-			dutyCycle: waveType == 'square' ? 0.5 : 0, // Duty cycle required for square waves
+			dutyCycle:
+				waveType == SoundGeneratorParametersWaveType.Square ? 0.5 : 0, // Duty cycle required for square waves
 		},
 	});
 }
@@ -500,7 +484,7 @@ async function generate(
 					sound_blocks.push(
 						get_basic_sound_block_drums(
 							{ x: 0, y: t, z: -1 },
-							track.note_volumes[String(hz)] * volume,
+							track.note_volumes[String(midi_to_hz(hz))] * volume,
 							get_instrument(hz, true), // hz is a preserved midi value for drum tracks
 						),
 					);
