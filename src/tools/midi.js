@@ -187,18 +187,9 @@ function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 
 // Other helpers
 function generate_sound_name(instrument_name, pitch) {
-	return ''; // return no name to save on space (per .index's request), though im still keeping the code because it may be useful later
-
-	const uri = 'grabvr.quest';
-	if (instrument_name) {
-		if (pitch) {
-			return `${uri} | ${instrument_name} | ${pitch}hz`;
-		} else {
-			return `${uri} | ${instrument_name}`;
-		}
-	} else {
-		return `${uri} | ${pitch}hz`;
-	}
+	return [instrument_name && `${instrument_name}`, pitch && `${pitch}hz`]
+		.filter(Boolean)
+		.join(' ');
 }
 async function decode_midi_file_as_json(file) {
 	if (!file) return;
