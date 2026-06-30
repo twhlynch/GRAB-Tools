@@ -87,7 +87,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 		volume: amplitude * instrument.velocity,
 		maxRangeFactor: 1000,
 		parameters: {
-			...node.levelNodeSound.parameters,
+			...levelNodeWithSound().levelNodeSound.parameters,
 			waveType: wave_type_map[instrument.wave],
 			envelopeAttack: instrument.attack,
 			envelopeSustain: instrument.sustain,
@@ -108,7 +108,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 function get_basic_sound_block_drums(position, amplitude, instrument) {
 	return levelNodeWithSound({
 		position,
-		name: unique_sound_name(instrument.name, null),
+		name: generate_sound_name(instrument.name, null),
 		volume: amplitude * instrument.velocity,
 		maxRangeFactor: 1000,
 		parameters: {
@@ -139,7 +139,7 @@ function get_basic_sound_block_classic(
 		volume: amplitude * (isNoise ? 0.3 : 1),
 		maxRangeFactor: 1000,
 		parameters: {
-			...node.levelNodeSound.parameters,
+			...levelNodeWithSound().levelNodeSound.parameters,
 			waveType: isNoise
 				? SoundGeneratorParametersWaveType.Noise
 				: wave_type_map[waveType],
@@ -187,14 +187,17 @@ function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 
 // Other helpers
 function generate_sound_name(instrument_name, pitch) {
+	return ''; // return no name to save on space (per .index's request), though im still keeping the code because it may be useful later
+
+	const uri = 'grabvr.quest';
 	if (instrument_name) {
 		if (pitch) {
-			return `grab-tools.live | ${instrument_name} | ${pitch}hz`;
+			return `${uri} | ${instrument_name} | ${pitch}hz`;
 		} else {
-			return `grab-tools.live | ${instrument_name}`;
+			return `${uri} | ${instrument_name}`;
 		}
 	} else {
-		return `grab-tools.live | ${pitch}hz`;
+		return `${uri} | ${pitch}hz`;
 	}
 }
 async function decode_midi_file_as_json(file) {
