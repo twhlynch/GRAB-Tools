@@ -84,7 +84,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 	//console.log(instrument.name);
 	const node = levelNodeWithSound();
 	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = unique_sound_name(
+	node.levelNodeSound.name = generate_sound_name(
 		instrument.name,
 		Math.floor(pitch),
 	);
@@ -113,7 +113,7 @@ function get_basic_sound_block_drums(position, amplitude, instrument) {
 	//console.log(instrument.name);
 	const node = levelNodeWithSound();
 	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = unique_sound_name(instrument.name, null);
+	node.levelNodeSound.name = generate_sound_name(instrument.name, null);
 	node.levelNodeSound.volume = amplitude * instrument.velocity;
 	node.levelNodeSound.maxRangeFactor = 1000;
 	node.levelNodeSound.parameters = {
@@ -141,7 +141,7 @@ function get_basic_sound_block_classic(
 ) {
 	const node = levelNodeWithSound();
 	node.levelNodeSound.position = position;
-	node.levelNodeSound.name = unique_sound_name(null, Math.floor(pitch));
+	node.levelNodeSound.name = generate_sound_name(null, Math.floor(pitch));
 	node.levelNodeSound.volume = amplitude * (isNoise ? 0.3 : 1);
 	node.levelNodeSound.maxRangeFactor = 1000;
 	node.levelNodeSound.parameters = {
@@ -192,7 +192,7 @@ function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 }
 
 // Other helpers
-function unique_sound_name(instrument_name, pitch) {
+function generate_sound_name(instrument_name, pitch) {
 	if (instrument_name) {
 		if (pitch) {
 			return `grab-tools.live | ${instrument_name} | ${pitch}hz`;
