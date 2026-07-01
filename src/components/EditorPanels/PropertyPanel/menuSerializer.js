@@ -1,3 +1,5 @@
+import { obj } from "@/tools/obj";
+
 function isVector3(obj) {
 	return (
 		obj &&
@@ -29,12 +31,32 @@ const classify_as = {
 	color: ['Color', 'Color1', 'Color2'],
 };
 
-export function serializeToMenu(value, key = 'node') {
-	key = camelToTitleCase(key);
+function deSerialize(object) {
+	if (object.children) {
+		if (object.type=='array') {
+			let result = [];
+			object.children.forEach(element => {
+				result.push(deSerialize(element));
+			});
+			return result;
+		} else {
+			let result = {};
+			object.children.forEach(element => {
+				result[element.key] = deSerialize(element);
+			});
+			return result;
+		}
+	}
+	return object.value;
+}
+
+function serializeToMenu(value, key = 'node') {
+	const serkey = camelToTitleCase(key);
 
 	if (typeof value === 'object' && classify_as.vector3.includes(key)) {
 		return {
-			key,
+			serkey,
+			key: key,
 			type: 'vector3',
 			value: {
 				x: 0,
@@ -49,7 +71,8 @@ export function serializeToMenu(value, key = 'node') {
 
 	if (typeof value === 'object' && classify_as.vector4.includes(key)) {
 		return {
-			key,
+			serkey,
+			key: key,
 			type: 'vector4',
 			value: {
 				x: 0,
@@ -65,7 +88,8 @@ export function serializeToMenu(value, key = 'node') {
 
 	if (typeof value === 'object' && classify_as.color.includes(key)) {
 		return {
-			key,
+			serkey,
+			key: key,
 			type: 'color',
 			value: { ...value },
 			isExpandable: false,
@@ -75,7 +99,8 @@ export function serializeToMenu(value, key = 'node') {
 
 	if (Array.isArray(value)) {
 		return {
-			key,
+			serkey,
+			key: key,
 			type: 'array',
 			value: null,
 			isExpandable: value.length > 0,
@@ -87,7 +112,8 @@ export function serializeToMenu(value, key = 'node') {
 
 	if (typeof value === 'object' && value !== null) {
 		return {
-			key,
+			serkey,
+			key: key,
 			type: 'object',
 			value: null,
 			isExpandable: value != {},
@@ -98,10 +124,13 @@ export function serializeToMenu(value, key = 'node') {
 	}
 
 	return {
-		key,
+		serkey,
+		key: key,
 		type: typeof value,
 		value: value,
 		isExpandable: false,
 		children: null,
 	};
 }
+
+export { serializeToMenu, deSerialize };

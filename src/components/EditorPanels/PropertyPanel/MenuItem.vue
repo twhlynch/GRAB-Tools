@@ -15,7 +15,6 @@ export default defineComponent({
 		toggle() {
 			if (this.$props.node.isExpandable) {
 				this.isExpanded = !this.isExpanded;
-				console.log(this.$props.node);
 			}
 		},
 	},

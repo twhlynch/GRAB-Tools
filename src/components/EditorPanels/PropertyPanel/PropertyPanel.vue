@@ -1,6 +1,6 @@
 <script>
 import MenuItem from '@/components/EditorPanels/PropertyPanel/MenuItem.vue';
-import { serializeToMenu } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
+import { serializeToMenu, deSerialize } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
@@ -9,17 +9,19 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			editing_component: undefined,
-			is_active: false,
-			prop_json: undefined,
+			source_object: undefined,
+			deSerialized: undefined,
 			menu_tree: serializeToMenu({}, 'undefined'),
 		};
 	},
 	methods: {
-		save() {},
+		save() {
+			const new_object = this.$refs.rootMenuItem.$props.node;
+			this.deSerialized = deSerialize(new_object);
+		},
 		set_object(object) {
 			this.menu_tree = serializeToMenu(object);
-			console.log(this.menu_tree);
+			this.source_object = object;
 		},
 	},
 });
@@ -27,7 +29,7 @@ export default defineComponent({
 
 <template>
 	<div class="property-editor">
-		<MenuItem :node="menu_tree" />
+		<MenuItem ref="rootMenuItem" :node="menu_tree" />
 	</div>
 </template>
 
