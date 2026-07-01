@@ -45,19 +45,19 @@ export default defineComponent({
 					<input
 						type="number"
 						v-model.number="$props.node.value.x"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 					<span class="y-label">Y:</span>
 					<input
 						type="number"
 						v-model.number="$props.node.value.y"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 					<span class="z-label">Z:</span>
 					<input
 						type="number"
 						v-model.number="$props.node.value.z"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 				</div>
 
@@ -70,25 +70,25 @@ export default defineComponent({
 					<input
 						type="number"
 						v-model.number="$props.node.value.x"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 					<span class="y-label">Y:</span>
 					<input
 						type="number"
 						v-model.number="$props.node.value.y"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 					<span class="z-label">Z:</span>
 					<input
 						type="number"
 						v-model.number="$props.node.value.z"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 					<span class="w-label">W:</span>
 					<input
 						type="number"
 						v-model.number="$props.node.value.w"
-						class="primitive-number"
+						class="primitive-number primitive-input"
 					/>
 				</div>
 
@@ -97,25 +97,25 @@ export default defineComponent({
 					v-else-if="$props.node.type === 'number'"
 					type="number"
 					v-model.number="$props.node.value"
-					class="primitive-number"
+					class="primitive-number primitive-input"
 				/>
 				<input
 					v-else-if="$props.node.type === 'string'"
 					type="text"
 					v-model="$props.node.value"
-					class="primitive-text"
+					class="primitive-text primitive-input"
 				/>
 				<input
 					v-else-if="$props.node.type === 'boolean'"
 					type="checkbox"
 					v-model="$props.node.value"
-					class="primitive-checkbox"
+					class="primitive-checkbox primitive-input"
 				/>
 				<input
 					v-else-if="$props.node.type === 'color'"
 					type="color"
 					v-model.color="$props.node.value"
-					class="primitive-color"
+					class="primitive-color primitive-input"
 				/>
 
 				<!-- Structural Labels -->
@@ -196,7 +196,36 @@ export default defineComponent({
 	color: #8b833a;
 }
 
+.primitive-input {
+	background: var(--bg);
+	color: #888;
+}
+
 .primitive-number {
+	padding: 5px;
+}
+
+.primitive-number::-webkit-outer-spin-button,
+.primitive-number::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.primitive-color::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+.primitive-color::-webkit-color-swatch {
+	border: none;
+}
+
+.primitive-color::-moz-color-swatch {
+	border: none;
+}
+
+.primitive-number {
+	-moz-appearance: textfield;
+	appearance: textfield;
 }
 
 .menu-item {

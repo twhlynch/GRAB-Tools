@@ -34,7 +34,7 @@ export default defineComponent({
 <style scoped>
 .property-editor {
 	padding: 20px;
-	background: var(--bg);
+	background: #141415;
 	border-bottom: var(--border-color) solid 3px;
 	border-top: var(--border-color) dashed 1px;
 
