@@ -22,11 +22,13 @@ export default {
 			const start_active = getByID(`${toolID}-start-active`).checked;
 			const loop = getByID(`${toolID}-loop`).checked;
 			const optimize = getByID(`${toolID}-optimize`).checked;
+			const instrument = getByID(`${toolID}-instrument`).value;
 			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
 			const node = await midi.midi(
 				file,
 				0,
+				instrument,
 				start_active,
 				loop,
 				optimize,
@@ -57,6 +59,12 @@ export default {
 			Generate songs with triggers and sound blocks.
 		</template>
 		<input id="midi-tool-file" type="file" accept=".mid,.midi" />
+		<select id="midi-tool-instrument">
+			<option value="Auto Instrument" selected>Auto Instrument</option>
+			<option value="Sine (Classic)">Sine (Classic)</option>
+			<option value="Saw (Classic)">Saw (Classic)</option>
+			<option value="Square (Classic)">Square (Classic)</option>
+		</select>
 		<label>
 			Start active:
 			<input id="midi-tool-start-active" type="checkbox" checked="true" />

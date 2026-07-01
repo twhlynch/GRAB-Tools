@@ -588,6 +588,15 @@ export default {
 						accept: '.mid,.midi',
 					},
 					{
+						type: 'option',
+						options: [
+							'Auto Instrument',
+							'Sine (Classic)',
+							'Saw (Classic)',
+							'Square (Classic)',
+						],
+					},
+					{
 						type: 'checkbox',
 						text: 'Start active: ',
 						default: true,
@@ -607,7 +616,14 @@ export default {
 						text: 'Volume (0-100, default 30)',
 					},
 				],
-				async (files, start_active, loop, optimize, volume) => {
+				async (
+					files,
+					instrument,
+					start_active,
+					loop,
+					optimize,
+					volume,
+				) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
@@ -623,6 +639,7 @@ export default {
 						const node = await midi.midi(
 							file,
 							max_id,
+							instrument,
 							start_active,
 							loop,
 							optimize,
