@@ -5,9 +5,9 @@ import { deepClone, materials, node_data, shapes } from '@/common/utils';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
-import PropertyPanel from '@/components/EditorPanels/PropertyPanel/PropertyPanel.vue';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import KeyHint from '@/components/EditorPanels/KeyHint.vue';
+import PropertyPanel from '@/components/EditorPanels/PropertyPanel/PropertyPanel.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import { FreeControls } from '@/editor/FreeControls';
 import GizmoControls from '@/editor/GizmoControls';
@@ -1196,7 +1196,8 @@ export default defineComponent({
 						return;
 					}
 					if (this.show_mini_editor) this.close_mini_editor();
-					else if (this.show_property_editor) this.close_property_editor();
+					else if (this.show_property_editor)
+						this.close_property_editor();
 					else if (this.show_gasm_editor) this.close_gasm_editor();
 					else if (this.contextmenu) this.contextmenu = undefined;
 					else if (!this.gizmo.empty())
@@ -1358,7 +1359,7 @@ export default defineComponent({
 		},
 		edit_object_properties(object) {
 			if (!object) return;
-			
+
 			this.show_property_editor = true;
 			this.edit_property_object = object;
 			this.$refs.property_editor.set_object(object.userData.node);
