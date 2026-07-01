@@ -1,65 +1,82 @@
-<script setup>
-	import { ref } from 'vue';
+<script>
+	import { defineComponent, ref } from 'vue';
 
-	const props = defineProps({
-		node: { type: Object, required: true }
+	export default defineComponent({
+		props: {
+			node: Object,
+		},
+		setup(props) {
+
+		},
+		data() {
+			return {
+				isExpanded: ref(false),
+			};
+		},
+		methods: {
+			toggle() {
+				if (this.$props.node.isExpandable) {
+					this.isExpanded = !this.isExpanded;
+					console.log(this.$props.node);
+				}
+			},
+		},
 	});
-	console.log(props);
-
-	const node = props.node;
-	console.log(node);
-	const isExpanded = ref(false);
-	const toggle = () => {
-		if (node.isExpandable) {
-			isExpanded.value = !isExpanded.value;
-		}
-	}
 </script>
 
 <template>
 	<div class="menu-item">
-		<div class="menu-row" @click="toggle">
-			<span v-if="node.isExpandable" class="arrow">
+		<div class="menu-row" @click="toggle" :class="$props.node.isExpandable && 'clickable'">
+			<span v-if="$props.node.isExpandable" class="arrow">
 				{{ isExpanded ? 'v' : '>' }}
 			</span>
 			<span v-else class="spacer"></span>
 
-			<span class="node-key">{{ node.key }}:</span>
+			<span class="node-key">{{ $props.node.key }}:</span>
 			<div class="node-editor" @click.stop>
         		<!-- Custom Vector3 Editor -->
-        		<div v-if="node.type === 'vector3'" class="vector-inputs">
-          			X: <input type="number" v-model.number="node.value.x" />
-          			Y: <input type="number" v-model.number="node.value.y" />
-          			Z: <input type="number" v-model.number="node.value.z" />
+        		<div v-if="$props.node.type === 'vector3'" class="vector-inputs">
+          			X: <input type="number" v-model.number="$props.node.value.x" />
+          			Y: <input type="number" v-model.number="$props.node.value.y" />
+          			Z: <input type="number" v-model.number="$props.node.value.z" />
         		</div>
 
         			<!-- Primitive Editors -->
-        			<input v-else-if="node.type === 'number'" type="number" v-model.number="node.value" />
-        			<input v-else-if="node.type === 'string'" type="text" v-model="node.value" />
-        			<input v-else-if="node.type === 'boolean'" type="checkbox" v-model="node.value" />
+        			<input v-else-if="$props.node.type === 'number'" type="number" v-model.number="$props.node.value" class="primitive-number" />
+        			<input v-else-if="$props.node.type === 'string'" type="text" v-model="$props.node.value" class="primitive-text" />
+        			<input v-else-if="$props.node.type === 'boolean'" type="checkbox" v-model="$props.node.value" class="primitive-checkbox" />
 
         			<!-- Structural Labels -->
-        			<span v-else-if="node.type === 'object'" class="type-badge">{ ... }</span>
-        			<span v-else-if="node.type === 'array'" class="type-badge">[ ... ]</span>
+        			<span v-else-if="$props.node.type === 'object' && isExpanded" class="type-badge">{</span>
+        			<span v-else-if="$props.node.type === 'array' && isExpanded" class="type-badge">[</span>
+
+        			<span v-else-if="$props.node.type === 'object' && $props.node != {}" class="type-badge">{ ... }</span>
+        			<span v-else-if="$props.node.type === 'array' && $props.node.children.length > 0" class="type-badge">[ ... ]</span>
+
+        			<span v-else-if="$props.node.type === 'object'" class="type-badge">{ }</span>
+        			<span v-else-if="$props.node.type === 'array'" class="type-badge">[ ]</span>
       			</div>
 		</div>
-		<div v-show="isExpanded.value" class="menu-children">
-      			<MenuItem
-        			v-for="child in node.children"
-        			:key="child.key"
-        			:node="child"
-      			/>
-    		</div>
+		<div v-if="isExpanded" class="menu-children">
+      		<MenuItem
+        		v-for="child in $props.node.children"
+        		:key="child.key"
+        		:node="child"
+      		/>
+    	</div>
+        <span v-if="$props.node.type === 'object' && isExpanded" class="type-badge">}</span>
+        <span v-else-if="$props.node.type === 'array' && isExpanded" class="type-badge">]</span>
 	</div>
 </template>
 
 <style scoped>
+	.clickable { cursor: pointer; }
 	.menu-item { margin-left: 12px; font-family: monospace; }
-	.menu-row { display: flex; align-items: center; padding: 4px; cursor: pointer; }
+	.menu-row { display: flex; align-items: center; padding: 4px; }
 	.arrow { width: 15px; display: inline-block; }
 	.spacer { width: 15px; display: inline-block; }
 	.node-key { margin-right: 8px; font-weight: bold; }
 	.vector-inputs input { width: 50px; margin-right: 4px; }
-	.menu-children { border-left: 1px dashed #ccc; margin-left: 6px; }
+	.menu-children { border-left: 1px solid var(--border-color); margin-left: 6px; }
 	.type-badge { color: #888; font-size: 0.85em; }
 </style>
