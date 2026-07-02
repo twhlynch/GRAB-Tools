@@ -12,3 +12,6 @@
 
 # env
 /.env
+
+# swap
+*.sw[a-p]
