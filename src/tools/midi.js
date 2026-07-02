@@ -84,7 +84,7 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 			...instrument.parameters,
 			frequencyBase: pitch,
 			frequencyLimit: 35,
-			pitchJumpMod: 0.10000000149011612,
+			pitchJumpMod: 0.1,
 			lowPassFilterFrequency: 10000,
 			dutyCycle:
 				instrument.wave == SoundGeneratorParametersWaveType.Square
@@ -104,7 +104,7 @@ function get_basic_sound_block_drums(position, amplitude, instrument) {
 			waveType: SoundGeneratorParametersWaveType.Noise,
 			frequencyBase: 440,
 			frequencyLimit: 35,
-			pitchJumpMod: 0.10000000149011612,
+			pitchJumpMod: 0.1,
 			lowPassFilterFrequency: 10000,
 		},
 	});
@@ -132,7 +132,7 @@ function get_basic_sound_block_classic(
 			envelopePunch: isNoise ? 100 : 0,
 			frequencyBase: pitch,
 			frequencyLimit: 35,
-			pitchJumpMod: 0.10000000149011612,
+			pitchJumpMod: 0.1,
 			lowPassFilterFrequency: 10000,
 			dutyCycle:
 				waveType == SoundGeneratorParametersWaveType.Square ? 0.5 : 0, // Duty cycle required for square waves
