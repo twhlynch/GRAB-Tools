@@ -371,6 +371,17 @@ function serializeToMenu(
 		node.blankTypes = selected_blank_type;
 	}
 
+	// 42 empty array parents looking to populate in your area
+	if (Array.isArray(value) && value.length == 0) {
+		blank_types.forEach((e) => {
+			if (key != e.parentKey) return;
+			selected_blank_type = e.types;
+		});
+		if (selected_blank_type) {
+			node.blankTypes = selected_blank_type;
+		}
+	}
+
 	// Vector3
 	if (
 		typeof value === 'object' &&

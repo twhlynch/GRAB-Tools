@@ -14,7 +14,11 @@ export default defineComponent({
 			advancedEdit: ref(false),
 			isHovered: ref(false),
 			addMenuOpen: ref(false),
+			ignoreMenuClose: false,
 		};
+	},
+	mounted() {
+		window.addEventListener("click", this.onclick);
 	},
 	watch: {
 		'$props.reOpen': {
@@ -84,6 +88,26 @@ export default defineComponent({
 			});
 			this.$emit('refresh');
 		},
+		addArrayItem() {
+			if (this.$props.node.type != 'array') return;
+			this.$props.node.children = [
+				serializeToMenu(
+					Object.keys(this.$props.node.blankTypes).length == 1
+						? this.$props.node.blankTypes[
+								Object.keys(this.$props.node.blankTypes)[0]
+							]
+						: this.$props.node.blankTypes[
+								this.$refs.blankTypeSelectSingle.value
+							],
+					"0",
+					this.$props.node.key,
+					0,
+				)
+			];
+			this.$props.node.isExpandable = true;
+			this.isExpanded = true;
+			this.$emit('refresh');
+		},
 		removeItem() {
 			if (this.$props.node.arrayIndex == null) return;
 			this.$emit('set', (e) => {
@@ -100,6 +124,12 @@ export default defineComponent({
 		},
 		refreshEmit() {
 			this.$emit('refresh');
+		},
+		onclick(e) {
+			if (!e.target.className.includes("ignore-menu-close") && this.addMenuOpen && !this.ignoreMenuClose) {
+				this.addMenuOpen = false;
+			}
+			this.ignoreMenuClose = false;
 		},
 	},
 });
@@ -292,23 +322,29 @@ export default defineComponent({
 			<!-- Array modification buttons -->
 			<div v-if="isHovered && $props.node.arrayIndex != null">
 				<span class="spacer"></span>
-				<button class="modify-button" @click="addMenuOpen = true">
+				<button class="modify-button" @click="addMenuOpen = true; ignoreMenuClose = true">
 					+
 				</button>
 				<button class="modify-button red-button" @click="removeItem">
 					X
 				</button>
 			</div>
+			<div v-if="isHovered && $props.node.type === 'array' && $props.node.children.length == 0">
+				<span class="spacer"></span>
+				<button class="modify-button" @click="(Object.keys($props.node.blankTypes).length > 1) ? addMenuOpen = true : addArrayItem(); ignoreMenuClose = true">
+					+
+				</button>
+			</div>
 		</div>
+		<!-- Populate menu for empty array parents -->
 		<div
-			v-if="$props.node.arrayIndex != null && addMenuOpen"
-			class="add-menu"
-			@mouseleave="addMenuOpen = false"
+			v-if="$props.node.type === 'array' && $props.node.children.length === 0 && addMenuOpen"
+			class="add-menu ignore-menu-close"
 		>
 			<span v-if="Object.keys($props.node.blankTypes).length > 1">
 				<select
-					ref="blankTypeSelect"
-					class="primitive-select primitive-input"
+					ref="blankTypeSelectSingle"
+					class="primitive-select primitive-input ignore-menu-close"
 				>
 					<option
 						v-for="(item, index) in Object.keys(
@@ -323,11 +359,40 @@ export default defineComponent({
 				</select>
 				<br />
 			</span>
-			<button class="modify-button in-menu-button" @click="addItemAbove">
+			<button class="modify-button in-menu-button ignore-menu-close" @click="addArrayItem">
+				Add item
+			</button>
+		</div>
+
+		<!-- Populate menu for array children -->
+		<div
+			v-if="$props.node.arrayIndex!=null && addMenuOpen"
+			class="add-menu ignore-menu-close"
+			@mouseleave="addMenuOpen = false"
+		>
+			<span v-if="Object.keys($props.node.blankTypes).length > 1">
+				<select
+					ref="blankTypeSelect"
+					class="primitive-select primitive-input ignore-menu-close"
+				>
+					<option
+						v-for="(item, index) in Object.keys(
+							$props.node.blankTypes,
+						)"
+						:key="item"
+						:value="item"
+						:selected="index == 0"
+					>
+						{{ item }}
+					</option>
+				</select>
+				<br />
+			</span>
+			<button class="modify-button ignore-menu-close in-menu-button" @click="addItemAbove">
 				Insert item above
 			</button>
 			<br />
-			<button class="modify-button in-menu-button" @click="addItemBelow">
+			<button class="modify-button ignore-menu-close in-menu-button" @click="addItemBelow">
 				Insert item below
 			</button>
 		</div>
@@ -380,7 +445,7 @@ export default defineComponent({
 	position: absolute;
 	padding: 10px;
 	background: #141415;
-	border: 4px solid var(--border-color);
+	border: 3px solid var(--border-color);
 }
 
 .modify-button {
