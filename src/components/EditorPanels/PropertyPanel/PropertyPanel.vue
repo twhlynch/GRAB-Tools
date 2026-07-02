@@ -21,6 +21,7 @@ export default defineComponent({
 	methods: {
 		save() {
 			const new_object = this.$refs.rootMenuItem.$props.node;
+            console.log(new_object);
 			this.deSerialized = deSerialize(new_object);
 		},
 		set_object(object) {
@@ -28,13 +29,17 @@ export default defineComponent({
 			this.source_object = object;
 			this.reOpen = !this.reOpen;
 		},
+        refresh_tree() {
+			const new_object = this.$refs.rootMenuItem.$props.node;
+            this.menu_tree = serializeToMenu(deSerialize(new_object));
+        },
 	},
 });
 </script>
 
 <template>
 	<div class="property-editor">
-		<MenuItem ref="rootMenuItem" :node="menu_tree" :reOpen="reOpen" />
+		<MenuItem ref="rootMenuItem" :node="menu_tree" :reOpen="reOpen" @refresh="refresh_tree" />
 	</div>
 </template>
 

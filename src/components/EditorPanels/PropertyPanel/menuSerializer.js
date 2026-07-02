@@ -7,25 +7,15 @@ function camelToTitleCase(str) {
 }
 
 const classify_as = {
-	vector3: [
-		'position',
-		'scale',
-		'gradientDirection',
-		'direction',
-		'velocity',
-		'velocityMin',
-		'velocityMax',
-		'accelerationMin',
-		'accelerationMax',
-	],
+	vector3: ['position', 'scale', 'gradientDirection', 'direction', 'velocity', 'velocityMin', 'velocityMax', 'accelerationMin', 'accelerationMax'],
 	vector4: ['rotation'],
 	color: ['color', 'color1', 'color2', 'startColor', 'endColor'],
-	minmax: ['lifeSpan', 'startSize', 'endSize'],
+    minmax: ['lifeSpan', 'startSize', 'endSize'],
 };
 
 const enumerate_as = [
 	{
-		key: 'shape',
+		key: "shape",
 		enumData: [
 			[1000, 'Cube'],
 			[1001, 'Sphere'],
@@ -45,165 +35,192 @@ const enumerate_as = [
 			[8, 'Light'],
 		],
 	},
-	{
-		key: 'material',
-		enumData: [
-			[0, 'Stone'],
-			[1, 'Cheese'],
-			[2, 'Ice'],
-			[3, 'Lava'],
-			[4, 'Wood'],
-			[5, 'Grapple'],
-			[6, 'Lava Grapple'],
-			[7, 'Crumbling'],
-			[8, 'Color / Concrete'],
-			[9, 'Bouncing'],
-			[10, 'Frost'],
-			[11, 'Trigger'],
-		],
+    {
+	    key: "material",
+        enumData: [
+		    [0, 'Stone'],
+		    [1, 'Cheese'],
+		    [2, 'Ice'],
+		    [3, 'Lava'],
+		    [4, 'Wood'],
+		    [5, 'Grapple'],
+		    [6, 'Lava Grapple'],
+		    [7, 'Crumbling'],
+		    [8, 'Color / Concrete'],
+		    [9, 'Bouncing'],
+		    [10, 'Frost'],
+		    [11, 'Trigger'],
+        ]
 	},
 	{
-		key: 'interpolationType',
-		enumData: [
-			[0, 'Linear'],
-			[1, 'Quadratic Ease In'],
-			[2, 'Quadratic Ease Out'],
-			[3, 'Quadratic Ease In Out'],
-			[4, 'Sinusoidal Ease In'],
-			[5, 'Sinusoidal Ease Out'],
-			[6, 'Sinusoidal Ease In Out'],
-			[7, 'Exponential Ease In'],
-			[8, 'Exponential Ease Out'],
-			[9, 'Exponential Ease In Out'],
-			[10, 'Circular Ease In'],
-			[11, 'Circular Ease Out'],
-			[12, 'Circular Ease In Out'],
-			[13, 'Cubic Ease In'],
-			[14, 'Cubic Ease Out'],
-			[15, 'Cubic Ease In Out'],
-			[16, 'Quartic Ease In'],
-			[17, 'Quartic Ease Out'],
-			[18, 'Quartic Ease In Out'],
-			[19, 'Quintic Ease In'],
-			[20, 'Quintic Ease Out'],
-			[21, 'Quintic Ease In Out'],
-		],
-	},
+        key: "interpolationType",
+        enumData:[
+		[0, 'Linear'],
+		[1, 'Quadratic Ease In'],
+		[2, 'Quadratic Ease Out'],
+		[3, 'Quadratic Ease In Out'],
+		[4, 'Sinusoidal Ease In'],
+		[5, 'Sinusoidal Ease Out'],
+		[6, 'Sinusoidal Ease In Out'],
+		[7, 'Exponential Ease In'],
+		[8, 'Exponential Ease Out'],
+		[9, 'Exponential Ease In Out'],
+		[10, 'Circular Ease In'],
+		[11, 'Circular Ease Out'],
+		[12, 'Circular Ease In Out'],
+		[13, 'Cubic Ease In'],
+		[14, 'Cubic Ease Out'],
+		[15, 'Cubic Ease In Out'],
+		[16, 'Quartic Ease In'],
+		[17, 'Quartic Ease Out'],
+		[18, 'Quartic Ease In Out'],
+		[19, 'Quintic Ease In'],
+		[20, 'Quintic Ease Out'],
+		[21, 'Quintic Ease In Out'],
+	],
+    },
+    {
+        key: "weight",
+        parentKey: "levelNodeSign",
+        enumData: [
+		[0, 'Regular'],
+		[1, 'Light'],
+		[2, 'Semibold'],
+		[3, 'Bold'],
+		[4, 'Italic'],
+	],
+    },
 	{
-		key: 'weight',
-		parentKey: 'levelNodeSign',
-		enumData: [
-			[0, 'Regular'],
-			[1, 'Light'],
-			[2, 'Semibold'],
-			[3, 'Bold'],
-			[4, 'Italic'],
-		],
-	},
+        key: "mode",
+        parentKey: "levelNodeGravity",
+        enumData: [
+		[0, 'Legs'],
+		[1, 'Fling'],
+	],
+    },
+    {
+        key:"type",
+        parentKey:"triggerSourceBasic",
+        enumData: [
+		[0, 'Hand'],
+		[1, 'Head'],
+		[2, 'Grapple'],
+		[3, 'Feet'],
+		[4, 'Block'],
+	],
+    },
 	{
-		key: 'mode',
-		parentKey: 'levelNodeGravity',
-		enumData: [
-			[0, 'Legs'],
-			[1, 'Fling'],
-		],
-	},
+        key:"mode",
+        parentKey:"triggerTargetAnimation",
+        enumData: [
+		[0, 'Stop'],
+		[1, 'Start'],
+		[2, 'Toggle'],
+		[3, 'Toggle Reverse'],
+		[4, 'Restart'],
+		[5, 'Reset'],
+	],
+    },
 	{
-		key: 'type',
-		parentKey: 'triggerSourceBasic',
-		enumData: [
-			[0, 'Hand'],
-			[1, 'Head'],
-			[2, 'Grapple'],
-			[3, 'Feet'],
-			[4, 'Block'],
-		],
-	},
+        key:"mode",
+        parentKey:"triggerTargetSound",
+        enumData: [
+		[0, 'Stop'],
+		[1, 'Start'],
+		[2, 'Toggle'],
+		[3, 'Restart'],
+		[4, 'Reset'],
+	],
+    },
 	{
-		key: 'mode',
-		parentKey: 'triggerTargetAnimation',
-		enumData: [
-			[0, 'Stop'],
-			[1, 'Start'],
-			[2, 'Toggle'],
-			[3, 'Toggle Reverse'],
-			[4, 'Restart'],
-			[5, 'Reset'],
-		],
-	},
-	{
-		key: 'mode',
-		parentKey: 'triggerTargetSound',
-		enumData: [
-			[0, 'Stop'],
-			[1, 'Start'],
-			[2, 'Toggle'],
-			[3, 'Restart'],
-			[4, 'Reset'],
-		],
-	},
-	{
-		key: 'mode',
-		parentKey: 'triggerTargetGASM',
-		enumData: [
-			[0, 'Stop'],
-			[1, 'Start'],
-			[2, 'Toggle'],
-			[3, 'Restart'],
-			[4, 'Reset'],
-		],
-	},
-	{
-		key: 'mode',
-		parentKey: 'triggerTargets',
-		enumData: [
-			[0, 'On Enter'],
-			[1, 'On Leave'],
-			[2, 'Enter or Leave'],
-			[3, 'None'],
-		],
-	},
-	{
-		key: 'waveType',
-		enumData: [
-			[0, 'Square'],
-			[1, 'Sawtooth'],
-			[2, 'Sine'],
-			[3, 'Noise'],
-		],
-	},
-	{
-		key: 'type',
-		parentKey: 'connections',
-		enumData: [
-			[0, 'Node'],
-			[1, 'Player'],
-		],
-	},
-	{
-		key: 'type',
-		parentKey: 'levelNodeLight',
-		enumData: [
-			[0, 'Point'],
-			[1, 'Spot'],
-		],
-	},
-	{
-		key: 'direction',
-		parentKey: 'animations',
-		enumData: [
-			[0, 'Restart'],
-			[1, 'Ping Pong'],
-		],
-	},
-	{
-		key: 'interpolation',
-		parentKey: 'animations',
-		enumData: [
-			[0, 'No interpolation'],
-			[1, 'Interpolation'],
-		],
-	},
+        key:"mode",
+        parentKey:"triggerTargetGASM",
+        enumData: [
+		[0, 'Stop'],
+		[1, 'Start'],
+		[2, 'Toggle'],
+		[3, 'Restart'],
+		[4, 'Reset'],
+	],
+    },
+    {
+        key:"mode",
+        parentKey:"triggerTargets",
+        enumData:[
+		[0, 'On Enter'],
+		[1, 'On Leave'],
+		[2, 'Enter or Leave'],
+		[3, 'None'],
+	],
+    },
+    {
+        key:"waveType",
+        enumData: [
+		[0, 'Square'],
+		[1, 'Sawtooth'],
+		[2, 'Sine'],
+		[3, 'Noise'],
+	],
+    },
+    {
+        key:"type",
+        parentKey:"connections",
+        enumData:[
+		[0, 'Node'],
+		[1, 'Player'],
+	],
+    },
+    {
+        key: "type",
+        parentKey:"levelNodeLight",
+        enumData: [
+		[0, 'Point'],
+		[1, 'Spot'],
+	],
+    },
+    {
+        key:"direction",
+        parentKey:"animations",
+        enumData:[
+		[0, 'Restart'],
+		[1, 'Ping Pong'],
+	],
+    },
+    {
+        key:"interpolation",
+        parentKey:"animations",
+        enumData:[
+		[0, 'No interpolation'],
+		[1, 'Interpolation'],
+	],
+    },
+];
+
+const blank_types = [
+    {
+        parentKey:"animations",
+        types: {
+            Animation: {
+                name: "idle",
+                frames: [],
+                direction: 0,
+                speed: 1,
+                interpolation: 0,
+            },
+        },
+    },
+    {
+        parentKey:"frames",
+        types: {
+            Frame: {
+                time: 0,
+                position: { x: 0, y: 0, z: 0 },
+            },
+            NotFrame: {
+                asd:123,
+            },
+        },
+    },
 ];
 
 function deSerialize(object) {
@@ -233,19 +250,29 @@ function deSerialize(object) {
 	return object.value;
 }
 
-function serializeToMenu(
-	value,
-	key = 'node',
-	parentKey = null,
-	isArrayItem = false,
-) {
+function serializeToMenu(value, key = 'node', parentKey = null, arrayIndex = null) {
 	const serkey = camelToTitleCase(key);
 
-	// Vector3
-	if (typeof value === 'object' && classify_as.vector3.includes(key)) {
-		return {
-			title: serkey,
-			key: key,
+    let node = {
+        title: serkey,
+        key: key,
+        arrayIndex: arrayIndex,
+    };
+
+    // Blank type serialization
+    let selected_blank_type;
+    blank_types.forEach((e) => {
+        if (parentKey!=e.parentKey) return;
+        selected_blank_type = e.types;
+    });
+    if (selected_blank_type) {
+        node.blankTypes = selected_blank_type;
+    }
+
+    // Vector3
+	if (typeof value === 'object' && classify_as.vector3.includes(key) && !node.type) {
+		node = {
+            ...node,
 			type: 'vector3',
 			value: {
 				x: 0,
@@ -253,16 +280,13 @@ function serializeToMenu(
 				z: 0,
 				...value,
 			},
-			isExpandable: false,
-			children: null,
 		};
 	}
 
-	// Vector4
-	if (typeof value === 'object' && classify_as.vector4.includes(key)) {
-		return {
-			title: serkey,
-			key: key,
+    // Vector4
+	if (typeof value === 'object' && classify_as.vector4.includes(key) && !node.type) {
+		node = {
+            ...node,
 			type: 'vector4',
 			value: {
 				x: 0,
@@ -271,100 +295,90 @@ function serializeToMenu(
 				w: 0,
 				...value,
 			},
-			isExpandable: false,
-			children: null,
 		};
 	}
 
-	// Min-Max range
-	if (typeof value === 'object' && classify_as.minmax.includes(key)) {
-		return {
-			title: serkey,
-			key: key,
+    // Min-Max range
+    if (typeof value === 'object' && classify_as.minmax.includes(key) && !node.type) {
+		node = {
+            ...node,
 			type: 'minmax',
 			value: {
 				x: 0,
 				y: 0,
 				...value,
 			},
-			isExpandable: false,
-			children: null,
 		};
 	}
 
-	// Color
-	if (typeof value === 'object' && classify_as.color.includes(key)) {
+    // Color
+	if (typeof value === 'object' && classify_as.color.includes(key) && !node.type) {
 		const col = {
 			r: value.r * 255 || 0,
 			g: value.g * 255 || 0,
 			b: value.b * 255 || 0,
 		};
-		return {
-			title: serkey,
-			key: key,
+		node = {
+            ...node,
 			type: 'color',
 			value: rgbToHex(col.r, col.g, col.b),
-			isExpandable: false,
-			children: null,
 		};
 	}
 
-	// Array
-	if (Array.isArray(value)) {
-		return {
-			title: serkey,
-			key: key,
+    // Array
+	if (Array.isArray(value) && !node.type) {
+		node = {
+            ...node,
 			type: 'array',
-			value: null,
 			isExpandable: value.length > 0,
 			children: value.map((item, index) =>
-				serializeToMenu(item, index.toString(), key, true),
+				serializeToMenu(item, index.toString(), key, index),
 			),
 		};
 	}
 
-	// Objects
-	if (typeof value === 'object' && value !== null) {
-		return {
-			title: serkey,
-			key: key,
+    // Objects
+	if (typeof value === 'object' && value !== null && !node.type) {
+		node = {
+            ...node,
 			type: 'object',
-			value: null,
+            arrayIndex: arrayIndex,
 			isExpandable: value != {},
 			children: Object.entries(value).map(([subKey, subVal]) =>
-				serializeToMenu(subVal, subKey, isArrayItem ? parentKey : key),
+				serializeToMenu(subVal, subKey, arrayIndex!=null ? parentKey : key),
 			),
 		};
 	}
 
-	// Enums
-	let enumData = null;
-	enumerate_as.forEach((e) => {
-		if (e.key != key) return;
-		if (e.parentKey && e.parentKey != parentKey) return;
-		enumData = e.enumData;
-	});
-	if (enumData) {
-		return {
-			title: serkey,
-			key: key,
-			type: 'enum',
-			value: value,
-			enumData: enumData,
-			isExpandable: false,
-			children: null,
-		};
-	}
+    // Enums
+    let enumData = null;
+    enumerate_as.forEach((e)=>{
+        if (e.key!=key) return;
+        if (e.parentKey && e.parentKey!=parentKey) return;
+        enumData = e.enumData;
+    });
+    if (enumData && !node.type) {
+		node = {
+            ...node,
+            type: 'enum',
+            value: value,
+            enumData: enumData,
+        };
+    }
 
-	// Basic data types (number, string, etc)
-	return {
-		title: serkey,
-		key: key,
-		type: typeof value,
-		value: value,
-		isExpandable: false,
-		children: null,
-	};
+    // Basic data types (number, string, etc)
+    if (!node.type) {
+	    node = {
+            ...node,
+		    type: typeof value,
+		    value: value,
+            arrayIndex: arrayIndex,
+		    isExpandable: false,
+		    children: null,
+	    };
+    }
+
+    return node;
 }
 
 export { deSerialize, serializeToMenu };

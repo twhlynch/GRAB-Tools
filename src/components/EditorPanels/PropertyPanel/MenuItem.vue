@@ -1,7 +1,9 @@
 <script>
 import { defineComponent, ref } from 'vue';
+import { serializeToMenu } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
 
 export default defineComponent({
+    emits: ['set', 'refresh'],
 	props: {
 		node: Object,
 		reOpen: Boolean,
@@ -20,10 +22,13 @@ export default defineComponent({
 		return {
 			isExpanded: ref(false),
 			advancedEdit: ref(false),
+            isHovered: ref(false),
+            addMenuOpen: ref(false),
 		};
 	},
 	methods: {
-		toggle() {
+		toggle(e) {
+            if (e.target.className.includes("modify-button")) return;
 			if (this.$props.node.isExpandable) {
 				this.isExpanded = !this.isExpanded;
 			}
@@ -31,6 +36,63 @@ export default defineComponent({
 		toggleAdvanced() {
 			this.advancedEdit = !this.advancedEdit;
 		},
+        addItemAbove() {
+            if (this.$props.node.arrayIndex==null) return;
+            console.log(this.$props.node);
+            this.$emit('set', (e) => {
+                console.log(e.$props.node);
+                //console.log(this.$props.node.blankTypes[this.$refs.blankTypeSelect.value]);
+                e.$props.node.children.splice(
+                    this.$props.node.arrayIndex, 
+                    0, 
+                    serializeToMenu(
+                        (Object.keys(this.$props.node.blankTypes).length==1)
+                            ? this.$props.node.blankTypes[Object.keys(this.$props.node.blankTypes)[0]]
+                            : this.$props.node.blankTypes[this.$refs.blankTypeSelect.value],
+                        this.$props.node.arrayIndex.toString(),
+                        this.$props.node.key,
+                        this.$props.node.arrayIndex
+                    )
+                );
+            });
+            this.$emit('refresh');
+        },
+        addItemBelow() {
+            if (this.$props.node.arrayIndex==null) return;
+            this.$emit('set', (e) => {
+                console.log(e.$props.node);
+                e.$props.node.children.splice(
+                    this.$props.node.arrayIndex-1, 
+                    0, 
+                    serializeToMenu(
+                        (Object.keys(this.$props.node.blankTypes).length==1)
+                            ? this.$props.node.blankTypes[Object.keys(this.$props.node.blankTypes)[0]]
+                            : this.$props.node.blankTypes[this.$refs.blankTypeSelect.value],
+                        this.$props.node.arrayIndex.toString(),
+                        this.$props.node.key,
+                        this.$props.node.arrayIndex
+                    )
+                );
+            });
+            this.$emit('refresh');
+        },
+        removeItem() {
+            if (this.$props.node.arrayIndex==null) return;
+            this.$emit('set', (e) => {
+                console.log(e.$props.node);
+                e.$props.node.children.splice(this.$props.node.arrayIndex, 1);
+                if (e.$props.node.children.length==0) {
+                    e.isExpanded=false;
+                }
+            });
+            this.$emit('refresh');
+        },
+        setEmit(e) {
+            e(this);
+        },
+        refreshEmit() {
+            this.$emit('refresh');
+        },
 	},
 });
 </script>
@@ -41,6 +103,8 @@ export default defineComponent({
 			class="menu-row"
 			:class="$props.node.isExpandable && 'clickable'"
 			@click="toggle"
+            @mouseenter="isHovered=true"
+            @mouseleave="isHovered=false"
 		>
 			<span v-if="$props.node.isExpandable" class="arrow">
 				{{ isExpanded ? 'v' : '>' }}
@@ -215,13 +279,41 @@ export default defineComponent({
 					>[ ]</span
 				>
 			</div>
+
+            <!-- Array modification buttons -->
+            <div v-if="isHovered && $props.node.arrayIndex!=null">
+                <span class="spacer"></span>
+                <button class="modify-button" @click="addMenuOpen = true">+</button>
+                <button class="modify-button red-button" @click="removeItem">X</button>
+            </div>
 		</div>
+        <div v-if="$props.node.arrayIndex!=null && addMenuOpen" class="add-menu" @mouseleave="addMenuOpen = false">
+            <span v-if="Object.keys($props.node.blankTypes).length > 1">
+                <select class="primitive-select primitive-input" ref="blankTypeSelect">
+                    <option
+                        v-for="(item, index) in Object.keys($props.node.blankTypes)"
+                        :value="item"
+                        :selected="index==0"
+                    >
+                        {{ item }}
+                    </option>
+                </select>
+                <br>
+            </span>
+            <button class="modify-button in-menu-button" @click="addItemAbove">Insert item above</button>
+            <br>
+            <button class="modify-button in-menu-button" @click="addItemBelow">Insert item below</button>
+        </div>
 		<div v-if="isExpanded" class="menu-children">
+            <span v-if="$props.node.key=='program'" class="node-key x-label">GASM not supported</span>
 			<MenuItem
+                v-else
 				v-for="child in $props.node.children"
 				:key="child.key"
 				:node="child"
 				:reOpen="$props.reOpen"
+                @set="setEmit"
+                @refresh="refreshEmit"
 			/>
 		</div>
 		<span
@@ -255,9 +347,30 @@ export default defineComponent({
 	color: #8b833a;
 }
 
+.add-menu {
+    position: absolute;
+    padding:10px;
+    background: #141415;
+    border: 4px solid var(--border-color);
+}
+
+.modify-button {
+    display:inline-block;
+    padding:5px;
+    border-radius:5px;
+    background: #3d3c7a;
+    color: #888;
+    cursor: pointer;
+    margin:2px;
+}
+.red-button {
+    background: #7a3c3c;
+}
+
 .primitive-input {
 	background: var(--bg);
-	color: #888;
+	color: #aaa;
+    display:inline-block;
 }
 
 .primitive-number,
