@@ -21,7 +21,6 @@ export default defineComponent({
 	methods: {
 		save() {
 			const new_object = this.$refs.rootMenuItem.$props.node;
-			console.log(new_object);
 			this.deSerialized = deSerialize(new_object);
 		},
 		set_object(object) {

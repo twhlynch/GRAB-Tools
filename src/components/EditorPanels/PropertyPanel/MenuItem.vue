@@ -17,9 +17,6 @@ export default defineComponent({
 			ignoreMenuClose: false,
 		};
 	},
-	mounted() {
-		window.addEventListener("click", this.onclick);
-	},
 	watch: {
 		'$props.reOpen': {
 			handler() {
@@ -29,6 +26,9 @@ export default defineComponent({
 			},
 			deep: true,
 		},
+	},
+	mounted() {
+		window.addEventListener('click', this.onclick);
 	},
 	methods: {
 		toggle(e) {
@@ -42,9 +42,7 @@ export default defineComponent({
 		},
 		addItemAbove() {
 			if (this.$props.node.arrayIndex == null) return;
-			console.log(this.$props.node);
 			this.$emit('set', (e) => {
-				console.log(e.$props.node);
 				//console.log(this.$props.node.blankTypes[this.$refs.blankTypeSelect.value]);
 				e.$props.node.children.splice(
 					this.$props.node.arrayIndex,
@@ -68,7 +66,6 @@ export default defineComponent({
 		addItemBelow() {
 			if (this.$props.node.arrayIndex == null) return;
 			this.$emit('set', (e) => {
-				console.log(e.$props.node);
 				e.$props.node.children.splice(
 					this.$props.node.arrayIndex + 1,
 					0,
@@ -99,10 +96,10 @@ export default defineComponent({
 						: this.$props.node.blankTypes[
 								this.$refs.blankTypeSelectSingle.value
 							],
-					"0",
+					'0',
 					this.$props.node.key,
 					0,
-				)
+				),
 			];
 			this.$props.node.isExpandable = true;
 			this.isExpanded = true;
@@ -111,7 +108,6 @@ export default defineComponent({
 		removeItem() {
 			if (this.$props.node.arrayIndex == null) return;
 			this.$emit('set', (e) => {
-				console.log(e.$props.node);
 				e.$props.node.children.splice(this.$props.node.arrayIndex, 1);
 				if (e.$props.node.children.length == 0) {
 					e.isExpanded = false;
@@ -126,7 +122,11 @@ export default defineComponent({
 			this.$emit('refresh');
 		},
 		onclick(e) {
-			if (!e.target.className.includes("ignore-menu-close") && this.addMenuOpen && !this.ignoreMenuClose) {
+			if (
+				!e.target.className.includes('ignore-menu-close') &&
+				this.addMenuOpen &&
+				!this.ignoreMenuClose
+			) {
 				this.addMenuOpen = false;
 			}
 			this.ignoreMenuClose = false;
@@ -322,23 +322,47 @@ export default defineComponent({
 			<!-- Array modification buttons -->
 			<div v-if="isHovered && $props.node.arrayIndex != null">
 				<span class="spacer"></span>
-				<button class="modify-button" @click="addMenuOpen = true; ignoreMenuClose = true">
+				<button
+					class="modify-button"
+					@click="
+						addMenuOpen = true;
+						ignoreMenuClose = true;
+					"
+				>
 					+
 				</button>
 				<button class="modify-button red-button" @click="removeItem">
 					X
 				</button>
 			</div>
-			<div v-if="isHovered && $props.node.type === 'array' && $props.node.children.length == 0">
+			<div
+				v-if="
+					isHovered &&
+					$props.node.type === 'array' &&
+					$props.node.children.length == 0
+				"
+			>
 				<span class="spacer"></span>
-				<button class="modify-button" @click="(Object.keys($props.node.blankTypes).length > 1) ? addMenuOpen = true : addArrayItem(); ignoreMenuClose = true">
+				<button
+					class="modify-button"
+					@click="
+						Object.keys($props.node.blankTypes).length > 1
+							? (addMenuOpen = true)
+							: addArrayItem();
+						ignoreMenuClose = true;
+					"
+				>
 					+
 				</button>
 			</div>
 		</div>
 		<!-- Populate menu for empty array parents -->
 		<div
-			v-if="$props.node.type === 'array' && $props.node.children.length === 0 && addMenuOpen"
+			v-if="
+				$props.node.type === 'array' &&
+				$props.node.children.length === 0 &&
+				addMenuOpen
+			"
 			class="add-menu ignore-menu-close"
 		>
 			<span v-if="Object.keys($props.node.blankTypes).length > 1">
@@ -359,14 +383,17 @@ export default defineComponent({
 				</select>
 				<br />
 			</span>
-			<button class="modify-button in-menu-button ignore-menu-close" @click="addArrayItem">
+			<button
+				class="modify-button in-menu-button ignore-menu-close"
+				@click="addArrayItem"
+			>
 				Add item
 			</button>
 		</div>
 
 		<!-- Populate menu for array children -->
 		<div
-			v-if="$props.node.arrayIndex!=null && addMenuOpen"
+			v-if="$props.node.arrayIndex != null && addMenuOpen"
 			class="add-menu ignore-menu-close"
 		>
 			<span v-if="Object.keys($props.node.blankTypes).length > 1">
@@ -387,11 +414,17 @@ export default defineComponent({
 				</select>
 				<br />
 			</span>
-			<button class="modify-button ignore-menu-close in-menu-button" @click="addItemAbove">
+			<button
+				class="modify-button ignore-menu-close in-menu-button"
+				@click="addItemAbove"
+			>
 				Insert item above
 			</button>
 			<br />
-			<button class="modify-button ignore-menu-close in-menu-button" @click="addItemBelow">
+			<button
+				class="modify-button ignore-menu-close in-menu-button"
+				@click="addItemBelow"
+			>
 				Insert item below
 			</button>
 		</div>
