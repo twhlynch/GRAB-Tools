@@ -460,10 +460,10 @@ async function generate(
 
 	const is_auto_inst = instrument == 'Auto Instrument';
 	const wave_type_classic = instrument.includes('Sine')
-		? 'sine'
+		? SoundGeneratorParametersWaveType.Sine
 		: instrument.includes('Saw')
-			? 'sawtooth'
-			: 'square';
+			? SoundGeneratorParametersWaveType.Sawtooth
+			: SoundGeneratorParametersWaveType.Square;
 
 	let sound_blocks = [];
 	let triggers = [];
