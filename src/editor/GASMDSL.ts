@@ -1,11 +1,11 @@
 import { SPECIAL_REGISTERS } from '@/common/registers';
 import { load } from '@/common/root';
 import { StreamLanguage } from '@codemirror/language';
+import { get_instruction_name } from './AssemblyConversion';
 
 const instruction_map = load().COD.Level.InstructionData.Type;
-const instructions_list = Object.keys(instruction_map).map((ins) =>
-	ins.replace('In', '').toUpperCase(),
-);
+const instructions_list =
+	Object.keys(instruction_map).map(get_instruction_name);
 const instructions_regex = new RegExp(`(?:${instructions_list.join('|')})\\b`);
 
 const special_reg_list = SPECIAL_REGISTERS;

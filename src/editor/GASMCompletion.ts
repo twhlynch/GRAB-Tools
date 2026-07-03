@@ -1,7 +1,7 @@
 import { LevelNodeWith } from '@/common/levelNodes';
 import { SPECIAL_REGISTERS } from '@/common/registers';
 import { load } from '@/common/root';
-import { DIRECTIVES } from '@/editor/AssemblyConversion';
+import { DIRECTIVES, get_instruction_name } from '@/editor/AssemblyConversion';
 import { LevelNodeGASM } from '@/generated/proto';
 import {
 	acceptCompletion,
@@ -15,7 +15,7 @@ import { EditorView } from 'codemirror';
 
 const instruction_map = load().COD.Level.InstructionData.Type;
 const instructions_list = Object.keys(instruction_map)
-	.map((ins) => ins.replace('In', '').toUpperCase())
+	.map(get_instruction_name)
 	.map((label) => ({
 		label,
 		type: 'function',

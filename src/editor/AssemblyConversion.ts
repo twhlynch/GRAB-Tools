@@ -707,7 +707,7 @@ function instruction_json_to_asm(
 	instruction.operands ??= [];
 
 	const mapped = instruction_map[instruction.type ?? 0];
-	const operator = clean_instruction(mapped);
+	const operator = get_instruction_name(mapped);
 	const operands = instruction.operands.map(
 		(operand) => operand_json_to_asm(operand, node) ?? '',
 	);
@@ -748,10 +748,13 @@ function operand_json_to_asm(
 	return undefined;
 }
 
-function clean_instruction(name: string): string {
-	return name.replace('In', '').toUpperCase();
+export function get_instruction_name(name: string): string {
+	return name.replace('InVec', 'InVec_').replace('In', '').toUpperCase();
 }
 
 function dirty_instruction(name: string): string {
-	return `In${name.charAt(0)}${name.toLowerCase().slice(1)}`;
+	return `In${name.charAt(0)}${name
+		.toLowerCase()
+		.slice(1)
+		.replace(/_(.)/g, (_, c) => c.toUpperCase())}`;
 }
