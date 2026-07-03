@@ -577,6 +577,15 @@ export enum InstructionDataType {
 	InCos = 22,
 	InSqrt = 23,
 	InAtan2 = 24,
+	InPow = 25,
+	InAbs = 26,
+	InVecSet = 27,
+	InVecAdd = 28,
+	InVecSub = 29,
+	InVecMul = 30,
+	InVecScl = 31,
+	InVecLen = 32,
+	InVecDot = 33,
 }
 
 export interface ProgrammablePropertyDataComponent {

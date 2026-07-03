@@ -38,6 +38,15 @@ const operand_counts: Record<InstructionDataType, number> = {
 	[instruction_map.InCos]: 2,
 	[instruction_map.InSqrt]: 2,
 	[instruction_map.InAtan2]: 3,
+	[instruction_map.InPow]: 3,
+	[instruction_map.InAbs]: 2,
+	[instruction_map.InVecSet]: 2,
+	[instruction_map.InVecAdd]: 3,
+	[instruction_map.InVecSub]: 3,
+	[instruction_map.InVecMul]: 3,
+	[instruction_map.InVecScl]: 3,
+	[instruction_map.InVecLen]: 3,
+	[instruction_map.InVecDot]: 2,
 };
 export const DIRECTIVES = {
 	FOR: '#FOR',
