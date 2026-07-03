@@ -411,49 +411,30 @@ function load_proto_data() {
 					window.toast('Invalid protobuf enums', 'error');
 				}
 			});
+			let key_override = null;
+			let parentKey_override = null;
 			if (item.name === 'LevelNodeShape') {
-				structure.enums.push({
-					key: 'shape',
-					parentKey: 'levelNodeStatic',
-					enumData: enumData,
-				});
-				return;
+				key_override = 'shape';
+				parentKey_override = 'levelNodeStatic';
 			}
 			if (item.name === 'LevelNodeMaterial') {
-				structure.enums.push({
-					key: 'material',
-					parentKey: 'levelNodeStatic',
-					enumData: enumData,
-				});
-				return;
+				key_override = 'material';
+				parentKey_override = 'levelNodeStatic';
 			}
 			if (item.parent.name === 'Animation') {
-				structure.enums.push({
-					key: titleToCamelCase(item.name),
-					parentKey: 'Animations',
-					enumData: enumData,
-				});
-				return;
+				parentKey_override = 'Animations';
 			}
 			if (item.parent.name.includes('TriggerTarget')) {
-				structure.enums.push({
-					key: titleToCamelCase(item.name),
-					parentKey: 'TriggerTargets',
-					enumData: enumData,
-				});
-				return;
+				parentKey_override = 'TriggerTargets';
 			}
 			if (item.name === 'InterpolationType') {
-				structure.enums.push({
-					key: titleToCamelCase(item.name),
-					parentKey: 'triggerTargetAmbience',
-					enumData: enumData,
-				});
-				return;
+				parentKey_override = 'triggerTargetAmbience';
 			}
 			structure.enums.push({
-				key: titleToCamelCase(item.name),
-				parentKey: titleToCamelCase(item.parent.name),
+				key: key_override ? key_override : titleToCamelCase(item.name),
+				parentKey: parentKey_override
+					? parentKey_override
+					: titleToCamelCase(item.parent.name),
 				enumData: enumData,
 			});
 		} else {
