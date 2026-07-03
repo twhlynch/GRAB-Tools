@@ -6,6 +6,25 @@ function camelToTitleCase(str) {
 	return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
+function sortObjectKeys(o) {
+	return Object.keys(o)
+		.sort()
+		.reduce((obj, key) => {
+			obj[key] = o[key];
+			return obj;
+		}, {});
+}
+
+function populateObject(a, b) {
+	let target = a;
+	Object.keys(target).forEach((key) => {
+		if (Object.prototype.hasOwnProperty.call(b, key)) {
+			target[key] = b[key];
+		}
+	});
+	return target;
+}
+
 const classify_as = {
 	vector3: [
 		'position',
@@ -318,6 +337,89 @@ const blank_types = [
 			},
 		},
 	},
+	{
+		parentKey: 'node',
+		key: 'levelNodeStatic',
+		ifKey: {
+			material: 8,
+		},
+		types: {
+			Colored: {
+				shape: 1000,
+				material: 8,
+				position: {
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				scale: {
+					x: 1,
+					y: 1,
+					z: 1,
+				},
+				rotation: {
+					x: 0,
+					y: 0,
+					z: 0,
+					w: 1,
+				},
+				color1: {
+					r: 0,
+					g: 0,
+					b: 0,
+					a: 1,
+				},
+				isNeon: false,
+				isTransparent: false,
+				color2: {
+					r: 0,
+					g: 0,
+					b: 0,
+					a: 1,
+				},
+				isGrabbable: false,
+				isGrapplable: false,
+				isPassable: false,
+				isGradient: false,
+				gradientDirection: {
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				specularBrightness: 0,
+				isAdditive: false,
+			},
+		},
+	},
+	{
+		parentKey: 'node',
+		key: 'levelNodeStatic',
+		ifKey: {
+			material: [0, 1, 2, 4, 5, 6, 9, 10],
+		},
+		types: {
+			default: {
+				shape: 1000,
+				material: 0,
+				position: {
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				scale: {
+					x: 1,
+					y: 1,
+					z: 1,
+				},
+				rotation: {
+					x: 0,
+					y: 0,
+					z: 0,
+					w: 1,
+				},
+			},
+		},
+	},
 ];
 
 function deSerialize(object) {
@@ -362,13 +464,41 @@ function serializeToMenu(
 	};
 
 	// Blank type serialization
-	let selected_blank_type;
+	let selected_blank_type = null;
 	blank_types.forEach((e) => {
+		//console.log(e);
 		if (parentKey != e.parentKey) return;
+		if (e.key && key != e.key) return;
+		let matches = false;
+		if (e.ifKey) {
+			Object.entries(e.ifKey).forEach(([key, val]) => {
+				if ((Array.isArray(val) && val.includes(value[key])) || value[key] == val) matches = true;
+			});
+			if (!matches) return;
+		}
 		selected_blank_type = e.types;
 	});
 	if (selected_blank_type) {
 		node.blankTypes = selected_blank_type;
+		if (
+			Object.keys(node.blankTypes).length == 1 &&
+			typeof value == 'object' &&
+			!Array.isArray(value)
+		) {
+			let source = Object.entries(node.blankTypes)[0][1];
+			let source_keys = Object.keys(source);
+			value = {
+				...value,
+				...source,
+			};
+			let new_value = {};
+			Object.entries(value).forEach(([key, val]) => {
+				if (source_keys.includes(key)) {
+					new_value[key] = val;
+				}
+			});
+			value = new_value;
+		}
 	}
 
 	// 42 empty array parents looking to populate in your area
@@ -460,9 +590,11 @@ function serializeToMenu(
 			...node,
 			type: 'array',
 			isExpandable: value.length > 0,
-			children: value.map((item, index) =>
-				serializeToMenu(item, index.toString(), key, index),
-			),
+			children: value
+				.map((item, index) =>
+					serializeToMenu(item, index.toString(), key, index),
+				)
+				.toSorted((a, b) => a.key[0] - b.key[0]),
 		};
 	}
 
@@ -473,13 +605,17 @@ function serializeToMenu(
 			type: 'object',
 			arrayIndex: arrayIndex,
 			isExpandable: value != {},
-			children: Object.entries(value).map(([subKey, subVal]) =>
-				serializeToMenu(
-					subVal,
-					subKey,
-					arrayIndex != null ? parentKey : key,
+			children: Object.entries(value)
+				.map(([subKey, subVal]) =>
+					serializeToMenu(
+						subVal,
+						subKey,
+						arrayIndex != null ? parentKey : key,
+					),
+				)
+				.toSorted(
+					(a, b) => a.key[0].charCodeAt(0) - b.key[0].charCodeAt(0),
 				),
-			),
 		};
 	}
 

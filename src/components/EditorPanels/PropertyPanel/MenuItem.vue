@@ -1,6 +1,6 @@
 <script>
 import { serializeToMenu } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, toRaw } from 'vue';
 
 export default defineComponent({
 	props: {
@@ -15,9 +15,19 @@ export default defineComponent({
 			isHovered: ref(false),
 			addMenuOpen: ref(false),
 			ignoreMenuClose: false,
+            lastNodeKey: this.$props.node.key,
 		};
 	},
 	watch: {
+		'$props.node.value': {
+			handler(after, before) {
+                if (!this.objectEquals(before, after) && (this.lastNodeKey == this.$props.node.key)) {
+					this.$emit('refresh');
+				}
+                this.lastNodeKey = this.$props.node.key;
+			},
+			deep: true,
+		},
 		'$props.reOpen': {
 			handler() {
 				this.isExpanded = false;
@@ -31,6 +41,25 @@ export default defineComponent({
 		window.addEventListener('click', this.onclick);
 	},
 	methods: {
+        objectEquals(a,b) {
+            if (typeof a != typeof b) return false;
+            if (typeof a != 'object') {
+                return a==b;
+            }
+            let equal = true;
+            Object.entries(a).forEach(([key, val]) => {
+                if (Array.isArray(val)) {
+                    val.forEach((e, index) => {
+                        if (!this.objectEquals(e, b[key][index])) equal=false;
+                    });
+                }
+                if (typeof val === 'object') {
+                    if (!this.objectEquals(val, b[key])) equal=false;
+                }
+                if (b[key] != val) equal=false;
+            });
+            return equal;
+        },
 		toggle(e) {
 			if (e.target.className.includes('modify-button')) return;
 			if (this.$props.node.isExpandable) {
