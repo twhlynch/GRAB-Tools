@@ -1,5 +1,5 @@
 <script>
-import { serializeToMenu } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
+import { serialize } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
@@ -42,7 +42,7 @@ export default defineComponent({
 			handler() {
 				this.isExpanded = false;
 				this.advancedEdit = false;
-				if (this.$props.node.key == 'node') this.isExpanded = true; // expand root node by default
+				if (this.$props.node.key == null) this.isExpanded = true; // expand root node by default
 			},
 			deep: true,
 		},
@@ -82,11 +82,10 @@ export default defineComponent({
 		addItemAbove() {
 			if (this.$props.node.arrayIndex == null) return;
 			this.$emit('set', (e) => {
-				//console.log(this.$props.node.blankTypes[this.$refs.blankTypeSelect.value]);
 				e.$props.node.children.splice(
 					this.$props.node.arrayIndex,
 					0,
-					serializeToMenu(
+					serialize(
 						Object.keys(this.$props.node.blankTypes).length == 1
 							? this.$props.node.blankTypes[
 									Object.keys(this.$props.node.blankTypes)[0]
@@ -95,7 +94,7 @@ export default defineComponent({
 									this.$refs.blankTypeSelect.value
 								],
 						this.$props.node.arrayIndex.toString(),
-						this.$props.node.key,
+						this.$props.node.elementType || this.$props.node.key,
 						this.$props.node.arrayIndex,
 					),
 				);
@@ -108,7 +107,7 @@ export default defineComponent({
 				e.$props.node.children.splice(
 					this.$props.node.arrayIndex + 1,
 					0,
-					serializeToMenu(
+					serialize(
 						Object.keys(this.$props.node.blankTypes).length == 1
 							? this.$props.node.blankTypes[
 									Object.keys(this.$props.node.blankTypes)[0]
@@ -117,7 +116,7 @@ export default defineComponent({
 									this.$refs.blankTypeSelect.value
 								],
 						this.$props.node.arrayIndex.toString(),
-						this.$props.node.key,
+						this.$props.node.elementType || this.$props.node.key,
 						this.$props.node.arrayIndex,
 					),
 				);
@@ -127,7 +126,7 @@ export default defineComponent({
 		addArrayItem() {
 			if (this.$props.node.type != 'array') return;
 			this.$props.node.children = [
-				serializeToMenu(
+				serialize(
 					Object.keys(this.$props.node.blankTypes).length == 1
 						? this.$props.node.blankTypes[
 								Object.keys(this.$props.node.blankTypes)[0]
@@ -136,13 +135,45 @@ export default defineComponent({
 								this.$refs.blankTypeSelectSingle.value
 							],
 					'0',
-					this.$props.node.key,
+					this.$props.node.elementType || this.$props.node.key,
 					0,
 				),
 			];
 			this.$props.node.isExpandable = true;
 			this.isExpanded = true;
 			this.$emit('refresh');
+		},
+		isInlineType() {
+			return ['Vector', 'Vector2', 'Quaternion', 'Color'].includes(
+				this.$props.node.type,
+			);
+		},
+		getChildValue(key) {
+			return this.$props.node.children?.find((c) => c.key === key)?.value;
+		},
+		setChildValue(key, val) {
+			const child = this.$props.node.children?.find((c) => c.key === key);
+			if (child) child.value = val;
+		},
+		getColorHex() {
+			const r = this.getChildValue('r') || 0;
+			const g = this.getChildValue('g') || 0;
+			const b = this.getChildValue('b') || 0;
+			const ri = Math.floor(r * 255);
+			const gi = Math.floor(g * 255);
+			const bi = Math.floor(b * 255);
+			return (
+				'#' +
+				[ri, gi, bi]
+					.map((x) => x.toString(16).padStart(2, '0'))
+					.join('')
+			);
+		},
+		onColorInput(e) {
+			const hex = e.target.value;
+			this.setChildValue('r', parseInt(hex.substring(1, 3), 16) / 255);
+			this.setChildValue('g', parseInt(hex.substring(3, 5), 16) / 255);
+			this.setChildValue('b', parseInt(hex.substring(5, 7), 16) / 255);
 		},
 		removeItem() {
 			if (this.$props.node.arrayIndex == null) return;
@@ -178,87 +209,102 @@ export default defineComponent({
 	<div class="menu-item">
 		<div
 			class="menu-row"
-			:class="$props.node.isExpandable && 'clickable'"
+			:class="$props.node.isExpandable && !isInlineType() && 'clickable'"
 			@click="toggle"
 			@mouseenter="isHovered = true"
 			@mouseleave="isHovered = false"
 		>
-			<span v-if="$props.node.isExpandable" class="arrow">
+			<span
+				v-if="$props.node.isExpandable && !isInlineType()"
+				class="arrow"
+			>
 				{{ isExpanded ? 'v' : '>' }}
 			</span>
 			<span v-else class="spacer"></span>
 
 			<span class="node-key">{{ $props.node.title }}:</span>
 			<div class="node-editor" @click.stop>
-				<!-- Min-Max range -->
-				<div v-if="$props.node.type === 'minmax'" class="vector-inputs">
-					<span class="x-label">Min:</span>
-					<input
-						v-model.number="$props.node.value.x"
-						type="number"
-						class="primitive-number primitive-input"
-					/>
-					<span class="y-label">Max:</span>
-					<input
-						v-model.number="$props.node.value.y"
-						type="number"
-						class="primitive-number primitive-input"
-					/>
-				</div>
-
-				<!-- Vector3 -->
+				<!-- Vector2 -->
 				<div
-					v-else-if="$props.node.type === 'vector3'"
+					v-if="$props.node.type === 'Vector2'"
 					class="vector-inputs"
 				>
 					<span class="x-label">X:</span>
 					<input
-						v-model.number="$props.node.value.x"
 						type="number"
 						class="primitive-number primitive-input"
+						:value="getChildValue('x')"
+						@input="setChildValue('x', $event.target.valueAsNumber)"
 					/>
 					<span class="y-label">Y:</span>
 					<input
-						v-model.number="$props.node.value.y"
 						type="number"
 						class="primitive-number primitive-input"
-					/>
-					<span class="z-label">Z:</span>
-					<input
-						v-model.number="$props.node.value.z"
-						type="number"
-						class="primitive-number primitive-input"
+						:value="getChildValue('y')"
+						@input="setChildValue('y', $event.target.valueAsNumber)"
 					/>
 				</div>
 
-				<!-- Vector4 -->
+				<!-- Vector -->
 				<div
-					v-if="$props.node.type === 'vector4'"
+					v-else-if="$props.node.type === 'Vector'"
 					class="vector-inputs"
 				>
 					<span class="x-label">X:</span>
 					<input
-						v-model.number="$props.node.value.x"
 						type="number"
 						class="primitive-number primitive-input"
+						:value="getChildValue('x')"
+						@input="setChildValue('x', $event.target.valueAsNumber)"
 					/>
 					<span class="y-label">Y:</span>
 					<input
-						v-model.number="$props.node.value.y"
 						type="number"
 						class="primitive-number primitive-input"
+						:value="getChildValue('y')"
+						@input="setChildValue('y', $event.target.valueAsNumber)"
 					/>
 					<span class="z-label">Z:</span>
 					<input
-						v-model.number="$props.node.value.z"
 						type="number"
 						class="primitive-number primitive-input"
+						:value="getChildValue('z')"
+						@input="setChildValue('z', $event.target.valueAsNumber)"
+					/>
+				</div>
+
+				<!-- Quaternion -->
+				<div
+					v-else-if="$props.node.type === 'Quaternion'"
+					class="vector-inputs"
+				>
+					<span class="x-label">X:</span>
+					<input
+						type="number"
+						class="primitive-number primitive-input"
+						:value="getChildValue('x')"
+						@input="setChildValue('x', $event.target.valueAsNumber)"
+					/>
+					<span class="y-label">Y:</span>
+					<input
+						type="number"
+						class="primitive-number primitive-input"
+						:value="getChildValue('y')"
+						@input="setChildValue('y', $event.target.valueAsNumber)"
+					/>
+					<span class="z-label">Z:</span>
+					<input
+						type="number"
+						class="primitive-number primitive-input"
+						:value="getChildValue('z')"
+						@input="setChildValue('z', $event.target.valueAsNumber)"
 					/>
 					<span class="w-label">W:</span>
 					<input
-						v-model.number="$props.node.value.w"
 						type="number"
 						class="primitive-number primitive-input"
+						:value="getChildValue('w')"
+						@input="setChildValue('w', $event.target.valueAsNumber)"
 					/>
 				</div>
 
@@ -282,10 +328,11 @@ export default defineComponent({
 					class="primitive-checkbox primitive-input"
 				/>
 				<input
-					v-else-if="$props.node.type === 'color'"
-					v-model="$props.node.value"
+					v-else-if="$props.node.type === 'Color'"
 					type="color"
 					class="primitive-color primitive-input"
+					:value="getColorHex()"
+					@input="onColorInput"
 				/>
 
 				<!-- Enum input (select, option) -->
@@ -320,41 +367,51 @@ export default defineComponent({
 
 				<!-- Structural Labels -->
 				<span
-					v-else-if="$props.node.type === 'object' && isExpanded"
-					class="type-badge"
-					>{</span
-				>
-				<span
 					v-else-if="$props.node.type === 'array' && isExpanded"
 					class="type-badge"
 					>[</span
 				>
+				<span
+					v-else-if="
+						$props.node.children &&
+						$props.node.type !== 'array' &&
+						isExpanded &&
+						!isInlineType()
+					"
+					class="type-badge"
+					>{</span
+				>
 
 				<span
 					v-else-if="
-						$props.node.type === 'object' && $props.node != {}
-					"
-					class="type-badge"
-					>{ ... }</span
-				>
-				<span
-					v-else-if="
 						$props.node.type === 'array' &&
-						$props.node.children.length > 0
+						$props.node.children.length > 0 &&
+						!isExpanded
 					"
 					class="type-badge"
 					>[ ... ]</span
 				>
-
 				<span
-					v-else-if="$props.node.type === 'object'"
+					v-else-if="
+						$props.node.children &&
+						$props.node.children.length > 0 &&
+						$props.node.type !== 'array' &&
+						!isExpanded &&
+						!isInlineType()
+					"
 					class="type-badge"
-					>{ }</span
+					>{ ... }</span
 				>
+
 				<span
 					v-else-if="$props.node.type === 'array'"
 					class="type-badge"
 					>[ ]</span
+				>
+				<span
+					v-else-if="$props.node.children && !isInlineType()"
+					class="type-badge"
+					>{ }</span
 				>
 			</div>
 
@@ -467,7 +524,7 @@ export default defineComponent({
 				Insert item below
 			</button>
 		</div>
-		<div v-if="isExpanded" class="menu-children">
+		<div v-if="isExpanded && !isInlineType()" class="menu-children">
 			<span v-if="$props.node.key == 'program'" class="node-key x-label"
 				><span class="spacer"></span>GASM not supported</span
 			>
@@ -482,14 +539,19 @@ export default defineComponent({
 			/>
 		</div>
 		<span
-			v-if="$props.node.type === 'object' && isExpanded"
-			class="type-badge"
-			>}</span
-		>
-		<span
-			v-else-if="$props.node.type === 'array' && isExpanded"
+			v-if="$props.node.type === 'array' && isExpanded"
 			class="type-badge"
 			>]</span
+		>
+		<span
+			v-else-if="
+				$props.node.children &&
+				$props.node.type !== 'array' &&
+				isExpanded &&
+				!isInlineType()
+			"
+			class="type-badge"
+			>}</span
 		>
 	</div>
 </template>

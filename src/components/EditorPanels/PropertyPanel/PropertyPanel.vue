@@ -1,8 +1,8 @@
 <script>
 import MenuItem from '@/components/EditorPanels/PropertyPanel/MenuItem.vue';
 import {
-	deSerialize,
-	serializeToMenu,
+	deserialize,
+	serialize,
 } from '@/components/EditorPanels/PropertyPanel/menuSerializer';
 import { defineComponent, ref } from 'vue';
 
@@ -15,22 +15,22 @@ export default defineComponent({
 			source_object: undefined,
 			deSerialized: undefined,
 			reOpen: ref(false),
-			menu_tree: serializeToMenu({}, 'undefined'),
+			menu_tree: serialize({}, 'undefined'),
 		};
 	},
 	methods: {
 		save() {
 			const new_object = this.$refs.rootMenuItem.$props.node;
-			this.deSerialized = deSerialize(new_object);
+			this.deSerialized = deserialize(new_object);
 		},
 		set_object(object) {
-			this.menu_tree = serializeToMenu(object);
+			this.menu_tree = serialize(object);
 			this.source_object = object;
 			this.reOpen = !this.reOpen;
 		},
 		refresh_tree() {
 			const new_object = this.$refs.rootMenuItem.$props.node;
-			this.menu_tree = serializeToMenu(deSerialize(new_object));
+			this.menu_tree = serialize(deserialize(new_object));
 		},
 	},
 });
