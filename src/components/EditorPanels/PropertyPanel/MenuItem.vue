@@ -11,7 +11,6 @@ export default defineComponent({
 	data() {
 		return {
 			isExpanded: ref(false),
-			advancedEdit: ref(false),
 			isHovered: ref(false),
 			addMenuOpen: ref(false),
 			ignoreMenuClose: false,
@@ -41,7 +40,6 @@ export default defineComponent({
 		'$props.reOpen': {
 			handler() {
 				this.isExpanded = false;
-				this.advancedEdit = false;
 				if (this.$props.node.key == null) this.isExpanded = true; // expand root node by default
 			},
 			deep: true,
@@ -75,9 +73,6 @@ export default defineComponent({
 			if (this.$props.node.isExpandable) {
 				this.isExpanded = !this.isExpanded;
 			}
-		},
-		toggleAdvanced() {
-			this.advancedEdit = !this.advancedEdit;
 		},
 		addItemAbove() {
 			if (this.$props.node.arrayIndex == null) return;
@@ -336,7 +331,7 @@ export default defineComponent({
 
 				<!-- Enum input (select, option) -->
 				<select
-					v-else-if="$props.node.type === 'enum' && !advancedEdit"
+					v-else-if="$props.node.type === 'enum'"
 					v-model="$props.node.value"
 					class="primitive-select primitive-input"
 				>
@@ -349,20 +344,6 @@ export default defineComponent({
 						{{ item[1] }}
 					</option>
 				</select>
-				<input
-					v-else-if="$props.node.type === 'enum' && advancedEdit"
-					v-model.number="$props.node.value"
-					type="number"
-					class="primitive-number primitive-input"
-				/>
-				<span
-					v-if="$props.node.type === 'enum'"
-					class="clickable"
-					style="margin-left: 10px"
-					@click="toggleAdvanced"
-				>
-					{{ advancedEdit ? '[simple]' : '[advanced]' }}
-				</span>
 
 				<!-- Structural Labels -->
 				<span
