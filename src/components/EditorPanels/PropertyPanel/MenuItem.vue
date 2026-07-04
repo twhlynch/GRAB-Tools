@@ -218,7 +218,7 @@ export default defineComponent({
 				v-if="$props.node.isExpandable && !isInlineType()"
 				class="arrow"
 			>
-				{{ isExpanded ? 'v' : '>' }}
+				{{ isExpanded ? '⌄' : '›' }}
 			</span>
 
 			<span class="node-key">{{ $props.node.title }}:</span>
