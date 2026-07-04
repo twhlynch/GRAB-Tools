@@ -51,6 +51,7 @@ export default defineComponent({
 .property-editor {
 	padding: 20px;
 	background: #141415;
+	color: #a0a0a0;
 	border-bottom: var(--border-color) solid 3px;
 	border-top: var(--border-color) dashed 1px;
 

@@ -220,7 +220,6 @@ export default defineComponent({
 			>
 				{{ isExpanded ? 'v' : '>' }}
 			</span>
-			<span v-else class="spacer"></span>
 
 			<span class="node-key">{{ $props.node.title }}:</span>
 			<div class="node-editor" @click.stop>
@@ -583,12 +582,13 @@ export default defineComponent({
 
 .modify-button {
 	display: inline-block;
-	padding: 5px;
+	height: 100%;
+	padding-inline: 4px;
 	border-radius: 5px;
 	background: #3d3c7a;
 	color: #888;
 	cursor: pointer;
-	margin: 2px;
+	margin-right: 2px;
 }
 .red-button {
 	background: #7a3c3c;
@@ -648,7 +648,6 @@ export default defineComponent({
 }
 .node-key {
 	margin-right: 8px;
-	font-weight: bold;
 }
 .vector-inputs input {
 	width: 50px;
