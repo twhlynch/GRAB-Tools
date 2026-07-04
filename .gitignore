@@ -5,7 +5,8 @@
 /node_modules
 
 # editor config
-/.vscode
+/.vscode/*
+!/.vscode/extensions.json
 
 # build output
 /dist

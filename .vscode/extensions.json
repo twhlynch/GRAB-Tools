@@ -1,0 +1,7 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"jacobcassidy.css-nesting-syntax-highlighting",
+		"vue.volar"
+	]
+}
