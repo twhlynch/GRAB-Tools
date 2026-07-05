@@ -524,6 +524,7 @@ export default {
 
 			const file = files[0];
 			const json = await decodeLevel(file);
+			if (!json) return;
 
 			this.$emit('modifier', (level) => {
 				const a_nodes = level.levelNodes;
