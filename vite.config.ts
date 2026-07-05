@@ -1,12 +1,10 @@
 import vue from '@vitejs/plugin-vue';
-import fs from 'fs/promises';
 import process from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
-import path from 'path';
 import postcssNesting from 'postcss-nesting';
-import { minify } from 'terser';
 import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
+import { bookmarklets } from './vite/vite-plugin-bookmarklets';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -14,34 +12,10 @@ export default defineConfig({
 	plugins: [
 		vue(),
 		mkcert(),
-		{
-			name: 'minify-bookmarklets',
-			apply: 'build',
-
-			async generateBundle(_, _bundle) {
-				const dir = path.resolve('public/bookmarklets');
-				const entries = await fs.readdir(dir, { withFileTypes: true });
-
-				for (const entry of entries) {
-					if (!entry.isFile() || !entry.name.endsWith('.js'))
-						continue;
-
-					const filepath = path.join(dir, entry.name);
-					const code = await fs.readFile(filepath, 'utf8');
-
-					const result = await minify(code, {
-						compress: true,
-						mangle: true,
-					});
-
-					this.emitFile({
-						type: 'asset',
-						fileName: `bookmarklets/${entry.name}`,
-						source: result.code!,
-					});
-				}
-			},
-		},
+		bookmarklets({
+			inputDir: 'src/assets/bookmarklets',
+			outputDir: 'bookmarklets',
+		}),
 	],
 	resolve: {
 		alias: {

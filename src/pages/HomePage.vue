@@ -78,27 +78,27 @@ export default {
 			<Bookmarklet
 				class="button"
 				:name="'Chrome Extension'"
-				:script="'ChromeExtension.js'"
+				:script="'chrome_extension.js'"
 			/>
 			<Bookmarklet
 				class="button"
 				:name="'Open in JSON Editor'"
-				:script="'JSONEditor.js'"
+				:script="'open_json_editor.js'"
 			/>
 			<Bookmarklet
 				class="button"
 				:name="'Download glTF'"
-				:script="'DownloadGlTF.js'"
+				:script="'download_gltf.js'"
 			/>
 			<Bookmarklet
 				class="button"
 				:name="'Download Level'"
-				:script="'Download.js'"
+				:script="'download_level.js'"
 			/>
 			<Bookmarklet
 				class="button"
 				:name="'Custom Colors'"
-				:script="'CustomColors.js'"
+				:script="'custom_colors.js'"
 			/>
 		</section>
 		<section class="editor">

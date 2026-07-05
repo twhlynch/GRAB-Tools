@@ -85,7 +85,6 @@ Development helper scripts in `scripts/`:
 ├─ .github/          # github actions
 ├─ scripts/          # scripts for development
 ├─ public/           # public website assets
-│  ├─ bookmarklets/    # javascript bookmarklet sources
 │  ├─ fonts/           # fonts
 │  ├─ gasm/            # grab assembly samples
 │  ├─ images/          # images
@@ -93,6 +92,7 @@ Development helper scripts in `scripts/`:
 │  └─ favicon.png      # website icon
 ├─ src/              # website sources
 │  ├─ assets/          # built in assets
+│  │  ├─ bookmarklets/   # javascript bookmarklet sources
 │  │  ├─ models/         # level models
 │  │  ├─ proto/          # level protobuf definition
 │  │  ├─ shaders/        # editor shaders
@@ -117,6 +117,7 @@ Development helper scripts in `scripts/`:
 │  └─ router.ts        # vue router config
 ├─ src-tauri/        # tauri rust application sources
 ├─ test/             # unit tests
+├─ vite/             # vite plugins
 ├─ .env.example      # example env config
 ├─ .gitattributes    # git attributes
 ├─ .gitignore        # gitignore

@@ -206,7 +206,7 @@ export default {
 				<div id="bookmark-links">
 					<Bookmarklet
 						class="button"
-						:script="'CustomColors.js'"
+						:script="'custom_colors.js'"
 						:name="'Custom Color Picker'"
 					/>
 				</div>
