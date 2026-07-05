@@ -36,8 +36,7 @@ export async function decodeLevel(buffer: Blob): Promise<Level | null> {
 		return level;
 	} catch (e) {
 		if (e instanceof Error) {
-			e.message = 'Invalid level data: ' + e.message;
-			window.toast(e, 'error');
+			window.toast('Invalid level data: ' + e.message, 'error');
 		}
 		return null;
 	}
