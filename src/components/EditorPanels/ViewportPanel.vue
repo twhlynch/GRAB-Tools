@@ -334,7 +334,7 @@ export default defineComponent({
 		},
 		async set_json(json) {
 			if (!json) return;
-			const selected_nodes = this.gizmo.selection
+			const selected_nodes = (this.gizmo?.selection ?? [])
 				.map((o) => o.userData.node)
 				.filter(Boolean);
 			this.gizmo.clear();
