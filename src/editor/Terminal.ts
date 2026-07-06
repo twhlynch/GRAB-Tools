@@ -4,6 +4,16 @@ import { javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
 import { EditorView } from 'codemirror';
 
+import { levelNodeGroupFrom } from '@/common/group';
+import * as helpers from '@/generated/helpers';
+import * as nodes from '@/generated/nodes';
+
+const terminal_context = {
+	...helpers,
+	...nodes,
+	levelNodeGroupFrom,
+};
+
 export class Terminal {
 	view: EditorView;
 
@@ -15,9 +25,15 @@ export class Terminal {
 
 	run_command(command: string, level: Level) {
 		try {
-			new Function('level', command)(level);
+			new Function('LEVEL', ...Object.keys(terminal_context), command)(
+				level,
+				...Object.values(terminal_context),
+			);
 		} catch (e) {
 			console.error(e);
+			if (e instanceof Error) {
+				window.toast(e.message, 'error');
+			}
 		}
 	}
 
