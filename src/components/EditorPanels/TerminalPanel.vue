@@ -51,5 +51,6 @@ section {
 	height: 100%;
 	background-color: #141415;
 	cursor: text;
+	overflow-y: scroll;
 }
 </style>
