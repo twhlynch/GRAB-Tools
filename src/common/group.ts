@@ -11,12 +11,48 @@ import {
 	LevelNodeGroup,
 	LevelNodeLobbyTerminal,
 	LevelNodeStart,
+	Vector,
 } from '@/generated/proto';
 import { Box3 } from 'three/src/math/Box3.js';
 import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
 
+export function levelNodeGroupFrom(
+	overrides: Partial<LevelNodeGroup> &
+		Required<Pick<LevelNodeGroup, 'childNodes'>>,
+) {
+	const center = get_nodes_center(overrides.childNodes);
+	place_nodes_around(overrides.childNodes, center);
+
+	return levelNodeWithGroup({
+		position: center,
+		...overrides,
+	});
+}
+
+// TODO: this can be replaced by levelNodeGroupFrom
 export function groupNodes(nodes: LevelNode[]): LevelNodeWith<LevelNodeGroup> {
+	const center = get_nodes_center(nodes);
+	place_nodes_around(nodes, center);
+
+	return levelNodeWithGroup({
+		position: center,
+		childNodes: nodes,
+	});
+}
+
+export function place_nodes_around(nodes: LevelNode[], center: Vector) {
+	nodes.forEach((node) => {
+		const data = node_data(node);
+
+		data.position ??= {};
+		data.position.x = (data.position.x ?? 0) - (center.x ?? 0);
+		data.position.y = (data.position.y ?? 0) - (center.y ?? 0);
+		data.position.z = (data.position.z ?? 0) - (center.z ?? 0);
+	});
+}
+
+export function get_nodes_center(nodes: LevelNode[]): Vector {
 	const positions = nodes.map((node) => {
 		const data = node_data(node);
 
@@ -31,19 +67,7 @@ export function groupNodes(nodes: LevelNode[]): LevelNodeWith<LevelNodeGroup> {
 	const center = new Vector3();
 	box.getCenter(center);
 
-	nodes.forEach((node) => {
-		const data = node_data(node);
-
-		data.position ??= {};
-		data.position.x = (data.position.x ?? 0) - center.x;
-		data.position.y = (data.position.y ?? 0) - center.y;
-		data.position.z = (data.position.z ?? 0) - center.z;
-	});
-
-	const group = levelNodeWithGroup();
-	group.levelNodeGroup.position = { x: center.x, y: center.y, z: center.z };
-	group.levelNodeGroup.childNodes = nodes;
-	return group;
+	return { x: center.x, y: center.y, z: center.z };
 }
 
 export function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): LevelNode[] {
