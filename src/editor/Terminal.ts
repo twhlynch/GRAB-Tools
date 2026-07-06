@@ -1,7 +1,14 @@
 import build_editor from '@/editor/EditorSetup';
 import { Level } from '@/generated/proto';
-import { javascript } from '@codemirror/lang-javascript';
+import {
+	acceptCompletion,
+	autocompletion,
+	CompletionContext,
+	CompletionResult,
+} from '@codemirror/autocomplete';
+import { completionPath, javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
 import { EditorView } from 'codemirror';
 
 import { levelNodeGroupFrom } from '@/common/group';
@@ -14,12 +21,44 @@ const terminal_context = {
 	levelNodeGroupFrom,
 };
 
+const completion_options = [
+	{ label: 'LEVEL', type: 'keyword' },
+	...Object.keys(terminal_context).map((key) => ({
+		label: key,
+		type: 'function' as const,
+	})),
+];
+
+function completion(context: CompletionContext): CompletionResult | null {
+	const info = completionPath(context);
+	if (!info?.name) return null;
+
+	const { path, name } = info;
+
+	// dont complete paths
+	if (path.length > 0) return null;
+
+	// complete terminal context tokens
+	const from = context.pos - name.length;
+	const options = completion_options.filter(
+		(opt) => opt.label.startsWith(name) && opt.label !== name,
+	);
+	return options.length ? { from, options } : null;
+}
+
 export class Terminal {
 	view: EditorView;
 
 	constructor(element: HTMLElement) {
 		this.view = build_editor(element, '', javascript(), [
 			EditorView.lineWrapping,
+			autocompletion({ override: [completion] }),
+			keymap.of([
+				{
+					key: 'Tab',
+					run: acceptCompletion,
+				},
+			]),
 		]);
 	}
 
