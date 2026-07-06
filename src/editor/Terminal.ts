@@ -8,7 +8,7 @@ import {
 } from '@codemirror/autocomplete';
 import { completionPath, javascript } from '@codemirror/lang-javascript';
 import { EditorSelection } from '@codemirror/state';
-import { keymap } from '@codemirror/view';
+import { keymap, placeholder } from '@codemirror/view';
 import { EditorView } from 'codemirror';
 
 import { levelNodeGroupFrom } from '@/common/group';
@@ -46,12 +46,24 @@ function completion(context: CompletionContext): CompletionResult | null {
 	return options.length ? { from, options } : null;
 }
 
+const placeholder_text = `
+LEVEL.title = "Example code";
+
+LEVEL.levelNodes.push(
+  levelNodeWithStatic({
+    scale: { y: 0.5 },
+    material: 8,
+  }),
+);
+`.trim();
+
 export class Terminal {
 	view: EditorView;
 
 	constructor(element: HTMLElement) {
 		this.view = build_editor(element, '', javascript(), [
 			EditorView.lineWrapping,
+			placeholder(placeholder_text),
 			autocompletion({ override: [completion] }),
 			keymap.of([
 				{
