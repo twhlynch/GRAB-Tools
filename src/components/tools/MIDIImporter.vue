@@ -77,6 +77,12 @@ export default {
 			max="100"
 			placeholder="Volume (0-100, default 30)"
 		/>
+		<span>
+			Don't have a MIDI file? Download some
+			<a href="https://onlinesequencer.net/sequences" target="_blank"
+				>here</a
+			>!
+		</span>
 		<button id="midi-tool-btn" class="button" @click="run">Generate</button>
 	</ToolTemplate>
 </template>
