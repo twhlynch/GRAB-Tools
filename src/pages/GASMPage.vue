@@ -52,7 +52,14 @@ export default {
 			<button @click="clear">Clear</button>
 		</menu>
 		<div id="container">
-			<GASMEditor ref="editor" />
+			<div id="editor-container">
+				<menu class="tab-menu">
+					<button>Raw GASM</button>
+					<button class="selected">GASM Editor</button>
+					<button>Python</button>
+				</menu>
+				<GASMEditor ref="editor" />
+			</div>
 			<aside>
 				<h3>Samples</h3>
 				<p>
@@ -106,12 +113,35 @@ aside {
 		}
 	}
 }
+menu.tab-menu {
+	padding: 0px;
+	padding-left: 6px;
+	gap: 0px;
+	
+	button {
+		background-color: #1e1e1e;
+		color: #5e5e5e;
+		&:hover {
+			background-color: #2e2e2e;
+		}
+	}
+	button.selected {
+		background-color: #141415;
+		color: white;
+		&:hover {
+			background-color: #171718;
+		}
+	}
+}
 #container {
 	width: 100%;
 	flex: 1;
 	overflow: auto;
 	display: flex;
 	flex-direction: row;
+}
+#editor-container {
+	width: 100%;
 }
 menu {
 	flex-direction: row;
