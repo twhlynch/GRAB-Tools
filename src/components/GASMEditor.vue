@@ -19,6 +19,13 @@ import { basicSetup } from 'codemirror';
 import { mapActions, mapState } from 'pinia';
 
 export default {
+	data() {
+		return {
+			current_page: 1,
+			parent_page: 1,
+			parent_page_text: '',
+		};
+	},
 	computed: {
 		...mapState(useConfigStore, ['vim_enabled', 'default_gasm']),
 	},
@@ -45,6 +52,12 @@ export default {
 					if (update.docChanged) {
 						const asm = this.view.state.doc.toString();
 						this.set_default_gasm(asm);
+
+						if (this.current_page != 0) {
+							// page 0 (raw GASM) dosent compile back to any other tabs, so ignore parent changes
+							this.parent_page_text = asm;
+							this.parent_page = this.current_page;
+						}
 					}
 				},
 			);
@@ -97,6 +110,30 @@ export default {
 			const to = this.view.state.doc.length;
 			const changes = { from: 0, to, insert };
 			const _change = this.view.dispatch({ changes });
+		},
+		switch_page(from, to) {
+			this.current_page = to;
+			if (to === this.parent_page) {
+				// switching back to parent page with no changes made to other pages
+				this.set(this.parent_page_text);
+			}
+			if (
+				from === this.parent_page &&
+				this.parent_page_text != this.view.state.doc.toString()
+			) {
+				this.parent_page_text = this.view.state.doc.toString();
+			}
+			if (to === 0) {
+				// switch to raw GASM page
+				let text;
+				if (from === 1) {
+					text = this.parent_page_text;
+				} else {
+					// TODO: call compile python code to GASM function
+					text = '';
+				}
+				this.set(compile_gasm(text).join('\n'));
+			}
 		},
 		async copy() {
 			try {
