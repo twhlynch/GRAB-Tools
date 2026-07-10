@@ -177,7 +177,7 @@ menu.tab-menu {
 #container {
 	width: 100%;
 	flex: 1;
-	overflow: auto;
+	overflow: hidden;
 	display: flex;
 	flex-direction: row;
 }
