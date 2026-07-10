@@ -21,15 +21,15 @@ export default {
 			const file = files[0];
 			const start_active = getByID(`${toolID}-start-active`).checked;
 			const loop = getByID(`${toolID}-loop`).checked;
-			const optimize = getByID(`${toolID}-optimize`).checked;
+			const instrument = getByID(`${toolID}-instrument`).value;
 			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
 			const node = await midi.midi(
 				file,
 				0,
+				instrument,
 				start_active,
 				loop,
-				optimize,
 				volume,
 			);
 			if (!node) return;
@@ -57,16 +57,18 @@ export default {
 			Generate songs with triggers and sound blocks.
 		</template>
 		<input id="midi-tool-file" type="file" accept=".mid,.midi" />
+		<select id="midi-tool-instrument">
+			<option value="Auto Instrument" selected>Auto Instrument</option>
+			<option value="Sine (Classic)">Sine (Classic)</option>
+			<option value="Saw (Classic)">Saw (Classic)</option>
+			<option value="Square (Classic)">Square (Classic)</option>
+		</select>
 		<label>
 			Start active:
 			<input id="midi-tool-start-active" type="checkbox" checked="true" />
 		</label>
 		<label>
 			Loop: <input id="midi-tool-loop" type="checkbox" checked="true" />
-		</label>
-		<label>
-			Optimize complexity:
-			<input id="midi-tool-optimize" type="checkbox" />
 		</label>
 		<input
 			id="midi-tool-volume"
@@ -75,6 +77,12 @@ export default {
 			max="100"
 			placeholder="Volume (0-100, default 30)"
 		/>
+		<span>
+			Don't have a MIDI file? Download some
+			<a href="https://onlinesequencer.net/sequences" target="_blank"
+				>here</a
+			>!
+		</span>
 		<button id="midi-tool-btn" class="button" @click="run">Generate</button>
 	</ToolTemplate>
 </template>
