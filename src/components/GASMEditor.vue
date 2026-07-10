@@ -8,6 +8,7 @@ import {
 } from '@/editor/GASMCompletion';
 import { gasmDiagnostics } from '@/editor/GASMDiagnostics';
 import { gasm } from '@/editor/GASMDSL';
+import { gasm_to_python, python_to_gasm } from '@/editor/GASMPythonConversion';
 import { levelNodeWithGASM } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
 import { redo, undo } from '@codemirror/commands';
@@ -27,14 +28,21 @@ export default {
 		};
 	},
 	computed: {
-		...mapState(useConfigStore, ['vim_enabled', 'default_gasm']),
+		...mapState(useConfigStore, [
+			'vim_enabled',
+			'default_gasm',
+			'default_page',
+		]),
 	},
 	mounted() {
 		this.create_editor();
 	},
 	methods: {
-		...mapActions(useConfigStore, ['set_default_gasm']),
+		...mapActions(useConfigStore, ['set_default_gasm', 'set_default_page']),
 		create_editor() {
+			this.current_page = this.default_page;
+			this.parent_page = this.default_page;
+			this.parent_page_text = this.default_gasm ?? '';
 			this.view = build_editor(
 				this.$refs.code_container,
 				this.default_gasm ?? '',
@@ -51,7 +59,8 @@ export default {
 				(update) => {
 					if (update.docChanged) {
 						const asm = this.view.state.doc.toString();
-						this.set_default_gasm(asm);
+						this.set_default_gasm(this.parent_page_text);
+						this.set_default_page(this.parent_page);
 
 						if (this.current_page != 0) {
 							// page 0 (raw GASM) dosent compile back to any other tabs, so ignore parent changes
@@ -119,7 +128,7 @@ export default {
 			} else if (this.current_page === 0) {
 				this.set(compile_gasm(text).join('\n'));
 			} else if (this.current_page === 2) {
-				// TODO: compile snippet to python
+				this.set(gasm_to_python(text));
 			}
 		},
 		switch_page(from, to) {
@@ -127,6 +136,7 @@ export default {
 			if (to === this.parent_page) {
 				// switching back to parent page with no changes made to other pages
 				this.set(this.parent_page_text);
+				return;
 			}
 			if (
 				from === this.parent_page &&
@@ -140,10 +150,17 @@ export default {
 				if (from === 1) {
 					text = this.parent_page_text;
 				} else {
-					// TODO: call compile python code to GASM function
-					text = '';
+					text = python_to_gasm(this.parent_page_text);
 				}
 				this.set(compile_gasm(text).join('\n'));
+			}
+			if (to === 1) {
+				// must be python -> GASM because raw gasm can never be the parent page
+				this.set(python_to_gasm(this.parent_page_text));
+			}
+			if (to === 2) {
+				// must be GASM -> python because raw gasm can never be the parent page
+				this.set(gasm_to_python(this.parent_page_text));
 			}
 		},
 		async copy() {
