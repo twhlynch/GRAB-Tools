@@ -2,6 +2,8 @@
 import { create_connection } from '@/common/connections';
 import { compile_gasm } from '@/editor/AssemblyConversion';
 import build_editor from '@/editor/EditorSetup';
+import { EditorState } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import {
 	gasmCompletion,
 	update_json_completions,
@@ -20,17 +22,23 @@ import { basicSetup } from 'codemirror';
 import { mapActions, mapState } from 'pinia';
 
 export default {
+	emits: ['output', 'switch_tab'],
+	props: {
+		output: Boolean,
+	},
 	data() {
 		return {
-			current_page: 1,
-			parent_page: 1,
-			parent_page_text: '',
+			gasm_page: "",
+			python_page: "",
+			current_page: 0,
+			lastaction_swaptab: false,
 		};
 	},
 	computed: {
 		...mapState(useConfigStore, [
 			'vim_enabled',
 			'default_gasm',
+			'default_python',
 			'default_page',
 		]),
 	},
@@ -38,14 +46,14 @@ export default {
 		this.create_editor();
 	},
 	methods: {
-		...mapActions(useConfigStore, ['set_default_gasm', 'set_default_page']),
+		...mapActions(useConfigStore, ['set_default_gasm_values']),
 		create_editor() {
 			this.current_page = this.default_page;
-			this.parent_page = this.default_page;
-			this.parent_page_text = this.default_gasm ?? '';
+			this.gasm_page = this.default_gasm;
+			this.python_page = this.default_python;
 			this.view = build_editor(
 				this.$refs.code_container,
-				this.default_gasm ?? '',
+				(this.$props.output) ? '' : (this.default_gasm ?? ''),
 				gasm,
 				[
 					foldGutter(),
@@ -54,19 +62,23 @@ export default {
 					basicSetup,
 					...gasmCompletion(),
 					gasmDiagnostics,
+					EditorState.readOnly.of(this.$props.output),
+					EditorView.editable.of(!this.$props.output),
 				],
 				[...searchKeymap],
 				(update) => {
-					if (update.docChanged) {
+					if (update.docChanged && !this.$props.output) {
 						const asm = this.view.state.doc.toString();
-						this.set_default_gasm(this.parent_page_text);
-						this.set_default_page(this.parent_page);
+						this.lastaction_swaptab = false;
 
-						if (this.current_page != 0) {
-							// page 0 (raw GASM) dosent compile back to any other tabs, so ignore parent changes
-							this.parent_page_text = asm;
-							this.parent_page = this.current_page;
+						if (this.current_page == 1) {
+							this.python_page = asm;
+						} else {
+							this.gasm_page = asm;
+							this.compile();
 						}
+
+						this.set_default_gasm_values(this.gasm_page, this.python_page, this.current_page);
 					}
 				},
 			);
@@ -101,20 +113,19 @@ export default {
 			try {
 				const asm = this.view.state.doc.toString();
 				const insert = compile_gasm(asm).join('\n');
-				const to = this.view.state.doc.length;
-				const changes = { from: 0, to, insert };
-				const _change = this.view.dispatch({ changes });
+				this.$emit("output", insert, false);
 			} catch (e) {
-				window.toast(e.message, 'error');
+				console.log(e.message);
 				return;
 			}
 		},
 		undo() {
-			if (this.current_page !== this.parent_page) return;
+			if (this.lastaction_swaptab) {
+				this.$emit("switch_tab");
+			}
 			undo(this.view);
 		},
 		redo() {
-			if (this.current_page !== this.parent_page) return;
 			redo(this.view);
 		},
 		set(insert) {
@@ -123,44 +134,20 @@ export default {
 			const _change = this.view.dispatch({ changes });
 		},
 		set_sample(text) {
-			if (this.current_page === 1) {
+			console.log(this.current_page);
+			if (this.current_page == 0) {
 				this.set(text);
-			} else if (this.current_page === 0) {
-				this.set(compile_gasm(text).join('\n'));
-			} else if (this.current_page === 2) {
-				this.set(gasm_to_python(text));
+			} else {
+				window.toast("GASM samples cannot be loaded into the python window", "error");
 			}
 		},
 		switch_page(from, to) {
 			this.current_page = to;
-			if (to === this.parent_page) {
-				// switching back to parent page with no changes made to other pages
-				this.set(this.parent_page_text);
-				return;
-			}
-			if (
-				from === this.parent_page &&
-				this.parent_page_text != this.view.state.doc.toString()
-			) {
-				this.parent_page_text = this.view.state.doc.toString();
-			}
-			if (to === 0) {
-				// switch to raw GASM page
-				let text;
-				if (from === 1) {
-					text = this.parent_page_text;
-				} else {
-					text = python_to_gasm(this.parent_page_text);
-				}
-				this.set(compile_gasm(text).join('\n'));
-			}
-			if (to === 1) {
-				// must be python -> GASM because raw gasm can never be the parent page
-				this.set(python_to_gasm(this.parent_page_text));
-			}
-			if (to === 2) {
-				// must be GASM -> python because raw gasm can never be the parent page
-				this.set(gasm_to_python(this.parent_page_text));
+			this.lastaction_swaptab = true;
+			if (to == 1) {
+				this.set(this.python_page);
+			} else {
+				this.set(this.gasm_page);
 			}
 		},
 		async copy() {

@@ -14,7 +14,8 @@ export const useConfigStore = defineStore('config', {
 		dark_mode: false,
 		vim_enabled: false,
 		default_gasm: '',
-		default_page: 1,
+		default_python: '',
+		default_page: 0,
 	}),
 	actions: {
 		set_dark_mode(value: boolean) {
@@ -23,11 +24,10 @@ export const useConfigStore = defineStore('config', {
 		set_vim(value: boolean) {
 			this.vim_enabled = value;
 		},
-		set_default_gasm(value: string) {
-			this.default_gasm = value;
-		},
-		set_default_page(value: number) {
-			this.default_page = value;
+		set_default_gasm_values(gasm: string, python: string, page: number) {
+			this.default_gasm = gasm;
+			this.default_python = python;
+			this.default_page = page;
 		},
 	},
 	persist: true,
