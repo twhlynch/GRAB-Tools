@@ -16,7 +16,7 @@ const source_file = ts.createSourceFile(
 
 // collect all interface names
 function get_interfaces() {
-	const interfaces = new Set();
+	const interfaces = new Set<string>();
 
 	source_file.forEachChild((node) => {
 		if (ts.isInterfaceDeclaration(node)) interfaces.add(node.name.text);
@@ -25,7 +25,7 @@ function get_interfaces() {
 	return interfaces;
 }
 
-function has_default_comment(node) {
+function has_default_comment(node: ts.EnumMember) {
 	const start = node.end;
 	const eol = source_text.indexOf('\n', start);
 
@@ -40,12 +40,12 @@ function has_default_comment(node) {
 	return comment === 'default';
 }
 
-function enum_member_is_zero(member) {
+function enum_member_is_zero(member: ts.EnumMember) {
 	const init = member.initializer;
 	return init && ts.isNumericLiteral(init) && Number(init.text) === 0;
 }
 
-function get_enum_default(node) {
+function get_enum_default(node: ts.EnumDeclaration) {
 	// explicit // default
 	for (const member of node.members) {
 		if (has_default_comment(member)) {
@@ -62,22 +62,23 @@ function get_enum_default(node) {
 
 	// implicit first member if no specified value
 	if (node.members.length > 0) {
-		const init = node.members[0].initializer;
+		const member = node.members[0]!;
+		const init = member.initializer;
 		if (init && ts.isNumericLiteral(init)) {
-			return node.members[0].name.getText(source_file);
+			return member.name.getText(source_file);
 		}
 	}
 }
 
 // collect enums and their 0 member
 function get_enums() {
-	const enums = new Map();
+	const enums = new Map<string, string | undefined>();
 
 	source_file.forEachChild((node) => {
 		if (!ts.isEnumDeclaration(node)) return;
 
 		const name = node.name.text;
-		let default_member = get_enum_default(node);
+		const default_member = get_enum_default(node);
 
 		enums.set(name, default_member);
 	});
@@ -85,7 +86,7 @@ function get_enums() {
 	return enums;
 }
 
-function get_comment(prop) {
+function get_comment(prop: ts.PropertySignature) {
 	const comments = ts.getTrailingCommentRanges(source_text, prop.end);
 	if (!comments) return;
 
@@ -97,27 +98,35 @@ function get_comment(prop) {
 	if (comment.length > 0) return comment;
 }
 
-function default_value_for_type(prop, interfaces, enums) {
-	const type_name = prop.type.typeName.getText(source_file);
+function default_value_for_type(
+	prop: ts.PropertySignature,
+	interfaces: Set<string>,
+	enums: Map<string, string | undefined>,
+) {
+	if (prop.type && ts.isTypeReferenceNode(prop.type)) {
+		const type_name = prop.type.typeName.getText(source_file);
 
-	if (type_name === 'Array') return `[]`;
-	if (interfaces.has(type_name)) return `${camelCase(type_name)}()`;
+		if (type_name === 'Array') return `[]`;
+		if (interfaces.has(type_name)) return `${camelCase(type_name)}()`;
 
-	if (enums.has(type_name)) {
-		const member = enums.get(type_name);
-		if (member) return `proto.${type_name}.${member}`;
-		return '0'; // fallback if no zero member
+		if (enums.has(type_name)) {
+			const member = enums.get(type_name);
+			if (member) return `proto.${type_name}.${member}`;
+			return '0'; // fallback if no zero member
+		}
 	}
 
 	return '0';
 }
 
 // default value generator
-function default_value(prop, interfaces, enums) {
-	if (prop) {
-		const comment = get_comment(prop);
-		if (comment !== undefined) return comment;
-	}
+function default_value(
+	prop: ts.PropertySignature,
+	interfaces: Set<string>,
+	enums: Map<string, string | undefined>,
+) {
+	const comment = get_comment(prop);
+	if (comment !== undefined) return comment;
 
 	if (!prop.type) return 'undefined';
 
@@ -137,12 +146,15 @@ function default_value(prop, interfaces, enums) {
 	}
 }
 
-function camelCase(str) {
+function camelCase(str: string) {
 	return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 // generate output
-function generate(interfaces, enums) {
+function generate(
+	interfaces: Set<string>,
+	enums: Map<string, string | undefined>,
+) {
 	let output = `import * as proto from './proto';
 import { merge } from './util';
 

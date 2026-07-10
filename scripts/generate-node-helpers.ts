@@ -2,6 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 
+interface Interface {
+	name: string;
+	camel: string;
+	wrapper: string;
+	scope: string;
+}
+
 const input_file = path.resolve('src/generated/proto.ts');
 const output_file = path.resolve('src/generated/nodes.ts');
 
@@ -17,9 +24,9 @@ const source_file = ts.createSourceFile(
 const wrapper_types = ['LevelNode', 'TriggerSource', 'TriggerTarget'];
 
 function get_interfaces() {
-	const interfaces = [];
+	const interfaces: Interface[] = [];
 
-	const wrapper_interfaces = [];
+	const wrapper_interfaces: ts.InterfaceDeclaration[] = [];
 	source_file.forEachChild((node) => {
 		if (ts.isInterfaceDeclaration(node)) {
 			if (wrapper_types.includes(node.name.text)) {
@@ -36,7 +43,12 @@ function get_interfaces() {
 
 				if (
 					name.startsWith(wrapper.name.text) &&
-					wrapper.members.some((member) => member.name.text === camel)
+					wrapper.members.some(
+						(member) =>
+							ts.isPropertySignature(member) &&
+							ts.isIdentifier(member.name) &&
+							member.name.text === camel,
+					)
 				) {
 					interfaces.push({
 						name,
@@ -52,12 +64,12 @@ function get_interfaces() {
 	return interfaces;
 }
 
-function camelCase(str) {
+function camelCase(str: string) {
 	return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 // generate output
-function generate(interfaces) {
+function generate(interfaces: Interface[]) {
 	let output = `
 import { ${interfaces.map((i) => i.camel).join(', \n')} } from './helpers';
 import { ${interfaces.map((i) => i.name).join(', \n')} } from './proto';
