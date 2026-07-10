@@ -1,4 +1,5 @@
 import { groupNodes } from '@/common/group';
+import { LevelNodeWith } from '@/common/levelNodes';
 import { animation, animationFrame } from '@/generated/helpers';
 import {
 	levelNodeWithSound,
@@ -9,25 +10,46 @@ import {
 	triggerTargetWithSound,
 } from '@/generated/nodes';
 import {
+	LevelNodeGroup,
+	LevelNodeSound,
+	LevelNodeStatic,
+	LevelNodeTrigger,
 	SoundGeneratorParametersWaveType,
 	TriggerSourceBasicType,
 	TriggerTargetAnimationMode,
 	TriggerTargetMode,
 	TriggerTargetSoundMode,
+	Vector,
 } from '@/generated/proto';
-import { Midi } from '@tonejs/midi';
-import { get_instrument } from './instrument_map';
+import { Midi, Track } from '@tonejs/midi';
+import { Drum, get_instrument, Instrument } from './instrument_map';
 
-/**
- * @param {File} file - A midi file
- * @param {Number} node_count - node count to offset ids
- * @param {String} inst_type - instrument generation type
- * @param {Boolean} start_active - should the animation be start active
- * @param {Boolean} loop - should the animation loop
- * @param {Number} volume - volume multiplier for whole song (0-1)
- * @returns {Promise<Object>} - A group level node
- */
-async function midi(file, node_count, inst_type, start_active, loop, volume) {
+interface NoteData {
+	start: number;
+	duration: number;
+	frequency_hertz: number;
+	midi: number;
+	velocity: number;
+}
+
+interface TrackData {
+	channel: number;
+	volume: number;
+	note_volumes: Record<string, number>;
+	instrument: number;
+	name: string;
+	notes: NoteData[];
+	isDrums: boolean;
+}
+
+async function midi(
+	file: File,
+	node_count: number,
+	inst_type: string,
+	start_active: boolean,
+	loop: boolean,
+	volume: number,
+): Promise<LevelNodeWith<LevelNodeGroup> | null> {
 	const optimize = inst_type.includes('Classic');
 
 	//console.log(inst_type);
@@ -52,13 +74,20 @@ async function midi(file, node_count, inst_type, start_active, loop, volume) {
 		if (!level_nodes) return null;
 		return groupNodes(level_nodes);
 	} catch (e) {
-		window.toast(e, 'error');
+		if (e instanceof Error) {
+			window.toast(e, 'error');
+		}
 		return null;
 	}
 }
 
 // Node helpers
-function get_basic_sound_block(position, pitch, amplitude, instrument) {
+function get_basic_sound_block(
+	position: Vector,
+	pitch: number,
+	amplitude: number,
+	instrument: Instrument,
+) {
 	return levelNodeWithSound({
 		position: position,
 		name: generate_sound_name(instrument.name, Math.floor(pitch)),
@@ -72,13 +101,18 @@ function get_basic_sound_block(position, pitch, amplitude, instrument) {
 			pitchJumpMod: 0.1,
 			lowPassFilterFrequency: 10000,
 			dutyCycle:
-				instrument.wave == SoundGeneratorParametersWaveType.Square
+				instrument.parameters.waveType ==
+				SoundGeneratorParametersWaveType.Square
 					? 0.5
 					: 0, // Duty cycle required for square waves
 		},
 	});
 }
-function get_basic_sound_block_drums(position, amplitude, instrument) {
+function get_basic_sound_block_drums(
+	position: Vector,
+	amplitude: number,
+	instrument: Drum,
+) {
 	return levelNodeWithSound({
 		position: position,
 		name: generate_sound_name(instrument.name, null),
@@ -95,11 +129,11 @@ function get_basic_sound_block_drums(position, amplitude, instrument) {
 	});
 }
 function get_basic_sound_block_classic(
-	position,
-	pitch,
-	amplitude,
-	isNoise,
-	waveType,
+	position: Vector,
+	pitch: number,
+	amplitude: number,
+	isNoise: boolean,
+	waveType: SoundGeneratorParametersWaveType,
 ) {
 	return levelNodeWithSound({
 		position: position,
@@ -124,8 +158,17 @@ function get_basic_sound_block_classic(
 		},
 	});
 }
-function get_sound_trigger_block(x, y, target_id, start_active, looping) {
+function get_sound_trigger_block(
+	x: number,
+	y: number,
+	target_id: number,
+	start_active: boolean,
+	looping: boolean,
+) {
 	const node = levelNodeWithTrigger();
+	node.levelNodeTrigger.position ??= {};
+	node.levelNodeTrigger.triggerSources ??= [];
+	node.levelNodeTrigger.triggerTargets ??= [];
 	node.levelNodeTrigger.position.z = x;
 	node.levelNodeTrigger.scale = { x: 0.03, y: 0.9, z: 0.9 };
 	node.levelNodeTrigger.position.y = y;
@@ -146,7 +189,7 @@ function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 	node.levelNodeTrigger.triggerTargets.push(stop_target);
 
 	const anim = animation();
-	anim.frames.push(animationFrame());
+	(anim.frames ??= []).push(animationFrame());
 	node.animations = [anim];
 
 	node.activeAnimation = start_active ? 0 : -1;
@@ -155,12 +198,15 @@ function get_sound_trigger_block(x, y, target_id, start_active, looping) {
 }
 
 // Other helpers
-function generate_sound_name(instrument_name, pitch) {
+function generate_sound_name(
+	instrument_name: string | null,
+	pitch: number | null,
+) {
 	return [instrument_name && `${instrument_name}`, pitch && `${pitch}hz`]
 		.filter(Boolean)
 		.join(' ');
 }
-async function decode_midi_file_as_json(file) {
+async function decode_midi_file_as_json(file: File | undefined) {
 	if (!file) return;
 
 	const buffer = await file.arrayBuffer();
@@ -179,18 +225,17 @@ async function decode_midi_file_as_json(file) {
 		throw e;
 	}
 }
-function midi_to_hz(m) {
-	const hz_value = 440 * Math.pow(2, (m - 69) / 12);
-	return hz_value;
+function midi_to_hz(m: number) {
+	return 440 * Math.pow(2, (m - 69) / 12);
 }
-function get_usable_tracks(m) {
-	let tracks = [];
+function get_usable_tracks(m: Midi) {
+	const tracks: Track[] = [];
 	m.tracks.forEach((track) => {
 		if (track.notes.length == 0) {
 			// No notes, no track
 			return;
 		}
-		if (track.instrument > 127 || track.instrument < 0) {
+		if (track.instrument.number > 127 || track.instrument.number < 0) {
 			// just in case this ever happens
 			return;
 		}
@@ -198,15 +243,15 @@ function get_usable_tracks(m) {
 	});
 	return tracks;
 }
-function parse_unparsed_tracks(tracks) {
-	let new_tracks = [];
+function parse_unparsed_tracks(tracks: Track[]) {
+	const new_tracks: TrackData[] = [];
 	let discarded_notes = 0;
-	tracks.forEach((track) => {
-		let notes = [];
+	tracks.forEach((track: Track) => {
+		const notes: NoteData[] = [];
 
 		let average_velocity = 0;
-		let average_note_volumes = {};
-		let average_note_volumes_count = {};
+		const average_note_volumes: Record<string, number> = {};
+		const average_note_volumes_count: Record<string, number> = {};
 
 		track.notes.forEach((note) => {
 			if (track.channel == 9 && (note.midi < 35 || note.midi > 80)) {
@@ -223,10 +268,10 @@ function parse_unparsed_tracks(tracks) {
 				velocity: note.velocity,
 			});
 			average_velocity += note.velocity;
-			let hz = String(midi_to_hz(note.midi));
+			const hz = String(midi_to_hz(note.midi));
 			if (average_note_volumes[hz]) {
 				average_note_volumes[hz] += note.velocity;
-				average_note_volumes_count[hz]++;
+				average_note_volumes_count[hz]!++;
 			} else {
 				average_note_volumes[hz] = note.velocity;
 				average_note_volumes_count[hz] = 1;
@@ -235,17 +280,16 @@ function parse_unparsed_tracks(tracks) {
 		average_velocity /= track.notes.length;
 
 		// Sometimes tracks can have a volume control on controlChanges[7]
-		const track_volume = track.controlChanges[7]
-			? track.controlChanges[7][0].value
+		const track_volume = track.controlChanges[7]?.length
+			? track.controlChanges[7][0]!.value
 			: 1;
 
 		Object.keys(average_note_volumes).forEach((key) => {
 			average_note_volumes[key] =
-				(average_note_volumes[key] / average_note_volumes_count[key]) *
+				(average_note_volumes[key]! /
+					average_note_volumes_count[key]!) *
 				track_volume;
 		});
-
-		//console.log(average_note_volumes);
 
 		new_tracks.push({
 			channel: track.channel,
@@ -265,8 +309,8 @@ function parse_unparsed_tracks(tracks) {
 	}
 	return new_tracks;
 }
-function get_unique_pitches(track) {
-	let unique_pitches = [];
+function get_unique_pitches(track: TrackData) {
+	const unique_pitches: number[] = [];
 	track.notes.forEach((note) => {
 		if (!unique_pitches.includes(note.frequency_hertz)) {
 			unique_pitches.push(note.frequency_hertz);
@@ -274,10 +318,10 @@ function get_unique_pitches(track) {
 	});
 	return unique_pitches;
 }
-function get_notes_by_pitch(track) {
-	let notes_by_pitch = {};
+function get_notes_by_pitch(track: TrackData) {
+	const notes_by_pitch: Record<string, NoteData[]> = {};
 	track.notes.forEach((note) => {
-		let frequency_string = note.frequency_hertz.toString();
+		const frequency_string = note.frequency_hertz.toString();
 		if (notes_by_pitch[frequency_string]) {
 			notes_by_pitch[frequency_string].push(note);
 		} else {
@@ -286,7 +330,7 @@ function get_notes_by_pitch(track) {
 	});
 	return notes_by_pitch;
 }
-function get_duration(tracks) {
+function get_duration(tracks: TrackData[]) {
 	let longest = 0;
 	tracks.forEach((track) => {
 		track.notes.forEach((note) => {
@@ -299,14 +343,15 @@ function get_duration(tracks) {
 	return longest;
 }
 function make_connected_trigger(
-	position,
-	current_soundblocks,
-	trigger_count,
-	node_count,
-	target_mode,
-	do_loop,
+	position: Vector,
+	current_soundblocks: number,
+	trigger_count: number,
+	node_count: number,
+	target_mode: TriggerTargetAnimationMode,
+	do_loop: boolean,
 ) {
 	const trigger = levelNodeWithTrigger();
+	trigger.levelNodeTrigger.triggerTargets ??= [];
 	trigger.levelNodeTrigger.position = position;
 	trigger.levelNodeTrigger.scale = { x: 1, y: 1, z: 1 };
 
@@ -316,7 +361,7 @@ function make_connected_trigger(
 		i < trigger_count + trigger_start_index + 1;
 		i++
 	) {
-		let target = triggerTargetWithAnimation();
+		const target = triggerTargetWithAnimation();
 		target.triggerTargetAnimation.objectID = i;
 		target.triggerTargetAnimation.loop = do_loop;
 		target.triggerTargetAnimation.mode = target_mode;
@@ -328,27 +373,28 @@ function make_connected_trigger(
 }
 
 // Split one track of overlapping notes into many tracks of non-overlapping notes
-function split_overlapping_notes(initial_track) {
-	let new_tracks = [initial_track];
+function split_overlapping_notes(initial_track: NoteData[]) {
+	const new_tracks = [initial_track];
 
 	let splitted_index = 0;
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	while (true) {
-		let origin = [];
-		let splitted = [];
+		const origin: NoteData[] = [];
+		const splitted: NoteData[] = [];
 		let i = 0;
-		while (i < new_tracks[splitted_index].length) {
-			let track = new_tracks[splitted_index];
-			origin.push(track[i]);
+		while (i < new_tracks[splitted_index]!.length) {
+			const track = new_tracks[splitted_index]!;
+			origin.push(track[i]!);
 			let scan_index = i + 1;
 			while (
 				scan_index < track.length - 1 &&
-				track[scan_index].start < track[i].start + track[i].duration
+				track[scan_index]!.start < track[i]!.start + track[i]!.duration
 			) {
-				if (track[scan_index].midi == track[i].midi) {
-					splitted.push(track[scan_index]);
+				if (track[scan_index]!.midi == track[i]!.midi) {
+					splitted.push(track[scan_index]!);
 				} else {
-					origin.push(track[scan_index]);
+					origin.push(track[scan_index]!);
 				}
 				scan_index++;
 			}
@@ -364,37 +410,37 @@ function split_overlapping_notes(initial_track) {
 	return new_tracks;
 }
 
-function refactor_as_optimised(tracks) {
+function refactor_as_optimised(tracks: TrackData[]) {
 	const track_name_instrument = 'Combined-';
 	const track_name_drums = 'Combined-drums-';
 
-	let tracks_inst = [[]];
-	let tracks_drum = [[]];
+	let tracks_inst: NoteData[][] = [[]];
+	let tracks_drum: NoteData[][] = [[]];
 	tracks.forEach((track) => {
 		track.notes.forEach((note) => {
 			if (track.isDrums) {
-				tracks_drum[0].push(note);
+				tracks_drum[0]!.push(note);
 			} else {
-				tracks_inst[0].push(note);
+				tracks_inst[0]!.push(note);
 			}
 		});
 	});
-	tracks_inst[0] = tracks_inst[0].toSorted((a, b) => a.start - b.start);
-	tracks_drum[0] = tracks_drum[0].toSorted((a, b) => a.start - b.start);
+	tracks_inst[0] = tracks_inst[0]!.toSorted((a, b) => a.start - b.start);
+	tracks_drum[0] = tracks_drum[0]!.toSorted((a, b) => a.start - b.start);
 
 	tracks_inst = split_overlapping_notes(tracks_inst[0]);
 	tracks_drum = split_overlapping_notes(tracks_drum[0]);
 
-	let new_tracks = [];
+	const new_tracks: TrackData[] = [];
 
 	tracks_inst.forEach((track, index) => {
-		let average_note_volumes = {};
-		let average_note_volumes_count = {};
+		const average_note_volumes: Record<string, number> = {};
+		const average_note_volumes_count: Record<string, number> = {};
 		track.forEach((note) => {
-			let hz = String(note.frequency_hertz);
+			const hz = String(note.frequency_hertz);
 			if (average_note_volumes[hz]) {
 				average_note_volumes[hz] += note.velocity;
-				average_note_volumes_count[hz]++;
+				average_note_volumes_count[hz]!++;
 			} else {
 				average_note_volumes[hz] = note.velocity;
 				average_note_volumes_count[hz] = 1;
@@ -402,7 +448,7 @@ function refactor_as_optimised(tracks) {
 		});
 		Object.keys(average_note_volumes).forEach((key) => {
 			average_note_volumes[key] =
-				average_note_volumes[key] / average_note_volumes_count[key];
+				average_note_volumes[key]! / average_note_volumes_count[key]!;
 		});
 		new_tracks.push({
 			channel: 0,
@@ -414,15 +460,15 @@ function refactor_as_optimised(tracks) {
 			isDrums: false,
 		});
 	});
-	if (tracks_drum[0].length > 0) {
+	if (tracks_drum[0]!.length > 0) {
 		tracks_drum.forEach((track, index) => {
-			let average_note_volumes = {};
-			let average_note_volumes_count = {};
+			const average_note_volumes: Record<string, number> = {};
+			const average_note_volumes_count: Record<string, number> = {};
 			track.forEach((note) => {
-				let hz = String(note.frequency_hertz);
+				const hz = String(note.frequency_hertz);
 				if (average_note_volumes[hz]) {
 					average_note_volumes[hz] += note.velocity;
-					average_note_volumes_count[hz]++;
+					average_note_volumes_count[hz]!++;
 				} else {
 					average_note_volumes[hz] = note.velocity;
 					average_note_volumes_count[hz] = 1;
@@ -430,7 +476,8 @@ function refactor_as_optimised(tracks) {
 			});
 			Object.keys(average_note_volumes).forEach((key) => {
 				average_note_volumes[key] =
-					average_note_volumes[key] / average_note_volumes_count[key];
+					average_note_volumes[key]! /
+					average_note_volumes_count[key]!;
 			});
 			new_tracks.push({
 				channel: 9,
@@ -448,16 +495,17 @@ function refactor_as_optimised(tracks) {
 }
 
 async function generate(
-	file,
-	node_count,
-	start_active,
-	loop,
-	optimize,
-	volume,
-	instrument,
+	file: File,
+	node_count: number,
+	start_active: boolean,
+	loop: boolean,
+	optimize: boolean,
+	volume: number,
+	instrument: string,
 ) {
 	// Decode midi file into JSON
 	const m = await decode_midi_file_as_json(file);
+	if (!m) return;
 
 	// Get the available tracks that can be parsed
 	const unparsed_tracks = get_usable_tracks(m);
@@ -478,37 +526,38 @@ async function generate(
 			? SoundGeneratorParametersWaveType.Sawtooth
 			: SoundGeneratorParametersWaveType.Square;
 
-	let sound_blocks = [];
-	let triggers = [];
-	let wall_blocks = [];
+	const sound_blocks: LevelNodeWith<LevelNodeSound>[] = [];
+	const triggers: LevelNodeWith<LevelNodeTrigger>[] = [];
+	const wall_blocks: LevelNodeWith<LevelNodeStatic>[] = [];
 
 	for (let t = 0; t < tracks.length; t++) {
 		// Get unique pitches to create sound blocks and triggers from
-		const unique_pitches = get_unique_pitches(tracks[t]);
+		const unique_pitches = get_unique_pitches(tracks[t]!);
 
-		let current_soundblocks = sound_blocks.length;
-		let current_triggers = triggers.length;
+		const current_soundblocks = sound_blocks.length;
+		const current_triggers = triggers.length;
 
 		// Make each sound block for each pitch
 		unique_pitches.forEach((hz) => {
-			let track = tracks[t];
+			const track = tracks[t]!;
 			if (track.isDrums) {
 				if (is_auto_inst) {
 					sound_blocks.push(
 						get_basic_sound_block_drums(
 							{ x: 0, y: t, z: -1 },
-							track.note_volumes[String(midi_to_hz(hz))] * volume,
-							get_instrument(hz, true), // hz is a preserved midi value for drum tracks
+							track.note_volumes[String(midi_to_hz(hz))]! *
+								volume,
+							get_instrument(hz, true)!, // hz is a preserved midi value for drum tracks
 						),
 					);
 				} else {
 					sound_blocks.push(
 						get_basic_sound_block_classic(
 							{ x: 0, y: t, z: -1 },
-							midi_to_hz(hz) * (track.isDrums ? 2.5 : 1), // Frequency is doubled for drum tracks
-							track.note_volumes[String(hz)] * volume,
+							midi_to_hz(hz) * 2.5,
+							track.note_volumes[String(hz)]! * volume,
 							true, // is drums
-							'noise',
+							SoundGeneratorParametersWaveType.Noise,
 						),
 					);
 				}
@@ -518,8 +567,8 @@ async function generate(
 						get_basic_sound_block(
 							{ x: 0, y: t, z: -1 },
 							hz,
-							track.note_volumes[String(hz)] * volume,
-							get_instrument(track.instrument, false),
+							track.note_volumes[String(hz)]! * volume,
+							get_instrument(track.instrument, false)!,
 						),
 					);
 				} else {
@@ -527,7 +576,7 @@ async function generate(
 						get_basic_sound_block_classic(
 							{ x: 0, y: t, z: -1 },
 							hz,
-							track.note_volumes[String(hz)] * volume,
+							track.note_volumes[String(hz)]! * volume,
 							false, // isnt drums
 							wave_type_classic,
 						),
@@ -544,49 +593,55 @@ async function generate(
 					t,
 					i + node_count + 2 + current_soundblocks,
 					start_active,
+					loop,
 				),
 			);
 		}
 
 		// For efficient access
-		const notes_by_pitch = get_notes_by_pitch(tracks[t]);
+		const notes_by_pitch = get_notes_by_pitch(tracks[t]!);
 
 		// Create animations for each trigger according to the notes
 		for (let i = 0; i < unique_pitches.length; i++) {
-			let current_trigger_animation =
-				triggers[i + current_triggers].animations[0];
-			let hz = unique_pitches[i];
+			const current_trigger_animation =
+				triggers[i + current_triggers]!.animations![0]!;
+			const hz = unique_pitches[i]!;
 
-			let notes = notes_by_pitch[hz.toString()];
+			const notes = notes_by_pitch[hz.toString()]!;
 			for (const note of notes) {
-				let previous_frame = animationFrame();
-				previous_frame.time = note.start - 0.05;
-				previous_frame.position.x = 0;
-				current_trigger_animation.frames.push(previous_frame);
+				const previous_frame = animationFrame({
+					time: note.start - 0.05,
+					position: { x: 0 },
+				});
 
-				let frame = animationFrame();
-				frame.time = note.start;
-				frame.position.x = 1;
-				current_trigger_animation.frames.push(frame);
+				const frame = animationFrame({
+					time: note.start,
+					position: { x: 1 },
+				});
 
-				let next_frame = animationFrame();
-				next_frame.time = note.start + note.duration - 0.05;
-				next_frame.position.x = 1;
-				current_trigger_animation.frames.push(next_frame);
+				const next_frame = animationFrame({
+					time: note.start + note.duration - 0.05,
+					position: { x: 1 },
+				});
 
-				let next_next_frame = animationFrame();
-				next_next_frame.time = note.start + note.duration;
-				next_next_frame.position.x = 0;
-				current_trigger_animation.frames.push(next_next_frame);
+				const next_next_frame = animationFrame({
+					time: note.start + note.duration,
+					position: { x: 0 },
+				});
+
+				current_trigger_animation.frames!.push(previous_frame);
+				current_trigger_animation.frames!.push(frame);
+				current_trigger_animation.frames!.push(next_frame);
+				current_trigger_animation.frames!.push(next_next_frame);
 			}
 
 			// Last frame for each block has to be at the same time to ensure sync
-			let last_frame = animationFrame();
+			const last_frame = animationFrame();
 			last_frame.time = Math.ceil(duration);
-			current_trigger_animation.frames.push(last_frame);
+			current_trigger_animation.frames!.push(last_frame);
 		}
 
-		let wall_block = levelNodeWithStatic();
+		const wall_block = levelNodeWithStatic();
 		wall_block.levelNodeStatic.position = {
 			x: 1,
 			y: t,

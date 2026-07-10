@@ -3,7 +3,7 @@ import {
 	SoundGeneratorParametersWaveType,
 } from '@/generated/proto';
 
-interface Instrument {
+export interface Instrument {
 	name: string;
 	volume: number;
 	parameters: Required<
@@ -18,6 +18,22 @@ interface Instrument {
 			| 'frequencyDeltaRamp'
 			| 'vibratoStrength'
 			| 'vibratoSpeed'
+		>
+	>;
+}
+
+export interface Drum {
+	name: string;
+	volume: number;
+	parameters: Required<
+		Pick<
+			SoundGeneratorParameters,
+			| 'envelopeAttack'
+			| 'envelopeSustain'
+			| 'envelopePunch'
+			| 'envelopeRelease'
+			| 'frequencyRamp'
+			| 'frequencyDeltaRamp'
 		>
 	>;
 }
@@ -1945,7 +1961,7 @@ const instrument_map: Instrument[] = [
 	},
 ];
 
-const percussion_map = [
+const percussion_map: Drum[] = [
 	{
 		name: 'Acoustic Bass Drum',
 		volume: 1,
@@ -2512,6 +2528,14 @@ const percussion_map = [
 	},
 ];
 
-export function get_instrument(index: number, isDrums: boolean) {
+export function get_instrument(index: number, isDrums: true): Drum | undefined;
+export function get_instrument(
+	index: number,
+	isDrums: false,
+): Instrument | undefined;
+export function get_instrument(
+	index: number,
+	isDrums: boolean,
+): Instrument | Drum | undefined {
 	return isDrums ? percussion_map[index - 35] : instrument_map[index];
 }
