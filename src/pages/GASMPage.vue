@@ -5,8 +5,14 @@ export default {
 	components: {
 		GASMEditor,
 	},
-	created() {
+	data() {
+		return {
+			page_num: null,
+		};
+	},
+	mounted() {
 		document.title = 'GASM Editor | GRAB Tools';
+		this.switch_page(1);
 	},
 	methods: {
 		copy() {
@@ -37,6 +43,20 @@ export default {
 				window.toast(e, 'error');
 			}
 		},
+		switch_page(number) {
+			if (number === this.page_num) return;
+			if (this.page_num !== null) {
+				this.$refs.editor.switch_page(this.page_num, number); // include current page and page to switch to
+			}
+			this.page_num = number;
+			this.$refs.tab_parent.childNodes.forEach((node, index) => {
+				if (index == this.page_num) {
+					node.className = 'selected';
+				} else {
+					node.className = '';
+				}
+			});
+		},
 	},
 };
 </script>
@@ -53,10 +73,10 @@ export default {
 		</menu>
 		<div id="container">
 			<div id="editor-container">
-				<menu class="tab-menu">
-					<button>Raw GASM</button>
-					<button class="selected">GASM Editor</button>
-					<button>Python</button>
+				<menu ref="tab_parent" class="tab-menu">
+					<button @click="switch_page(0)">Raw GASM</button>
+					<button @click="switch_page(1)">GASM Editor</button>
+					<button @click="switch_page(2)">Python</button>
 				</menu>
 				<GASMEditor ref="editor" />
 			</div>
@@ -117,7 +137,7 @@ menu.tab-menu {
 	padding: 0px;
 	padding-left: 6px;
 	gap: 0px;
-	
+
 	button {
 		background-color: #1e1e1e;
 		color: #5e5e5e;
