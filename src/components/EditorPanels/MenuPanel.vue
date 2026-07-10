@@ -46,7 +46,7 @@ import car from '@/tools/car';
 import gun from '@/tools/gun';
 import { generate_pixel_art } from '@/tools/image';
 import midi from '@/tools/midi';
-import monochrome from '@/tools/monochrome';
+import { monochrome } from '@/tools/monochrome';
 import { obj } from '@/tools/obj';
 import signs from '@/tools/signs';
 import svg from '@/tools/svg';
@@ -1133,7 +1133,7 @@ export default {
 		},
 		monochrome_level() {
 			this.set_selectable_nodes((nodes) => {
-				monochrome.monochrome(nodes);
+				monochrome(nodes);
 			});
 		},
 		randomize_materials() {
