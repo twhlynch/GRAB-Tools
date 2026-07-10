@@ -1,9 +1,11 @@
 <script>
+import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import GASMEditor from '@/components/GASMEditor.vue';
 
 export default {
 	components: {
 		GASMEditor,
+		ResizableColPanel,
 	},
 	data() {
 		return {
@@ -12,7 +14,7 @@ export default {
 	},
 	mounted() {
 		document.title = 'GASM Editor | GRAB Tools';
-		this.switch_page(1);
+		//this.switch_page(0);
 	},
 	methods: {
 		copy() {
@@ -48,6 +50,7 @@ export default {
 			if (this.page_num !== null) {
 				this.$refs.editor.switch_page(this.page_num, number); // include current page and page to switch to
 			}
+			console.log(this.$refs.tab_parent);
 			this.page_num = number;
 			this.$refs.tab_parent.childNodes.forEach((node, index) => {
 				if (index == this.page_num) {
@@ -56,6 +59,9 @@ export default {
 					node.className = '';
 				}
 			});
+		},
+		set_output(text) {
+			this.$refs.outputEditor.set(text);
 		},
 	},
 };
@@ -72,14 +78,27 @@ export default {
 			<button @click="clear">Clear</button>
 		</menu>
 		<div id="container">
-			<div id="editor-container">
-				<menu ref="tab_parent" class="tab-menu">
-					<button @click="switch_page(0)">Raw GASM</button>
-					<button @click="switch_page(1)">GASM Editor</button>
-					<button @click="switch_page(2)">Python</button>
-				</menu>
-				<GASMEditor ref="editor" />
-			</div>
+			<ResizableColPanel id="editor-container">
+				<template #first>
+					<menu ref="tab_parent" class="tab-menu">
+						<button class="selected">GASM Editor</button>
+						<!-- <button @click="switch_page(1)">Python</button> -->
+					</menu>
+					<GASMEditor
+						ref="editor"
+						output="false"
+						@output="set_output"
+					/>
+				</template>
+				<template #second>
+					<menu class="tab-menu">
+						<button class="selected" style="cursor: default">
+							Output
+						</button>
+					</menu>
+					<GASMEditor ref="outputEditor" output="true" />
+				</template>
+			</ResizableColPanel>
 			<aside>
 				<h3>Samples</h3>
 				<p>

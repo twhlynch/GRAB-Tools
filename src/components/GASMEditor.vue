@@ -194,13 +194,12 @@ export default {
 <style scoped>
 section {
 	width: 100%;
-	height: 100%;
+	height: calc(100% - 30px);
 	background-color: #141415;
 	display: grid;
 	grid-template-rows: 1fr 0;
 }
 .code-container {
 	overflow-y: scroll;
-	max-height: 100%;
 }
 </style>
