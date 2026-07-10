@@ -101,15 +101,26 @@ export default {
 			}
 		},
 		undo() {
+			if (this.current_page !== this.parent_page) return;
 			undo(this.view);
 		},
 		redo() {
+			if (this.current_page !== this.parent_page) return;
 			redo(this.view);
 		},
 		set(insert) {
 			const to = this.view.state.doc.length;
 			const changes = { from: 0, to, insert };
 			const _change = this.view.dispatch({ changes });
+		},
+		set_sample(text) {
+			if (this.current_page === 1) {
+				this.set(text);
+			} else if (this.current_page === 0) {
+				this.set(compile_gasm(text).join('\n'));
+			} else if (this.current_page === 2) {
+				// TODO: compile snippet to python
+			}
 		},
 		switch_page(from, to) {
 			this.current_page = to;

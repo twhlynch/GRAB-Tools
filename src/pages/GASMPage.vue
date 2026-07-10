@@ -37,7 +37,7 @@ export default {
 			try {
 				const res = await fetch(`/gasm/${name}.asm`);
 				const asm = await res.text();
-				this.$refs.editor.set(asm);
+				this.$refs.editor.set_sample(asm);
 			} catch (e) {
 				e.message = 'Failed to load asm: ' + e.message;
 				window.toast(e, 'error');
@@ -66,7 +66,7 @@ export default {
 		<menu>
 			<button @click="copy">Copy</button>
 			<button @click="paste">Paste</button>
-			<button @click="compile">Compile</button>
+			<!-- <button @click="compile">Compile</button> (obsolete with new tabs system) -->
 			<button @click="undo">Undo</button>
 			<button @click="redo">Redo</button>
 			<button @click="clear">Clear</button>
