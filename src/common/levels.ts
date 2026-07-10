@@ -42,7 +42,7 @@ export async function decodeLevel(buffer: Blob): Promise<Level | null> {
 	}
 }
 
-export function encodeLevel(level: Level): ArrayBuffer | null {
+export function encodeLevel(level: Level): Uint8Array | null {
 	const root = load();
 	const message = root.lookupType('COD.Level.Level');
 
