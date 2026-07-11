@@ -1,11 +1,13 @@
 <script>
 import AssemblyEditor from '@/components/AssemblyEditor.vue';
+import DropDown from '@/components/EditorPanels/DropDown.vue';
 import ResizableColPanel from '@/components/EditorPanels/ResizableColPanel.vue';
 import { GASMEditor, OutputEditor } from '@/editor/GASMEditor';
 import { useConfigStore } from '@/stores/config';
 
 export default {
 	components: {
+		DropDown,
 		AssemblyEditor,
 		ResizableColPanel,
 	},
@@ -14,6 +16,24 @@ export default {
 			active_tab: 0,
 			error: false,
 			editors: [GASMEditor],
+			menu: {
+				Edit: {
+					Copy: { func: () => this.copy() },
+					Paste: { func: () => this.paste() },
+					// FIXME: i dont know why these broke
+					// Undo: { func: () => this.undo() },
+					// Redo: { func: () => this.redo() },
+					Clear: { func: () => this.clear() },
+				},
+				Samples: {
+					'Get Player By Name': {
+						func: () => this.sample('get_player_by_name'),
+					},
+					'Write Text On Sign': {
+						func: () => this.sample('write_text_on_sign'),
+					},
+				},
+			},
 		};
 	},
 	mounted() {
@@ -50,6 +70,9 @@ export default {
 		clear() {
 			this.editor().set('');
 		},
+		copyOutput() {
+			this.$refs.outputEditor.copy();
+		},
 		async sample(name) {
 			try {
 				const res = await fetch(`/gasm/${name}.asm`);
@@ -84,13 +107,12 @@ export default {
 <template>
 	<main id="gasm">
 		<menu>
-			<button @click="copy">Copy</button>
-			<button @click="paste">Paste</button>
-			<!-- i broke undo :( -->
-			<!-- <button @click="undo">Undo</button> -->
-			<!-- <button @click="redo">Redo</button> -->
-			<button @click="clear">Clear</button>
+			<li v-for="[name, item] of Object.entries(menu)" :key="name">
+				<button class="menu-btn">{{ name }}</button>
+				<DropDown :menu="item" class="dropdown" />
+			</li>
 		</menu>
+
 		<div id="container">
 			<ResizableColPanel id="editor-container">
 				<template #first>
@@ -114,33 +136,25 @@ export default {
 					/>
 				</template>
 				<template #second>
-					<menu class="tab-menu">
-						<button
-							class="selected"
-							:style="
-								(error ? 'color: #D8647E;' : '') +
-								'cursor: default;'
-							"
-						>
-							Output
+					<div class="output-header">
+						<menu class="tab-menu">
+							<button
+								class="selected"
+								:style="
+									(error ? 'color: #D8647E;' : '') +
+									'cursor: default;'
+								"
+							>
+								Output
+							</button>
+						</menu>
+						<button class="copy-output-btn" @click="copyOutput">
+							Copy
 						</button>
-					</menu>
+					</div>
 					<AssemblyEditor ref="outputEditor" :editor="OutputEditor" />
 				</template>
 			</ResizableColPanel>
-			<aside>
-				<h3>Samples</h3>
-				<p>
-					Suggest your own samples in
-					<a :href="$config.DISCORD_URL">the discord</a>!
-				</p>
-				<button @click="sample('get_player_by_name')">
-					Get player by name
-				</button>
-				<button @click="sample('write_text_on_sign')">
-					Write text on sign
-				</button>
-			</aside>
 		</div>
 	</main>
 </template>
@@ -158,8 +172,7 @@ html:has(#gasm) {
 	width: 100svw;
 	height: 100svh;
 }
-menu,
-aside {
+menu {
 	display: flex;
 	background-color: #1e1e1e;
 	align-items: center;
@@ -171,7 +184,6 @@ aside {
 	button {
 		background-color: #2e2e2e;
 		color: white;
-		padding: 6px 16px;
 		border: none;
 		cursor: pointer;
 		font-size: 0.8rem;
@@ -181,12 +193,17 @@ aside {
 		}
 	}
 }
+menu > li {
+	position: relative;
+	list-style: none;
+}
 menu.tab-menu {
 	padding: 0px;
 	padding-left: 6px;
 	gap: 0px;
 
 	button {
+		padding: 6px 16px;
 		background-color: #1e1e1e;
 		color: #5e5e5e;
 		&:hover {
@@ -215,10 +232,41 @@ menu {
 	flex-direction: row;
 	width: 100%;
 }
-aside {
-	flex-direction: column;
-	width: 200px;
-	height: 100%;
+.menu-btn {
+	background-color: #2e2e2e;
+	padding: 6px 16px;
+	border: none;
+	cursor: pointer;
+	font-size: 0.8rem;
+	font-family: var(--font-family-default);
+	&:hover {
+		background-color: #3e3e3e;
+	}
+}
+.dropdown {
+	padding-top: 4px;
+}
+.output-header {
+	position: relative;
+}
+.output-header menu {
+	margin: 0;
+}
+.copy-output-btn {
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: #2e2e2e;
+	color: white;
+	padding: 4px 12px;
+	border: none;
+	cursor: pointer;
+	font-size: 0.75rem;
+	font-family: var(--font-family-default);
+	&:hover {
+		background-color: #3e3e3e;
+	}
 }
 a {
 	color: #5b5f84;
