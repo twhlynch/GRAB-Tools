@@ -46,7 +46,7 @@ import car from '@/tools/car';
 import gun from '@/tools/gun';
 import { generate_pixel_art } from '@/tools/image';
 import midi from '@/tools/midi';
-import monochrome from '@/tools/monochrome';
+import { monochrome } from '@/tools/monochrome';
 import { obj } from '@/tools/obj';
 import signs from '@/tools/signs';
 import svg from '@/tools/svg';
@@ -589,6 +589,15 @@ export default {
 						accept: '.mid,.midi',
 					},
 					{
+						type: 'option',
+						options: [
+							'Auto Instrument',
+							'Sine (Classic)',
+							'Saw (Classic)',
+							'Square (Classic)',
+						],
+					},
+					{
 						type: 'checkbox',
 						text: 'Start active: ',
 						default: true,
@@ -599,16 +608,11 @@ export default {
 						default: true,
 					},
 					{
-						type: 'checkbox',
-						text: 'Optimize complexity: ',
-						default: false,
-					},
-					{
 						type: 'number',
 						text: 'Volume (0-100, default 30)',
 					},
 				],
-				async (files, start_active, loop, optimize, volume) => {
+				async (files, instrument, start_active, loop, volume) => {
 					if (!files.length) {
 						window.toast('No midi file chosen', 'error');
 						return;
@@ -624,9 +628,9 @@ export default {
 						const node = await midi.midi(
 							file,
 							max_id,
+							instrument,
 							start_active,
 							loop,
-							optimize,
 							volume,
 						);
 						if (!node) return;
@@ -1129,7 +1133,7 @@ export default {
 		},
 		monochrome_level() {
 			this.set_selectable_nodes((nodes) => {
-				monochrome.monochrome(nodes);
+				monochrome(nodes);
 			});
 		},
 		randomize_materials() {

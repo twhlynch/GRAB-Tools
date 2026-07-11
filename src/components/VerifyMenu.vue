@@ -31,6 +31,10 @@ export default {
 	mounted() {
 		const userStore = useUserStore();
 		this.bookmarklet = `javascript:(async () => {
+			if (location.hostname !== 'grabvr.quest') {
+				return window.toast('Use in grabvr.quest', 'error');
+			}
+
 			const token = JSON.parse(localStorage.user).user.access_token;
 			const url = '${this.$config.SERVER_URL}verify_account?token=' + token + '&access_token=${userStore.access_token}';
 

@@ -1,7 +1,7 @@
 import { traverse_node } from '@/common/utils';
 import { Color, LevelNode } from '@/generated/proto';
 
-function monochrome(nodes: LevelNode[]) {
+export function monochrome(nodes: LevelNode[]) {
 	nodes.forEach((n) => {
 		traverse_node(n, (node) => {
 			const static_node = node.levelNodeStatic;
@@ -33,7 +33,3 @@ function monochrom_color(color: Color) {
 	color.g = brightness;
 	color.b = brightness;
 }
-
-export default {
-	monochrome,
-};

@@ -77,11 +77,6 @@ export default {
 		<section class="bookmark-links">
 			<Bookmarklet
 				class="button"
-				:name="'Chrome Extension'"
-				:script="'chrome_extension.js'"
-			/>
-			<Bookmarklet
-				class="button"
 				:name="'Open in JSON Editor'"
 				:script="'open_json_editor.js'"
 			/>
