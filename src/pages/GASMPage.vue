@@ -10,7 +10,7 @@ export default {
 	data() {
 		return {
 			page_num: null,
-			current_error: "",
+			current_error: '',
 		};
 	},
 	mounted() {
@@ -82,14 +82,16 @@ export default {
 			<ResizableColPanel id="editor-container">
 				<template #first>
 					<menu ref="tab_parent" class="tab-menu">
-						<button class="selected" style="cursor:default">GASM Editor</button>
+						<button class="selected" style="cursor: default">
+							GASM Editor
+						</button>
 						<!-- <button @click="switch_page(1)">Python</button> -->
 					</menu>
 					<GASMEditor
 						ref="editor"
 						:output="false"
 						@output="set_output"
-						@switch_tab="switch_page(1-page_num)"
+						@switch_tab="switch_page(1 - page_num)"
 					/>
 				</template>
 				<template #second>

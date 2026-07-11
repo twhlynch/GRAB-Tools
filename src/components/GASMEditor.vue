@@ -2,15 +2,15 @@
 import { create_connection } from '@/common/connections';
 import { compile_gasm } from '@/editor/AssemblyConversion';
 import build_editor from '@/editor/EditorSetup';
-import { EditorState } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
 import {
 	gasmCompletion,
 	update_json_completions,
 } from '@/editor/GASMCompletion';
 import { gasmDiagnostics } from '@/editor/GASMDiagnostics';
 import { gasm } from '@/editor/GASMDSL';
-import { gasm_to_python, python_to_gasm } from '@/editor/GASMPythonConversion';
+import { EditorState } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+//import { gasm_to_python, python_to_gasm } from '@/editor/GASMPythonConversion';
 import { levelNodeWithGASM } from '@/generated/nodes';
 import { useConfigStore } from '@/stores/config';
 import { redo, undo } from '@codemirror/commands';
@@ -22,14 +22,14 @@ import { basicSetup } from 'codemirror';
 import { mapActions, mapState } from 'pinia';
 
 export default {
-	emits: ['output', 'switch_tab'],
 	props: {
 		output: Boolean,
 	},
+	emits: ['output', 'switch_tab'],
 	data() {
 		return {
-			gasm_page: "",
-			python_page: "",
+			gasm_page: '',
+			python_page: '',
 			current_page: 0,
 			lastaction_swaptab: false,
 		};
@@ -53,7 +53,7 @@ export default {
 			this.python_page = this.default_python;
 			this.view = build_editor(
 				this.$refs.code_container,
-				(this.$props.output) ? '' : (this.default_gasm ?? ''),
+				this.$props.output ? '' : (this.default_gasm ?? ''),
 				gasm,
 				[
 					foldGutter(),
@@ -78,7 +78,11 @@ export default {
 							this.compile();
 						}
 
-						this.set_default_gasm_values(this.gasm_page, this.python_page, this.current_page);
+						this.set_default_gasm_values(
+							this.gasm_page,
+							this.python_page,
+							this.current_page,
+						);
 					}
 				},
 			);
@@ -113,7 +117,7 @@ export default {
 			try {
 				const asm = this.view.state.doc.toString();
 				const insert = compile_gasm(asm).join('\n');
-				this.$emit("output", insert, false);
+				this.$emit('output', insert, false);
 			} catch (e) {
 				console.log(e.message);
 				return;
@@ -121,7 +125,7 @@ export default {
 		},
 		undo() {
 			if (this.lastaction_swaptab) {
-				this.$emit("switch_tab");
+				this.$emit('switch_tab');
 			}
 			undo(this.view);
 		},
@@ -138,10 +142,14 @@ export default {
 			if (this.current_page == 0) {
 				this.set(text);
 			} else {
-				window.toast("GASM samples cannot be loaded into the python window", "error");
+				window.toast(
+					'GASM samples cannot be loaded into the python window',
+					'error',
+				);
 			}
 		},
-		switch_page(from, to) {
+		// _from should be used if cross-tab interactability is added, which may be added in the future
+		switch_page(_from, to) {
 			this.current_page = to;
 			this.lastaction_swaptab = true;
 			if (to == 1) {
