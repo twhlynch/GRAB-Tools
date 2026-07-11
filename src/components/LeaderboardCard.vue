@@ -19,7 +19,7 @@ export default {
 			return `${this.$config.GRAB_PAGE_URL}levels?tab=tab_other_user&user_id=${creator_id}`;
 		},
 		image_url() {
-			const image_key = this.data.images?.thumb?.key;
+			const image_key = `level_${this.data.identifier.replace(':', '_')}_${this.data.image_iteration}_thumb.png`;
 			return `${this.$config.GRAB_IMAGES_URL}${image_key}`;
 		},
 		level_url() {

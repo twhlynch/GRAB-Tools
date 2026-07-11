@@ -6,7 +6,7 @@ export const SERVER_URL = `https://api.${DOMAIN}/`;
 // export const WIKI_URL = `https://wiki.${DOMAIN}/`;
 export const WIKI_URL = `https://grabvr.miraheze.org/`;
 export const DISCORD_URL = `https://discord.${DOMAIN}/`;
-export const STATS_URL = `https://grab-tools.live/stats_data/`;
+export const STATS_URL = `https://stats.${DOMAIN}/`;
 
 // grab urls
 const GRAB_DOMAIN = `slin.dev`;
