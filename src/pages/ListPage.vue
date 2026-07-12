@@ -65,9 +65,7 @@ export default {
 			this.tab = id;
 		},
 		async fetchThen(filename, func) {
-			let response = await fetch(
-				`${this.$config.STATS_URL}${filename}.json`,
-			);
+			let response = await fetch(`${this.$config.STATS_URL}${filename}`);
 			if (!response.ok) {
 				const error = await response.text();
 				window.toast('Failed to load stat: ' + error, 'error');
@@ -196,9 +194,9 @@ export default {
 							}
 						}
 					}),
-					this.fetchThen('unbeaten_levels', (data) => {
+					this.fetchThen('all_verified', (data) => {
 						for (let level of data) {
-							if (!('sole' in level)) {
+							if (level.unbeaten && !('sole' in level)) {
 								const id = level.identifier.split(':')[0];
 								const username = level?.creators?.[0];
 								const priority =
