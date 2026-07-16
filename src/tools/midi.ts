@@ -1,4 +1,3 @@
-import { groupNodes } from '@/common/group';
 import { LevelNodeWith } from '@/common/levelNodes';
 import { animation, animationFrame } from '@/generated/helpers';
 import {
@@ -10,7 +9,7 @@ import {
 	triggerTargetWithSound,
 } from '@/generated/nodes';
 import {
-	LevelNodeGroup,
+	LevelNode,
 	LevelNodeSound,
 	LevelNodeStatic,
 	LevelNodeTrigger,
@@ -49,7 +48,7 @@ async function midi(
 	start_active: boolean,
 	loop: boolean,
 	volume: number,
-): Promise<LevelNodeWith<LevelNodeGroup> | null> {
+): Promise<LevelNode[] | null> {
 	const optimize = inst_type.includes('Classic');
 
 	//console.log(inst_type);
@@ -72,7 +71,7 @@ async function midi(
 			inst_type,
 		);
 		if (!level_nodes) return null;
-		return groupNodes(level_nodes);
+		return level_nodes;
 	} catch (e) {
 		if (e instanceof Error) {
 			window.toast(e, 'error');
@@ -355,7 +354,7 @@ function make_connected_trigger(
 	trigger.levelNodeTrigger.position = position;
 	trigger.levelNodeTrigger.scale = { x: 1, y: 1, z: 1 };
 
-	const trigger_start_index = current_soundblocks + node_count + 1;
+	const trigger_start_index = current_soundblocks + node_count;
 	for (
 		let i = trigger_start_index;
 		i < trigger_count + trigger_start_index + 1;
@@ -591,7 +590,7 @@ async function generate(
 				get_sound_trigger_block(
 					i,
 					t,
-					i + node_count + 2 + current_soundblocks,
+					i + node_count + 1 + current_soundblocks,
 					start_active,
 					loop,
 				),

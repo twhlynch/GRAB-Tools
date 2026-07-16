@@ -625,7 +625,7 @@ export default {
 					this.$emit('viewport', async (scope) => {
 						const max_id = scope.level.nodes.all.length;
 
-						const node = await midi.midi(
+						const nodes = await midi.midi(
 							file,
 							max_id,
 							instrument,
@@ -633,9 +633,9 @@ export default {
 							loop,
 							volume,
 						);
-						if (!node) return;
+						if (!nodes) return;
 
-						this.insert_selection_nodes([node]);
+						this.insert_selection_nodes(nodes);
 					});
 				},
 			);
