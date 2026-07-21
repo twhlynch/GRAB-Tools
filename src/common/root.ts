@@ -53,3 +53,7 @@ export function add_modded_types(def: string): string {
 export function unmodded_root() {
 	return vanilla_root;
 }
+
+export function unmodded_definition() {
+	return definition;
+}

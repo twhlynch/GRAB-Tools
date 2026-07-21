@@ -12,6 +12,7 @@ import StatisticsPanel from '@/components/EditorPanels/StatisticsPanel.vue';
 import TemplatesPanel from '@/components/EditorPanels/TemplatesPanel.vue';
 import TerminalPanel from '@/components/EditorPanels/TerminalPanel.vue';
 import ViewportPanel from '@/components/EditorPanels/ViewportPanel.vue';
+import * as mcp from '@/editor/MCP';
 import { useConfigStore } from '@/stores/config';
 import { useUserStore } from '@/stores/user';
 import downloads from '@/tools/downloads';
@@ -48,6 +49,7 @@ export default {
 		this.$refs.main_panel.size((window.innerWidth / 3) * 2);
 		this.close_templates();
 		this.open_starting_level();
+		mcp.init((level) => this.set_json(level, 'mcp'));
 	},
 	created() {
 		document.title = 'JSON Editor | GRAB Tools';
@@ -83,6 +85,7 @@ export default {
 				this.$refs.json_panel.set_json(this.json);
 			if (!skip.includes('viewport_panel'))
 				this.$refs.viewport_panel.set_json(this.json);
+			if (!skip.includes('mcp')) mcp.send_level(json);
 		},
 		json_changed(json) {
 			this.set_json(json, ['json_panel']);
