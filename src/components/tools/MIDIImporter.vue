@@ -24,7 +24,7 @@ export default {
 			const instrument = getByID(`${toolID}-instrument`).value;
 			const volume = parseInt(getByID(`${toolID}-volume`).value) || 40;
 
-			const node = await midi.midi(
+			const nodes = await midi.midi(
 				file,
 				0,
 				instrument,
@@ -32,10 +32,10 @@ export default {
 				loop,
 				volume,
 			);
-			if (!node) return;
+			if (!nodes) return;
 
 			const obj = createLevel(
-				[node],
+				nodes,
 				'MIDI: ' + file.name,
 				'Generated with GRAB Tools',
 				['TheTrueFax', 'GRAB Tools'],
