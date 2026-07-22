@@ -1,6 +1,7 @@
-import { groupNodes } from '@/common/group';
+import { levelNodeGroupFrom } from '@/common/group';
 import { LevelNodeWith } from '@/common/levelNodes';
-import { Level, LevelNode, LevelNodeGroup } from '@/generated/proto';
+import { node_data } from '@/common/utils';
+import { LevelNode, LevelNodeGroup } from '@/generated/proto';
 
 function traverseNode(
 	node: LevelNode,
@@ -18,89 +19,111 @@ function traverseNode(
 	}
 }
 
-function compile(levels: Level[]) {
-	const values = levels
-		.filter((level) => level.levelNodes?.length)
-		.map((level) => {
-			return groupNodes(level.levelNodes ?? []);
-		});
-
-	const finalNodes: LevelNode[] = [];
-	let offset = 0;
-	for (const group of values) {
-		// starts and finishes
-		const startIds: number[] = [];
-		let id = 0;
-		traverseNode(group, (node, parent) => {
-			if (
-				(node.levelNodeStart || node.levelNodeFinish) &&
-				parent == group
-			) {
-				// only top level
-				startIds.push(id - 1); // -1 for the group
-			}
-			id++;
-		});
-		group.levelNodeGroup.childNodes = (
-			group.levelNodeGroup.childNodes ?? []
-		).filter((n) => !n.levelNodeStart && !n.levelNodeFinish);
-
-		// deleted target trigger targets
-		traverseNode(group, (node, _) => {
-			if (node.levelNodeTrigger?.triggerTargets) {
-				const deletedTargets = [];
-				for (
-					let i = 0;
-					i < node.levelNodeTrigger.triggerTargets.length;
-					i++
-				) {
-					const target = node.levelNodeTrigger.triggerTargets[i]!;
-					if (target.triggerTargetAnimation) {
-						const originalId =
-							target.triggerTargetAnimation.objectID || 0;
-						if (originalId >= id - 1) {
-							deletedTargets.push(i);
-						}
-					}
-				}
-				for (let i = deletedTargets.length - 1; i >= 0; i--) {
-					node.levelNodeTrigger.triggerTargets.splice(
-						deletedTargets[i]!,
-						1,
-					);
-				}
+export function count_nodes(nodes: LevelNode[]) {
+	const counts: Record<string, number> & { total: number } = {
+		total: 0,
+	};
+	for (const node of nodes) {
+		traverseNode(node, (_node, _parent) => {
+			counts.total++;
+			const type = Object.keys(node).find((key) =>
+				key.startsWith('levelNode'),
+			);
+			if (type) {
+				counts[type] = (counts[type] ?? 0) + 1;
 			}
 		});
-
-		// update target ids
-		let count = 0;
-		traverseNode(group, (node, _) => {
-			if (node.levelNodeTrigger?.triggerTargets) {
-				for (const target of node.levelNodeTrigger.triggerTargets) {
-					if (target.triggerTargetAnimation) {
-						if (!target.triggerTargetAnimation.objectID) {
-							target.triggerTargetAnimation.objectID = 0;
-						}
-						const originalId =
-							target.triggerTargetAnimation.objectID;
-						for (const sID of startIds) {
-							if (originalId >= sID) {
-								target.triggerTargetAnimation.objectID--;
-							}
-						}
-						target.triggerTargetAnimation.objectID += offset + 1; // +1 for group
-					}
-				}
-			}
-			count++;
-		});
-		offset += count;
-		finalNodes.push(group);
 	}
-
-	return finalNodes;
+	return counts;
 }
 
-export default {
-	compile,
+const update_id_params: Record<string, string[]> = {
+	triggerTargetAnimation: ['objectID'],
+	triggerTargetSound: ['objectID'],
+	triggerTargetGASM: ['objectID'],
+	triggerTargetLight: ['objectID'],
+	connections: ['objectID'],
 };
+
+export function offset_ids(nodes: LevelNode[], offset: number) {
+	const objects: object[] = [...nodes];
+
+	while (objects.length > 0) {
+		const current = [...objects];
+		objects.length = 0;
+
+		for (const object of current) {
+			for (const [key, value] of Object.entries(object)) {
+				// offset all ids
+				if (key in update_id_params) {
+					const keys = update_id_params[key] ?? [];
+					for (const k of keys) {
+						// update value in all of an array
+						if (Array.isArray(value)) {
+							for (const v of value) {
+								// must convert v[k] from Long to Number so it doesnt become a string
+								v[k] = Number(v[k] ?? 0) + offset;
+							}
+						}
+						// update value in an object
+						else if (typeof value === 'object' && value !== null) {
+							value[k] = Number(value[k] ?? 0) + offset;
+						}
+					}
+				}
+
+				// traverse subobjects
+				if (typeof value == 'object' && value !== null) {
+					objects.push(value);
+				}
+			}
+		}
+	}
+}
+
+export interface CompileOptions {
+	group?: boolean;
+	spacing?: number;
+}
+
+export function compile(level_nodes: LevelNode[][], options: CompileOptions) {
+	const result: LevelNode[] = [];
+
+	for (const [i, nodes] of level_nodes.entries()) {
+		// group and offset by 1
+		if (options.group) {
+			offset_ids(nodes, 1);
+
+			// filter out start/finish
+			const remove = [];
+			// only top level should exist
+			for (const [j, node] of nodes.entries()) {
+				if (node.levelNodeStart || node.levelNodeFinish) {
+					remove.push(j);
+				}
+				offset_ids([node], -remove.length);
+			}
+
+			const group = levelNodeGroupFrom({ childNodes: nodes });
+			nodes.length = 0;
+			nodes.push(group);
+		}
+
+		// offset by previous nodes
+		const count = count_nodes(result);
+		offset_ids(nodes, count.total);
+
+		// shift positions
+		if (options.spacing) {
+			for (const node of nodes) {
+				const data = node_data(node);
+				(data.position ??= {}).x =
+					(data.position.x ?? 0) + options.spacing * i;
+			}
+		}
+
+		result.push(...nodes);
+	}
+
+	return result;
+}
