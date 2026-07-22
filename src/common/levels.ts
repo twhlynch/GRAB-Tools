@@ -31,7 +31,9 @@ export async function decodeLevel(buffer: Blob): Promise<Level | null> {
 		const message = root.lookupType('COD.Level.Level');
 		const decoded = message.decode(new Uint8Array(data));
 
-		const level: Level = message.toObject(decoded);
+		const level: Level = message.toObject(decoded, {
+			longs: Number,
+		});
 
 		return level;
 	} catch (e) {

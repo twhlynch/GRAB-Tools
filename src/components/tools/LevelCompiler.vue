@@ -5,7 +5,7 @@ import {
 	downloadLevel,
 	encodeLevel,
 } from '@/common/levels';
-import compiler from '@/tools/compiler';
+import { compile } from '@/tools/compiler';
 import ToolTemplate from './ToolTemplate.vue';
 
 export default {
@@ -30,28 +30,33 @@ export default {
 
 			if (!files.length) return;
 
-			let creators = getByID(`${toolID}-creators`).value || '';
-			let description = getByID(`${toolID}-description`).value || '';
-			let title = getByID(`${toolID}-title`).value || '';
-			let checkpoints = parseInt(
+			const creators = getByID(`${toolID}-creators`).value || '';
+			const description = getByID(`${toolID}-description`).value || '';
+			const title = getByID(`${toolID}-title`).value || '';
+			const checkpoints = parseInt(
 				getByID(`${toolID}-checkpoints`).value || '0',
 			);
+			const group = getByID(`${toolID}-group`).checked;
+			const spacing = parseInt(getByID(`${toolID}-spacing`).value || '0');
 
-			const groups = await Promise.all(
-				files.map(async (file) => await decodeLevel(file)),
+			const nodes = await Promise.all(
+				files.map(async (file) => {
+					const level = await decodeLevel(file);
+					return level.levelNodes ?? [];
+				}),
 			);
 
-			let compiledNodes = compiler.compile(groups.filter(Boolean));
+			const result = compile(nodes, { group, spacing });
 
-			const obj = createLevel(
-				compiledNodes,
+			const level = createLevel(
+				result,
 				title,
 				description,
 				creators,
 				checkpoints,
 			);
 
-			const encoded = await encodeLevel(obj);
+			const encoded = await encodeLevel(level);
 			downloadLevel(encoded);
 		},
 	},
@@ -84,6 +89,19 @@ export default {
 			id="level-compiler-tool-checkpoints"
 			type="number"
 			placeholder="Checkpoints"
+		/>
+		<label>
+			Group:
+			<input
+				id="level-compiler-tool-group"
+				type="checkbox"
+				checked="true"
+			/>
+		</label>
+		<input
+			id="level-compiler-tool-spacing"
+			type="number"
+			placeholder="Spacing"
 		/>
 		<input
 			id="level-compiler-tool-file"
