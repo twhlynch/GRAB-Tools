@@ -15,6 +15,7 @@ import ViewportPanel from '@/components/EditorPanels/ViewportPanel.vue';
 import * as mcp from '@/editor/MCP';
 import { useConfigStore } from '@/stores/config';
 import { useUserStore } from '@/stores/user';
+import { compile } from '@/tools/compiler';
 import downloads from '@/tools/downloads';
 import { mapState } from 'pinia';
 
@@ -132,21 +133,37 @@ export default {
 		},
 		async drop(e) {
 			e.stopPropagation();
-			const dt = e.dataTransfer;
-			const files = dt.files;
+			const text = e.dataTransfer.getData('text/plain');
+			const files = e.dataTransfer.files;
+
 			if (files.length) {
 				e.preventDefault();
-				const file = files[0];
-				if (file.name.endsWith('.level')) {
-					const data = await decodeLevel(file);
+
+				if (files.length === 1) {
+					const file = files[0];
+					let data = null;
+					if (file.name.endsWith('.level')) {
+						data = await decodeLevel(file);
+					} else if (file.name.endsWith('.json')) {
+						data = json_parse(await file.text());
+					}
 					if (data) this.set_json(data);
-				} else if (file.name.endsWith('.json')) {
-					const json = json_parse(await file.text());
-					if (json) this.set_json(json);
+				} else {
+					const nodes = [this.json.levelNodes];
+					for (const file of files) {
+						let data = null;
+						if (file.name.endsWith('.level')) {
+							data = await decodeLevel(file);
+						} else if (file.name.endsWith('.json')) {
+							data = json_parse(await file.text());
+						}
+						nodes.push(data?.levelNodes ?? []);
+					}
+					const result = compile(nodes, {});
+					this.set_json({ ...this.json, levelNodes: result });
 				}
 			}
 
-			const text = dt.getData('text/plain');
 			if (text?.includes('level=')) {
 				e.preventDefault();
 				const params = new URLSearchParams(text.split('?')[1]);
