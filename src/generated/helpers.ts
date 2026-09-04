@@ -79,6 +79,11 @@ export function ambienceSettings(
 		sunBrightness: 0,
 		ambientColor: color(),
 		ambientBrightness: 0,
+		starDensity: 0,
+		starClustering: 0,
+		starRotationEuler: vector(),
+		starSize: 0,
+		starVisibility: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -194,6 +199,7 @@ export function levelNodeGravity(
 		scale: { x: 1, y: 1, z: 1 },
 		rotation: quaternion(),
 		direction: { x: 0, y: 1, z: 0 },
+		hideParticles: false,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -340,6 +346,11 @@ export function triggerTargetAmbience(
 		sunBrightness: 0,
 		ambientColor: color(),
 		ambientBrightness: 0,
+		starDensity: 0,
+		starClustering: 0,
+		starRotationEuler: vector(),
+		starSize: 0,
+		starVisibility: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -450,6 +461,7 @@ export function levelNodeLight(
 		angle: 0,
 		distanceFalloffShape: 0,
 		coneFalloffShape: 0,
+		creationOrder: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;

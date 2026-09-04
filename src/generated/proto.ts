@@ -51,6 +51,11 @@ export interface AmbienceSettings {
 	sunBrightness?: number;
 	ambientColor?: Color;
 	ambientBrightness?: number;
+	starDensity?: number;
+	starClustering?: number;
+	starRotationEuler?: Vector;
+	starSize?: number;
+	starVisibility?: number;
 }
 
 export enum LevelNodeShape {
@@ -184,6 +189,7 @@ export interface LevelNodeGravity {
 	scale?: Vector; // { x: 1, y: 1, z: 1 }
 	rotation?: Quaternion;
 	direction?: Vector; // { x: 0, y: 1, z: 0 }
+	hideParticles?: boolean;
 }
 
 export interface LevelNodeLobbyTerminal {
@@ -267,6 +273,11 @@ export interface TriggerTargetAmbience {
 	sunBrightness?: number;
 	ambientColor?: Color;
 	ambientBrightness?: number;
+	starDensity?: number;
+	starClustering?: number;
+	starRotationEuler?: Vector;
+	starSize?: number;
+	starVisibility?: number;
 }
 
 export interface TriggerTarget {
@@ -347,6 +358,7 @@ export interface LevelNodeLight {
 	angle?: number;
 	distanceFalloffShape?: number;
 	coneFalloffShape?: number;
+	creationOrder?: number;
 }
 
 export interface AnimationFrame {
@@ -470,6 +482,7 @@ export enum LevelNodeSignSignFontWeight {
 export enum LevelNodeGravityMode {
 	DEFAULT = 0,
 	NOLEGS = 1,
+	MONKEY = 2,
 }
 
 export enum TriggerSourceBasicType {
