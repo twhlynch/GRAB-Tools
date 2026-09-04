@@ -18,6 +18,7 @@ export default {
 					{ name: 'Shopping Center 2 (Christmas)', path: 'lobbies/shop/grab-shopping-center-2-christmas.level' },
 					{ name: 'Shopping Center 3',             path: 'lobbies/shop/grab-shopping-center-3.level' },
 					// post sublevels
+					{ name: 'Lobby ancient rome (2026)',             path: 'lobbies/lobby-september-2026.level' },
 					{ name: 'Lobby noir city (2026)',                path: 'lobbies/lobby-august-2026.level' },
 					{ name: 'Lobby july (2026)',                     path: 'lobbies/lobby-july-2026.level' },
 					{ name: 'Lobby june (2026)',                     path: 'lobbies/lobby-june-2026/lobby-june-2026.level' },
