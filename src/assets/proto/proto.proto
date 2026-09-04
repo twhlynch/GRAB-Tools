@@ -66,6 +66,12 @@ message AmbienceSettings {
 
   Color ambientColor = 10;
   optional float ambientBrightness = 11;
+
+  optional float starDensity = 12;
+  optional float starClustering = 13;
+  Vector starRotationEuler = 14;
+  optional float starSize = 15;
+  optional float starVisibility = 16;
 }
 
 enum LevelNodeShape {
@@ -224,6 +230,7 @@ message LevelNodeGravity {
   enum Mode {
     DEFAULT = 0;
     NOLEGS = 1;
+    MONKEY = 2;
   }
 
   Mode mode = 1;
@@ -233,6 +240,7 @@ message LevelNodeGravity {
   Quaternion rotation = 4;
 
   Vector direction = 5;
+  bool hideParticles = 6;
 }
 
 message LevelNodeLobbyTerminal {
@@ -364,6 +372,12 @@ message TriggerTargetAmbience {
 
   Color ambientColor = 12;
   optional float ambientBrightness = 13;
+
+  optional float starDensity = 14;
+  optional float starClustering = 15;
+  Vector starRotationEuler = 16;
+  optional float starSize = 17;
+  optional float starVisibility = 18;
 }
 
 message TriggerTarget {
@@ -497,6 +511,7 @@ message LevelNodeLight {
   float angle = 7;
   optional float distanceFalloffShape = 8;
   optional float coneFalloffShape = 9;
+  uint32 creationOrder = 10;
 }
 
 message AnimationFrame {
