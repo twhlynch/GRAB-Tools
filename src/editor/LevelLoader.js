@@ -638,7 +638,7 @@ class LevelLoader {
 					let particleGeometry = new THREE.BufferGeometry();
 
 					let particleColor = new THREE.Color(1.0, 1.0, 1.0);
-					if (node.levelNodeGravity?.mode == 1) {
+					if (node.levelNodeGravity?.mode != 0) {
 						particleColor = new THREE.Color(1.0, 0.6, 0.6);
 					}
 
