@@ -241,6 +241,17 @@ interface Instruction {
 	y: number;
 }
 
+/**
+ * connection names must be 4 characters
+ * joins last 2 digits of x and y 0 padded
+ * overlapping keys such as 0 and 100 -> 00 should not show up in the same node
+ */
+function connection_key(x: number, y: number): string {
+	const x_str = String(x).padStart(2, '0').slice(-2);
+	const y_str = String(y).padStart(2, '0').slice(-2);
+	return `${x_str}${y_str}`;
+}
+
 function build_code_video(
 	bitmaps: ImageBitmap[],
 	width: number,
@@ -279,16 +290,15 @@ function build_code_video(
 	const video_asm: Instruction[][] = vid.map((frame) =>
 		// update rgb values that change
 		frame.flatMap((p) => {
-			const key = `${p.x}_${p.y}`;
+			const key = connection_key(p.x, p.y);
 			const prev = (last[key] ??= { r: 0, g: 0, b: 0 });
-			const pixel = `P_${key}`;
 
 			return (['r', 'g', 'b'] as const).flatMap((c) => {
 				if (prev[c] === p[c]) return [];
 				prev[c] = p[c];
 				return [
 					{
-						line: `SET ${pixel}.Col.${c.toUpperCase()} ${p[c]}`,
+						line: `SET ${key}.Col.${c.toUpperCase()} ${p[c]}`,
 						x: p.x,
 						y: p.y,
 					},
@@ -301,7 +311,7 @@ function build_code_video(
 	const reset_asm: Instruction[] = [...Array(width)].flatMap((_, x) =>
 		[...Array(height)].flatMap((__, y) =>
 			['R', 'G', 'B'].map((c) => ({
-				line: `SET P_${x}_${y}.Col.${c} 0`,
+				line: `SET ${connection_key(x, y)}.Col.${c} 0`,
 				x,
 				y,
 			})),
@@ -335,18 +345,30 @@ function build_code_video(
 	const sleep = `\nSLEEP ${FRAME_INTERVAL}\n`;
 
 	const connection_map: Record<number, true> = {};
+	const connection_keys: Record<number, Set<string>> = {};
 	const connect = (block_index: number, x: number, y: number) => {
 		const block = code_nodes[block_index]!;
 		const pixel_index = y + x * height;
 		if (connection_map[pixel_index]) return;
 		connection_map[pixel_index] = true;
 
+		const key = connection_key(x, y);
+		const keys = (connection_keys[block_index] ??= new Set());
+		if (keys.has(key)) {
+			window.toast(
+				`Duplicate connection "${key}" in block ${block_index}`,
+				'error',
+			);
+		}
+
+		keys.add(key);
+
 		create_connection(
 			block,
 			static_nodes[pixel_index],
 			pixel_index + 1,
 			'color',
-			`P_${x}_${y}`,
+			key,
 		);
 	};
 
