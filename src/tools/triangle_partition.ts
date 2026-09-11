@@ -73,24 +73,16 @@ function is_isosceles(a: Vec2, b: Vec2, c: Vec2) {
 	);
 }
 
-function is_right(a: Vec2, b: Vec2, c: Vec2) {
-	const sides = [dist(a,b), dist(b,c), dist(a,c)]
-		.map(x => x * x)
-		.sort((x, y) => x - y);
-	return Math.abs(sides[0]! + sides[1]! - sides[2]!) < 1e-6 * sides[2]!;
-}
-
-// returns the right-angle vertex and the two base vertices
-function right_angle_vertex(pts: [Vec2, Vec2, Vec2]): { vertex: Vec2; base1: Vec2; base2: Vec2 } {
-	const [a, b, c] = pts;
-
+// find and return a right-angle vertex and the two base vertices
+function get_right_angle_vertex([a, b, c]: [Vec2, Vec2, Vec2]): { vertex: Vec2; base1: Vec2; base2: Vec2 } | undefined {
 	const scale = Math.max(dist(a, b), dist(b, c), dist(a, c)) ** 2;
 	const eps = 1e-6 * scale;
 
 	if (Math.abs(dot(a, b, c)) < eps) return { vertex: a, base1: b, base2: c };
 	if (Math.abs(dot(b, a, c)) < eps) return { vertex: b, base1: a, base2: c };
+	if (Math.abs(dot(c, a, b)) < eps) return { vertex: c, base1: a, base2: b };
 
-	return { vertex: c, base1: a, base2: b };
+	return undefined;
 }
 
 function obtuse_vertex_index(pts: [Vec2, Vec2, Vec2]) {
@@ -121,12 +113,13 @@ export function partition_into_isosceles(pts: [Vec2, Vec2, Vec2]) {
 	if (is_isosceles(A, B, C)) return [pts];
 
 	// Right: 2 isosceles triangles via hypotenuse midpoint
-	if (is_right(A, B, C)) {
-		const { vertex: R, base1, base2 } = right_angle_vertex(pts);
-		const M = midpoint(base1, base2);
+	const right = get_right_angle_vertex(pts);
+	if (right) {
+		const M = midpoint(right.base1, right.base2);
+
 		return [
-			[R, base1, M],
-			[R, M,     base2],
+			[right.vertex, right.base1, M],
+			[right.vertex, M,           right.base2],
 		];
 	}
 
