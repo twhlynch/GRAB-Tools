@@ -47,7 +47,7 @@ describe('triangles', () => {
 	it('partition a single triangle into 3 or 4 isosceles prisms', async () => {
 		const nodes = await obj(
 			file(`
-				v 0 0 0
+				v 0 0.0001 0
 				v 1 0 0
 				v 0 1 0
 				f 1 2 3
@@ -56,6 +56,19 @@ describe('triangles', () => {
 		);
 		expect(nodes.length).toBeGreaterThanOrEqual(3);
 		expect(nodes.length).toBeLessThanOrEqual(4);
+	});
+
+	it('does not partition an already isoceles triangle', async () => {
+		const nodes = await obj(
+			file(`
+				v 0 0 0
+				v 1 0 0
+				v 0 1 0
+				f 1 2 3
+			`),
+			'triangles',
+		);
+		expect(nodes.length).toBe(1);
 	});
 
 	it('produces colored nodes from an OBJ with an MTL file', async () => {
