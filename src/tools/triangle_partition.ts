@@ -83,8 +83,13 @@ function is_right(a: Vec2, b: Vec2, c: Vec2) {
 // returns the right-angle vertex and the two base vertices
 function right_angle_vertex(pts: [Vec2, Vec2, Vec2]): { vertex: Vec2; base1: Vec2; base2: Vec2 } {
 	const [a, b, c] = pts;
-	if (Math.abs(dot(a, b, c)) < 1e-6) return { vertex: a, base1: b, base2: c };
-	if (Math.abs(dot(b, a, c)) < 1e-6) return { vertex: b, base1: a, base2: c };
+
+	const scale = Math.max(dist(a, b), dist(b, c), dist(a, c)) ** 2;
+	const eps = 1e-6 * scale;
+
+	if (Math.abs(dot(a, b, c)) < eps) return { vertex: a, base1: b, base2: c };
+	if (Math.abs(dot(b, a, c)) < eps) return { vertex: b, base1: a, base2: c };
+
 	return { vertex: c, base1: a, base2: b };
 }
 
