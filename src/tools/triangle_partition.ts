@@ -63,9 +63,11 @@ function dot(a: Vec2, b: Vec2, c: Vec2) {
 	return (b.x - a.x) * (c.x - a.x) + (b.y - a.y) * (c.y - a.y);
 }
 
+const ISOSCELES_TOLERANCE = 1e-10; // yeah thats pretty small
+
 function is_isosceles(a: Vec2, b: Vec2, c: Vec2) {
 	const d = [dist(a,b), dist(b,c), dist(a,c)];
-	const eps = Math.max(...d) * 1e-6;
+	const eps = Math.max(...d) * ISOSCELES_TOLERANCE;
 	return (
 		Math.abs(d[0]! - d[1]!) < eps ||
 		Math.abs(d[1]! - d[2]!) < eps ||
@@ -76,7 +78,7 @@ function is_isosceles(a: Vec2, b: Vec2, c: Vec2) {
 // find and return a right-angle vertex and the two base vertices
 function get_right_angle_vertex([a, b, c]: [Vec2, Vec2, Vec2]): { vertex: Vec2; base1: Vec2; base2: Vec2 } | undefined {
 	const scale = Math.max(dist(a, b), dist(b, c), dist(a, c)) ** 2;
-	const eps = 1e-6 * scale;
+	const eps = ISOSCELES_TOLERANCE * scale;
 
 	if (Math.abs(dot(a, b, c)) < eps) return { vertex: a, base1: b, base2: c };
 	if (Math.abs(dot(b, a, c)) < eps) return { vertex: b, base1: a, base2: c };
