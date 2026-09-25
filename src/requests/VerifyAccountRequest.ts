@@ -12,7 +12,7 @@ export async function verify_account_request(
 	if (access_token) {
 		url += `?token=${access_token}`;
 	} else if (level_url) {
-		const params = new URLSearchParams(level_url);
+		const params = new URLSearchParams(level_url.split('?')[1]);
 		url += `?level_id=${params.get('level')}`;
 	}
 
