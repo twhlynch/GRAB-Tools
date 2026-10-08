@@ -52,7 +52,7 @@ export default {
 			<span>Games</span>
 			<RocketIcon class="nav-hideable" />
 		</a>
-		<a :href="$config.DISCORD_URL" class="nav-button">
+		<a :href="$config.DISCORD_URL" class="nav-button" target="_blank">
 			<span>Discord</span>
 			<DiscordIcon class="nav-hideable" />
 		</a>

@@ -16,14 +16,14 @@ export default {
 	computed: {
 		creator_url() {
 			const creator_id = this.data.identifier.split(':')[0];
-			return `${this.$config.GRAB_PAGE_URL}levels?tab=tab_other_user&user_id=${creator_id}`;
+			return `${this.$config.GRAB_USER_URL}${creator_id}`;
 		},
 		image_url() {
 			const image_key = `level_${this.data.identifier.replace(':', '_')}_${this.data.image_iteration}_thumb.png`;
 			return `${this.$config.GRAB_IMAGES_URL}${image_key}`;
 		},
 		level_url() {
-			return `${this.$config.GRAB_PAGE_URL}/levels/viewer/?level=${this.data.identifier}`;
+			return `${this.$config.GRAB_VIEWER_URL}${this.data.identifier}`;
 		},
 		creator() {
 			return this.data.creators?.[0] ?? '..';
@@ -57,7 +57,7 @@ export default {
 		<div class="leaderboard-item-info">
 			<a :href="level_url" target="_blank">{{ data.title }}</a
 			><br /><span>by </span
-			><a :href="image_url" target="_blank" :title="creators_string">{{
+			><a :href="creator_url" target="_blank" :title="creators_string">{{
 				creator
 			}}</a>
 		</div>

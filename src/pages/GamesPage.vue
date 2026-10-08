@@ -13,8 +13,8 @@ export default {
 			<p>
 				A collection of GRAB themed games available to play online or
 				download! Join the
-				<a :href="$config.DISCORD_URL">discord</a> to request a game to
-				add.
+				<a :href="$config.DISCORD_URL" target="_blank">discord</a> to
+				request a game to add.
 			</p>
 		</section>
 		<section id="games">
@@ -52,6 +52,7 @@ export default {
 							<a
 								href="https://discord.gg/PefVhprQs8"
 								class="button-sml"
+								target="_blank"
 								>Discord</a
 							>
 						</div>

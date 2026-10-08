@@ -51,7 +51,9 @@ export default {
 					the
 					<a :href="$config.REPO_URL">GitHub</a>
 					or
-					<a :href="$config.DISCORD_URL">Discord server</a>.
+					<a :href="$config.DISCORD_URL" target="_blank"
+						>Discord server</a
+					>.
 					<span class="details">
 						<button class="tech" @click="toggle_technicals">
 							Technical details:

@@ -122,6 +122,7 @@ export default {
 				<a
 					href="https://discordapp.com/users/649165311257608192"
 					class="social"
+					target="_blank"
 				>
 					<DiscordAltIcon />
 					<span> @.index </span>
@@ -141,9 +142,9 @@ export default {
 			</div>
 			<p>
 				If you need help with anything, you should join the
-				<a :href="$config.DISCORD_URL">discord server</a>, but feel free
-				to contact me on any of my socials, or if you prefer, you can
-				email me at {{ $config.SUPPORT_EMAIL }}.
+				<a :href="$config.DISCORD_URL" target="_blank">discord server</a
+				>, but feel free to contact me on any of my socials, or if you
+				prefer, you can email me at {{ $config.SUPPORT_EMAIL }}.
 			</p>
 		</section>
 	</main>
