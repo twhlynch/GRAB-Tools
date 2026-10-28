@@ -91,3 +91,4 @@ describe('compiler', () => {
 		expect(targets[1]!.triggerTargetSound?.objectID).toBe(6);
 	});
 });
+
