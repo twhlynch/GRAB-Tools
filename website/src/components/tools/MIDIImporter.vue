@@ -27,7 +27,7 @@ export default defineComponent({
 			const start_active = activeInput.checked;
 			const loop = loopInput.checked;
 			const instrument = instrumentInput.value;
-			const volume = parseInt(volumeInput.value) || 40;
+			const volume = (parseInt(volumeInput.value) || 30) / 100;
 			const speedIndex = 1 / (parseFloat(speedInput.value) || 1);
 
 			const nodes = await midi.midi(
