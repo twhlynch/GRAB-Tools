@@ -8,26 +8,45 @@ export default defineComponent({
 	data() {
 		return {
 			down: false,
+			bound_mouseup: undefined as ((e: MouseEvent) => void) | undefined,
+			bound_mousemove: undefined as ((e: MouseEvent) => void) | undefined,
+			bound_resize: undefined as (() => void) | undefined,
+			bound_prevent: undefined as ((e: Event) => void) | undefined,
+		};
+	},
+	created() {
+		this.bound_mouseup = (e: MouseEvent) => {
+			this.mouseup(e);
+		};
+		this.bound_mousemove = (e: MouseEvent) => {
+			this.mousemove(e);
+		};
+		this.bound_resize = () => {
+			this.resize();
+		};
+		this.bound_prevent = (e: Event) => {
+			this.prevent(e);
 		};
 	},
 	mounted() {
-		document.addEventListener('mouseup', this.mouseup.bind(this));
-		document.addEventListener('mousemove', this.mousemove.bind(this));
-		window.addEventListener('resize', this.resize.bind(this));
+		if (this.bound_mouseup) document.addEventListener('mouseup', this.bound_mouseup);
+		if (this.bound_mousemove) document.addEventListener('mousemove', this.bound_mousemove);
+		if (this.bound_resize) window.addEventListener('resize', this.bound_resize);
 	},
 	unmounted() {
-		document.removeEventListener('mouseup', this.mouseup.bind(this));
-		document.removeEventListener('mousemove', this.mousemove.bind(this));
-		window.removeEventListener('resize', this.resize.bind(this));
+		if (this.bound_mouseup) document.removeEventListener('mouseup', this.bound_mouseup);
+		if (this.bound_mousemove) document.removeEventListener('mousemove', this.bound_mousemove);
+		if (this.bound_resize) window.removeEventListener('resize', this.bound_resize);
+		if (this.bound_prevent) document.removeEventListener('selectstart', this.bound_prevent);
 	},
 	methods: {
 		mousedown(_: MouseEvent) {
 			this.down = true;
-			document.addEventListener('selectstart', this.prevent.bind(this));
+			if (this.bound_prevent) document.addEventListener('selectstart', this.bound_prevent);
 		},
 		mouseup(_: MouseEvent) {
 			this.down = false;
-			document.removeEventListener('selectstart', this.prevent.bind(this));
+			if (this.bound_prevent) document.removeEventListener('selectstart', this.bound_prevent);
 		},
 		mousemove(e: MouseEvent) {
 			if (this.down) {

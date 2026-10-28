@@ -148,6 +148,16 @@ export default defineComponent({
 			gizmo: undefined as unknown as Raw<GizmoControls>,
 			trigger_connection_material: undefined as THREE.LineBasicMaterial | undefined,
 			gasm_connection_material: undefined as THREE.LineBasicMaterial | undefined,
+			bound_keydown: undefined as ((e: KeyboardEvent) => void) | undefined,
+			bound_keyup: undefined as ((e: KeyboardEvent) => void) | undefined,
+		};
+	},
+	created() {
+		this.bound_keydown = (e: KeyboardEvent) => {
+			this.keydown(e);
+		};
+		this.bound_keyup = (e: KeyboardEvent) => {
+			this.keyup(e);
 		};
 	},
 	mounted() {
@@ -181,8 +191,8 @@ export default defineComponent({
 			}
 		});
 		observer.observe(this.refs().viewport);
-		window.addEventListener('keydown', this.keydown.bind(this));
-		window.addEventListener('keyup', this.keyup.bind(this));
+		if (this.bound_keydown) window.addEventListener('keydown', this.bound_keydown);
+		if (this.bound_keyup) window.addEventListener('keyup', this.bound_keyup);
 		// await this.set_json(this.json); // ???
 
 		const resize = this.refs().resize;
@@ -191,8 +201,8 @@ export default defineComponent({
 		this.load_camera_state();
 	},
 	unmounted() {
-		window.removeEventListener('keydown', this.keydown.bind(this));
-		window.removeEventListener('keyup', this.keyup.bind(this));
+		if (this.bound_keydown) window.removeEventListener('keydown', this.bound_keydown);
+		if (this.bound_keyup) window.removeEventListener('keyup', this.bound_keyup);
 	},
 	methods: {
 		refs() {

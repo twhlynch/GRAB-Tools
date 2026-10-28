@@ -17,6 +17,8 @@ export default defineComponent({
 	data() {
 		return {
 			visible: false,
+			bound_click: undefined as ((e: MouseEvent | TouchEvent) => void) | undefined,
+			bound_keydown: undefined as ((e: KeyboardEvent) => void) | undefined,
 		};
 	},
 	watch: {
@@ -28,15 +30,31 @@ export default defineComponent({
 			}
 		},
 	},
+	created() {
+		this.bound_click = (e: MouseEvent | TouchEvent) => {
+			this.click(e);
+		};
+		this.bound_keydown = (e: KeyboardEvent) => {
+			this.keydown(e);
+		};
+	},
 	mounted() {
-		document.addEventListener('mousedown', this.click.bind(this));
-		document.addEventListener('touchstart', this.click.bind(this));
-		document.addEventListener('keydown', this.keydown.bind(this));
+		if (this.bound_click) {
+			document.addEventListener('mousedown', this.bound_click);
+			document.addEventListener('touchstart', this.bound_click);
+		}
+		if (this.bound_keydown) {
+			document.addEventListener('keydown', this.bound_keydown);
+		}
 	},
 	unmounted() {
-		document.removeEventListener('mousedown', this.click.bind(this));
-		document.removeEventListener('touchstart', this.click.bind(this));
-		document.removeEventListener('keydown', this.keydown.bind(this));
+		if (this.bound_click) {
+			document.removeEventListener('mousedown', this.bound_click);
+			document.removeEventListener('touchstart', this.bound_click);
+		}
+		if (this.bound_keydown) {
+			document.removeEventListener('keydown', this.bound_keydown);
+		}
 	},
 	methods: {
 		run() {
