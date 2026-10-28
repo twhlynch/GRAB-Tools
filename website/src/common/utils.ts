@@ -34,8 +34,9 @@ export function traverse_node(node: LevelNode, func: (n: LevelNode) => void) {
 }
 
 export function random_material(): LevelNodeMaterial {
-	const options = Object.values(materials());
-	options.filter((option) => option !== materials().TRIGGER);
+	const options = Object.values(materials()).filter(
+		(option) => option !== materials().TRIGGER,
+	);
 	const length = options.length;
 	return options[Math.floor(Math.random() * length)] as LevelNodeMaterial;
 }
