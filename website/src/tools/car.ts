@@ -22,7 +22,7 @@ async function makeCar(nodes: LevelNode[]) {
 
 	let asm;
 	try {
-		const res = await fetch('/gasm/gun.asm');
+		const res = await fetch('/gasm/car.asm');
 		asm = await res.text();
 	} catch (e) {
 		if (e instanceof Error) {
@@ -74,7 +74,6 @@ async function makeCar(nodes: LevelNode[]) {
 	// create code block
 	const code_node = levelNodeWithGASM({ startActive: true });
 
-	create_connection(code_node, undefined, group_id, 'position', 'Str');
 	create_connection(code_node, undefined, group_id, 'position', 'Str');
 	create_connection(code_node, undefined, group_id, 'rotation', 'Str');
 	create_connection(code_node, undefined, car_id, 'position', 'Car');
