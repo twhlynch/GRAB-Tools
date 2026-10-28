@@ -25,7 +25,7 @@ export function count_nodes(nodes: LevelNode[]) {
 	for (const node of nodes) {
 		traverseNode(node, (_node, _parent) => {
 			counts.total++;
-			const type = Object.keys(node).find((key) =>
+			const type = Object.keys(_node).find((key) =>
 				key.startsWith('levelNode'),
 			);
 			if (type) {
@@ -44,7 +44,7 @@ const update_id_params: Record<string, string[]> = {
 	connections: ['objectID'],
 };
 
-export function offset_ids(nodes: LevelNode[], offset: number) {
+export function remap_ids(nodes: LevelNode[], remap: (id: number) => number) {
 	const objects: object[] = [...nodes];
 
 	while (objects.length > 0) {
@@ -62,13 +62,15 @@ export function offset_ids(nodes: LevelNode[], offset: number) {
 							for (const v of value) {
 								// must convert v[k] from Long to Number so it doesnt become a string
 								const record = v as Record<string, unknown>;
-								record[k] = Number(record[k] ?? 0) + offset;
+								const old_id = Number(record[k] ?? 0);
+								record[k] = remap(old_id);
 							}
 						}
 						// update value in an object
 						else if (typeof value === 'object' && value !== null) {
 							const record = value as Record<string, unknown>;
-							record[k] = Number(record[k] ?? 0) + offset;
+							const old_id = Number(record[k] ?? 0);
+							record[k] = remap(old_id);
 						}
 					}
 				}
@@ -82,6 +84,10 @@ export function offset_ids(nodes: LevelNode[], offset: number) {
 	}
 }
 
+export function offset_ids(nodes: LevelNode[], offset: number) {
+	remap_ids(nodes, (id) => id + offset);
+}
+
 export interface CompileOptions {
 	group?: boolean;
 	spacing?: number;
@@ -93,19 +99,33 @@ export function compile(level_nodes: LevelNode[][], options: CompileOptions) {
 	for (const [i, nodes] of level_nodes.entries()) {
 		// group and offset by 1
 		if (options.group) {
-			offset_ids(nodes, 1);
+			// filter out start/finish and map old node IDs to new node IDs
+			const id_map = new Map<number, number>();
+			let old_id = 1;
+			let new_id = 2; // start at 2 since the parent group will occupy ID 1
 
-			// filter out start/finish
-			const remove = [];
-			// only top level should exist
-			for (const [j, node] of nodes.entries()) {
+			for (const node of nodes) {
 				if (node.levelNodeStart || node.levelNodeFinish) {
-					remove.push(j);
+					traverseNode(node, () => {
+						old_id++;
+					});
+				} else {
+					traverseNode(node, () => {
+						id_map.set(old_id, new_id);
+						old_id++;
+						new_id++;
+					});
 				}
-				offset_ids([node], -remove.length);
 			}
 
-			const group = levelNodeGroupFrom({ childNodes: nodes });
+			remap_ids(nodes, (id) => id_map.get(id) ?? id);
+
+			const filtered = nodes.filter(
+				(node) => !node.levelNodeStart && !node.levelNodeFinish,
+			);
+			const group = levelNodeGroupFrom({
+				childNodes: filtered,
+			});
 			nodes.length = 0;
 			nodes.push(group);
 		}
