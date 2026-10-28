@@ -64,7 +64,7 @@ function get_enum_default(node: ts.EnumDeclaration) {
 	if (node.members.length > 0) {
 		const member = node.members[0]!;
 		const init = member.initializer;
-		if (init && ts.isNumericLiteral(init)) {
+		if (!init) {
 			return member.name.getText(source_file);
 		}
 	}
