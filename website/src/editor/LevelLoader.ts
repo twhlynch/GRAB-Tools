@@ -1954,7 +1954,7 @@ function getMaterialForTexture(
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.ShaderLib.standard.uniforms,
 			uniforms,
-		]) as LevelNodeUniforms,
+		]),
 	}) as LevelNodeShaderMaterial;
 }
 

@@ -1,6 +1,6 @@
+import { Root } from '@/common/levelNodes';
 import { LevelLoader } from '@/editor/LevelLoader';
 import { Reactive } from 'vue';
-import { Root } from './levelNodes';
 
 type Severity = 'message' | 'info' | 'warn' | 'warning' | 'err' | 'error';
 
