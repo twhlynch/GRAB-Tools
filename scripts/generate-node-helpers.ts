@@ -196,7 +196,7 @@ export function ${wrapper}With${scope}(overrides?: Partial<${name}>) {
 export function is${TitleCase(wrapper)}${scope}(
 	node: ${TitleCase(wrapper)},
 ): node is ${TitleCase(wrapper)}With<${name}> {
-	return '${camel}' in node;
+	return !!node.${camel};
 }
 `;
 	});

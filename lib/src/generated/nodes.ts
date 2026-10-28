@@ -493,7 +493,7 @@ export function levelNodeWithGroup(overrides?: Partial<LevelNodeGroup>) {
 export function isLevelNodeGroup(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeGroup> {
-	return 'levelNodeGroup' in node;
+	return !!node.levelNodeGroup;
 }
 
 export function levelNodeWithStart(overrides?: Partial<LevelNodeStart>) {
@@ -504,7 +504,7 @@ export function levelNodeWithStart(overrides?: Partial<LevelNodeStart>) {
 export function isLevelNodeStart(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeStart> {
-	return 'levelNodeStart' in node;
+	return !!node.levelNodeStart;
 }
 
 export function levelNodeWithFinish(overrides?: Partial<LevelNodeFinish>) {
@@ -515,7 +515,7 @@ export function levelNodeWithFinish(overrides?: Partial<LevelNodeFinish>) {
 export function isLevelNodeFinish(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeFinish> {
-	return 'levelNodeFinish' in node;
+	return !!node.levelNodeFinish;
 }
 
 export function levelNodeWithStatic(overrides?: Partial<LevelNodeStatic>) {
@@ -526,7 +526,7 @@ export function levelNodeWithStatic(overrides?: Partial<LevelNodeStatic>) {
 export function isLevelNodeStatic(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeStatic> {
-	return 'levelNodeStatic' in node;
+	return !!node.levelNodeStatic;
 }
 
 export function levelNodeWithCrumbling(
@@ -539,7 +539,7 @@ export function levelNodeWithCrumbling(
 export function isLevelNodeCrumbling(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeCrumbling> {
-	return 'levelNodeCrumbling' in node;
+	return !!node.levelNodeCrumbling;
 }
 
 export function levelNodeWithSign(overrides?: Partial<LevelNodeSign>) {
@@ -550,7 +550,7 @@ export function levelNodeWithSign(overrides?: Partial<LevelNodeSign>) {
 export function isLevelNodeSign(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeSign> {
-	return 'levelNodeSign' in node;
+	return !!node.levelNodeSign;
 }
 
 export function levelNodeWithGravity(overrides?: Partial<LevelNodeGravity>) {
@@ -561,7 +561,7 @@ export function levelNodeWithGravity(overrides?: Partial<LevelNodeGravity>) {
 export function isLevelNodeGravity(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeGravity> {
-	return 'levelNodeGravity' in node;
+	return !!node.levelNodeGravity;
 }
 
 export function levelNodeWithLobbyTerminal(
@@ -574,7 +574,7 @@ export function levelNodeWithLobbyTerminal(
 export function isLevelNodeLobbyTerminal(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeLobbyTerminal> {
-	return 'levelNodeLobbyTerminal' in node;
+	return !!node.levelNodeLobbyTerminal;
 }
 
 export function levelNodeWithParticleEmitter(
@@ -587,7 +587,7 @@ export function levelNodeWithParticleEmitter(
 export function isLevelNodeParticleEmitter(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeParticleEmitter> {
-	return 'levelNodeParticleEmitter' in node;
+	return !!node.levelNodeParticleEmitter;
 }
 
 export function triggerSourceWithBasic(
@@ -600,7 +600,7 @@ export function triggerSourceWithBasic(
 export function isTriggerSourceBasic(
 	node: TriggerSource,
 ): node is TriggerSourceWith<TriggerSourceBasic> {
-	return 'triggerSourceBasic' in node;
+	return !!node.triggerSourceBasic;
 }
 
 export function triggerSourceWithBlockNames(
@@ -613,7 +613,7 @@ export function triggerSourceWithBlockNames(
 export function isTriggerSourceBlockNames(
 	node: TriggerSource,
 ): node is TriggerSourceWith<TriggerSourceBlockNames> {
-	return 'triggerSourceBlockNames' in node;
+	return !!node.triggerSourceBlockNames;
 }
 
 export function triggerTargetWithAnimation(
@@ -626,7 +626,7 @@ export function triggerTargetWithAnimation(
 export function isTriggerTargetAnimation(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetAnimation> {
-	return 'triggerTargetAnimation' in node;
+	return !!node.triggerTargetAnimation;
 }
 
 export function triggerTargetWithSound(
@@ -639,7 +639,7 @@ export function triggerTargetWithSound(
 export function isTriggerTargetSound(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetSound> {
-	return 'triggerTargetSound' in node;
+	return !!node.triggerTargetSound;
 }
 
 export function triggerTargetWithGASM(overrides?: Partial<TriggerTargetGASM>) {
@@ -650,7 +650,7 @@ export function triggerTargetWithGASM(overrides?: Partial<TriggerTargetGASM>) {
 export function isTriggerTargetGASM(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetGASM> {
-	return 'triggerTargetGASM' in node;
+	return !!node.triggerTargetGASM;
 }
 
 export function triggerTargetWithLight(
@@ -663,7 +663,7 @@ export function triggerTargetWithLight(
 export function isTriggerTargetLight(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetLight> {
-	return 'triggerTargetLight' in node;
+	return !!node.triggerTargetLight;
 }
 
 export function triggerTargetWithSubLevel(
@@ -676,7 +676,7 @@ export function triggerTargetWithSubLevel(
 export function isTriggerTargetSubLevel(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetSubLevel> {
-	return 'triggerTargetSubLevel' in node;
+	return !!node.triggerTargetSubLevel;
 }
 
 export function triggerTargetWithAmbience(
@@ -689,7 +689,7 @@ export function triggerTargetWithAmbience(
 export function isTriggerTargetAmbience(
 	node: TriggerTarget,
 ): node is TriggerTargetWith<TriggerTargetAmbience> {
-	return 'triggerTargetAmbience' in node;
+	return !!node.triggerTargetAmbience;
 }
 
 export function levelNodeWithTrigger(overrides?: Partial<LevelNodeTrigger>) {
@@ -700,7 +700,7 @@ export function levelNodeWithTrigger(overrides?: Partial<LevelNodeTrigger>) {
 export function isLevelNodeTrigger(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeTrigger> {
-	return 'levelNodeTrigger' in node;
+	return !!node.levelNodeTrigger;
 }
 
 export function levelNodeWithSound(overrides?: Partial<LevelNodeSound>) {
@@ -711,7 +711,7 @@ export function levelNodeWithSound(overrides?: Partial<LevelNodeSound>) {
 export function isLevelNodeSound(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeSound> {
-	return 'levelNodeSound' in node;
+	return !!node.levelNodeSound;
 }
 
 export function levelNodeWithGASM(overrides?: Partial<LevelNodeGASM>) {
@@ -722,7 +722,7 @@ export function levelNodeWithGASM(overrides?: Partial<LevelNodeGASM>) {
 export function isLevelNodeGASM(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeGASM> {
-	return 'levelNodeGASM' in node;
+	return !!node.levelNodeGASM;
 }
 
 export function levelNodeWithLight(overrides?: Partial<LevelNodeLight>) {
@@ -733,5 +733,5 @@ export function levelNodeWithLight(overrides?: Partial<LevelNodeLight>) {
 export function isLevelNodeLight(
 	node: LevelNode,
 ): node is LevelNodeWith<LevelNodeLight> {
-	return 'levelNodeLight' in node;
+	return !!node.levelNodeLight;
 }
