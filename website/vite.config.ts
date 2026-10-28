@@ -27,6 +27,9 @@ export default defineConfig(({ command }) => {
 				'@': fileURLToPath(
 					new URL('./src/', import.meta.url), //
 				),
+				'@grab-tools/lib': fileURLToPath(
+					new URL('../lib/src/', import.meta.url),
+				),
 			},
 		},
 		assetsInclude: ['**/*.gltf', '**/*.glb'],
