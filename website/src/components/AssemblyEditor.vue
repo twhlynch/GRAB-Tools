@@ -61,7 +61,7 @@ export default defineComponent({
 
 		click(e: MouseEvent) {
 			if (e.target === this.$refs.code_container) {
-				focus();
+				this.focus();
 			}
 		},
 	},
