@@ -13,12 +13,16 @@ import {
 	add_animation_paths,
 	add_gasm_connection,
 	add_gasm_connections,
+	add_group_bounds,
 	add_trigger_connection,
 	add_trigger_connections,
 	update_animation_paths_transforms,
 	update_animation_paths_visibility,
 	update_connection_positions,
 	update_gasm_connections_visibility,
+	update_group_bound_visibility,
+	update_group_bounds_color,
+	update_relevant_group_bounds,
 	update_trigger_connections_visibility,
 } from '@/common/visuals';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
@@ -334,7 +338,7 @@ export default defineComponent({
 			this.gizmo.selection.forEach((object) => {
 				this.update_node_shader(object);
 				update_animation_paths_transforms(object);
-				this.update_group_bounds(object);
+				update_relevant_group_bounds(object, this.editing_parent);
 			});
 			this.update_connection_positions(this.gizmo.selection);
 		},
@@ -345,7 +349,7 @@ export default defineComponent({
 
 			this.gizmo.selection.forEach((object) => {
 				this.update_node_shader(object);
-				this.update_group_bounds(object);
+				update_relevant_group_bounds(object, this.editing_parent);
 			});
 
 			this.update_connection_positions(this.gizmo.selection);
@@ -447,7 +451,7 @@ export default defineComponent({
 			add_trigger_connections(this.level, this.show_trigger_connections);
 			add_gasm_connections(this.level, this.show_gasm_connections);
 			add_animation_paths(this.level, this.show_animations);
-			this.add_group_bounds();
+			add_group_bounds(this.level, this.show_groups);
 
 			if (this.show_shadows) this.update_shadows();
 			this.scene.add(this.level.scene);
@@ -780,68 +784,9 @@ export default defineComponent({
 		},
 		toggle_groups() {
 			this.show_groups = !this.show_groups;
-			this.update_group_visibility();
-		},
-		update_group_visibility() {
 			this.level.nodes.levelNodeGroup.forEach((object) => {
-				if (object.userData.group_bounds) {
-					object.userData.group_bounds.visible = this.show_groups;
-				}
+				update_group_bound_visibility(object, this.show_groups);
 			});
-		},
-		add_group_bounds() {
-			if (this.level.nodes.levelNodeGroup.length) {
-				this.level.nodes.levelNodeGroup.forEach((object) => {
-					this.add_group_bound(object);
-				});
-			}
-		},
-		add_group_bound(object: THREE.Object3D) {
-			if (object.children.length === 0) return;
-
-			const geometry = new THREE.BoxGeometry();
-			const edges = new THREE.EdgesGeometry(geometry);
-			const material = new THREE.LineBasicMaterial({
-				color: object === this.editing_parent ? 0x99ff00 : 0x009900,
-			});
-			const line = new THREE.LineSegments(edges, material);
-
-			const box = new THREE.Box3().setFromObject(object);
-			for (const obj of object.children) {
-				box.expandByObject(obj);
-			}
-			const size = new THREE.Vector3();
-			const center = new THREE.Vector3();
-			box.getSize(size);
-			box.getCenter(center);
-
-			object.worldToLocal(center);
-
-			const child = object.children[0]!;
-			const child_q = new THREE.Quaternion();
-			child.getWorldQuaternion(child_q);
-			const parent_q = new THREE.Quaternion();
-			object.getWorldQuaternion(parent_q);
-			const quat = parent_q.clone().invert().multiply(child_q);
-
-			line.quaternion.copy(quat.multiply(object.quaternion));
-			line.scale.copy(size);
-			line.position.copy(center);
-
-			line.visible = this.show_groups;
-			object.userData.group_bounds = line;
-			object.add(line);
-		},
-		update_group_bounds(object: THREE.Object3D) {
-			let parent = object;
-			while (parent !== this.level.scene) {
-				const bounds = parent.userData.group_bounds;
-				if (bounds) {
-					parent.remove(bounds);
-					this.add_group_bound(parent);
-				}
-				parent = parent.parent!;
-			}
 		},
 		toggle_animations() {
 			this.show_animations = !this.show_animations;
@@ -1034,17 +979,15 @@ export default defineComponent({
 		},
 		enter_specific_group(object: LevelNodeObject<LevelNodeGroup> | THREE.Scene) {
 			this.gizmo.clear();
-			if (this.editing_parent?.userData.isGroup) {
-				this.editing_parent.userData.group_bounds.material.color = new THREE.Color(
-					0x009900,
-				);
+
+			if (isLevelNodeObject(this.editing_parent, 'levelNodeGroup')) {
+				update_group_bounds_color(this.editing_parent, false);
 			}
 			this.editing_parent = markRaw(object);
-			if (this.editing_parent.userData.isGroup) {
-				this.editing_parent.userData.group_bounds.material.color = new THREE.Color(
-					0x99ff00,
-				);
+			if (isLevelNodeObject(this.editing_parent, 'levelNodeGroup')) {
+				update_group_bounds_color(this.editing_parent, true);
 			}
+
 			this.group_depth = 0;
 			let parent = this.editing_parent;
 			while (parent !== this.level.scene) {

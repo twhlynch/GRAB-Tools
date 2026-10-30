@@ -5,16 +5,22 @@ import {
 } from '@grab-tools/lib/generated/nodes';
 import {
 	LevelNodeGASM,
+	LevelNodeGroup,
 	LevelNodeTrigger,
 } from '@grab-tools/lib/generated/proto';
 import {
+	Box3,
+	BoxGeometry,
 	BufferGeometry,
+	EdgesGeometry,
 	Group,
 	Line,
 	LineBasicMaterial,
+	LineSegments,
 	Object3D,
 	Points,
 	PointsMaterial,
+	Quaternion,
 	Scene,
 	Vector3,
 } from 'three';
@@ -34,6 +40,8 @@ const animation_path_color = 0x000099;
 const current_animation_path_color = 0x0000ff;
 const trigger_connection_color = 0xff8800;
 const gasm_connection_color = 0x006600;
+const group_bounds_color = 0x009900;
+const current_group_bounds_color = 0x99ff00;
 
 const animation_path_material = new LineBasicMaterial({
 	color: animation_path_color,
@@ -55,6 +63,10 @@ const trigger_connection_material = new LineBasicMaterial({
 const gasm_connection_material = new LineBasicMaterial({
 	color: gasm_connection_color,
 });
+const group_bounds_material = new LineBasicMaterial({
+	color: group_bounds_color,
+});
+const group_bounds_geometry = new EdgesGeometry(new BoxGeometry());
 
 export function add_animation_paths(level: LevelData, visible: boolean) {
 	level.nodes.animated.forEach((object) => {
@@ -311,4 +323,88 @@ export function update_connection_positions(objects: LevelNodeObject[]) {
 		);
 		position.needsUpdate = true;
 	});
+}
+
+export function add_group_bounds(level: LevelData, visible: boolean) {
+	level.nodes.levelNodeGroup.forEach((object) => {
+		add_group_bound(object, visible);
+	});
+}
+
+export function update_group_bound_visibility(
+	object: LevelNodeObject<LevelNodeGroup>,
+	visible: boolean,
+) {
+	if (object.userData.group_bounds) {
+		object.userData.group_bounds.visible = visible;
+	}
+}
+export function add_group_bound(
+	object: LevelNodeObject<LevelNodeGroup>,
+	visible: boolean,
+) {
+	if (!object.children[0]) return;
+
+	const box = new Box3().setFromObject(object);
+	for (const obj of object.children) {
+		box.expandByObject(obj);
+	}
+	const size = new Vector3();
+	const center = new Vector3();
+	box.getSize(size);
+	box.getCenter(center);
+
+	object.worldToLocal(center);
+
+	const child = object.children[0];
+	const child_q = new Quaternion();
+	child.getWorldQuaternion(child_q);
+	const parent_q = new Quaternion();
+	object.getWorldQuaternion(parent_q);
+	const quat = parent_q.clone().invert().multiply(child_q);
+
+	const bounds = new LineSegments(
+		group_bounds_geometry,
+		group_bounds_material.clone(), // to change the color
+	);
+
+	bounds.quaternion.copy(quat.multiply(object.quaternion));
+	bounds.scale.copy(size);
+	bounds.position.copy(center);
+
+	bounds.visible = visible;
+	object.userData.group_bounds = bounds;
+
+	object.add(bounds);
+}
+
+export function update_group_bounds_color(
+	object: LevelNodeObject<LevelNodeGroup>,
+	is_current: boolean,
+) {
+	object.userData.group_bounds?.material.color.set(
+		is_current ? current_group_bounds_color : group_bounds_color,
+	);
+}
+
+export function update_relevant_group_bounds(
+	object: Object3D,
+	current_parent: Object3D | undefined,
+) {
+	let current: Object3D | null = object;
+	while (isLevelNodeObject(current)) {
+		if (isLevelNodeObject(current, 'levelNodeGroup')) {
+			const bounds = current.userData.group_bounds;
+			if (bounds) {
+				// TODO: modify the bound rather than recreating it
+				const visible = bounds.visible;
+				current.remove(bounds);
+				add_group_bound(current, visible);
+				if (current === current_parent) {
+					update_group_bounds_color(current, true);
+				}
+			}
+		}
+		current = current.parent;
+	}
 }

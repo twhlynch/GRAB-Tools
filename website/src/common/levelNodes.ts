@@ -16,9 +16,12 @@ import {
 } from '@grab-tools/lib/generated/proto';
 import { Root as PBRoot, Type } from 'protobufjs';
 import {
+	BoxGeometry,
+	EdgesGeometry,
 	Group,
 	IUniform,
 	Line,
+	LineBasicMaterial,
 	LineSegments,
 	Mesh,
 	Object3D,
@@ -94,7 +97,10 @@ export type LevelNodeObject<T extends LevelNodeTypes = never> = Partial<
 			relevant_connections?: LineWithConnectionData[];
 			trigger_connections?: LineWithConnectionData[];
 			gasm_connections?: LineWithConnectionData[];
-			group_bounds?: LineSegments;
+			group_bounds?: LineSegments<
+				EdgesGeometry<BoxGeometry>,
+				LineBasicMaterial
+			>;
 		} & {
 			[
 				K in LevelNodeKey as K extends `levelNode${infer S}`
