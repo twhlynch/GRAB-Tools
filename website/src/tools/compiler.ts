@@ -23,9 +23,9 @@ export function count_nodes(nodes: LevelNode[]) {
 		total: 0,
 	};
 	for (const node of nodes) {
-		traverseNode(node, (_node, _parent) => {
+		traverseNode(node, (child, _parent) => {
 			counts.total++;
-			const type = Object.keys(node).find((key) =>
+			const type = Object.keys(child).find((key) =>
 				key.startsWith('levelNode'),
 			);
 			if (type) {
@@ -44,7 +44,7 @@ const update_id_params: Record<string, string[]> = {
 	connections: ['objectID'],
 };
 
-export function offset_ids(nodes: LevelNode[], offset: number) {
+export function remap_ids(nodes: LevelNode[], remap: (id: number) => number) {
 	const objects: object[] = [...nodes];
 
 	while (objects.length > 0) {
@@ -62,13 +62,15 @@ export function offset_ids(nodes: LevelNode[], offset: number) {
 							for (const v of value) {
 								// must convert v[k] from Long to Number so it doesnt become a string
 								const record = v as Record<string, unknown>;
-								record[k] = Number(record[k] ?? 0) + offset;
+								const old_id = Number(record[k] ?? 0);
+								record[k] = remap(old_id);
 							}
 						}
 						// update value in an object
 						else if (typeof value === 'object' && value !== null) {
 							const record = value as Record<string, unknown>;
-							record[k] = Number(record[k] ?? 0) + offset;
+							const old_id = Number(record[k] ?? 0);
+							record[k] = remap(old_id);
 						}
 					}
 				}
@@ -82,6 +84,10 @@ export function offset_ids(nodes: LevelNode[], offset: number) {
 	}
 }
 
+export function offset_ids(nodes: LevelNode[], offset: number) {
+	remap_ids(nodes, (id) => id + offset);
+}
+
 export interface CompileOptions {
 	group?: boolean;
 	spacing?: number;
@@ -91,21 +97,38 @@ export function compile(level_nodes: LevelNode[][], options: CompileOptions) {
 	const result: LevelNode[] = [];
 
 	for (const [i, nodes] of level_nodes.entries()) {
-		// group and offset by 1
+		// group, remap, and offset by 1
 		if (options.group) {
-			offset_ids(nodes, 1);
+			// map old IDs to new IDs for when start/finish are removed
+			const id_map = new Map<number, number>();
+			// parent group will be ID 1
+			let old_id = 1;
+			let new_id = 2;
 
-			// filter out start/finish
-			const remove = [];
-			// only top level should exist
-			for (const [j, node] of nodes.entries()) {
+			for (const node of nodes) {
 				if (node.levelNodeStart || node.levelNodeFinish) {
-					remove.push(j);
+					traverseNode(node, () => {
+						old_id++;
+					});
+				} else {
+					traverseNode(node, () => {
+						id_map.set(old_id, new_id);
+						old_id++;
+						new_id++;
+					});
 				}
-				offset_ids([node], -remove.length);
 			}
 
-			const group = levelNodeGroupFrom({ childNodes: nodes });
+			// remap ids
+			remap_ids(nodes, (id) => id_map.get(id) ?? id);
+
+			// filter out start and finish
+			const filtered = nodes.filter(
+				(node) => !node.levelNodeStart && !node.levelNodeFinish,
+			);
+
+			// group result and replace nodes with group
+			const group = levelNodeGroupFrom({ childNodes: filtered });
 			nodes.length = 0;
 			nodes.push(group);
 		}
