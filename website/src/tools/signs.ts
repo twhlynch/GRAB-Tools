@@ -9,7 +9,6 @@ function signs(text: string, animated: boolean) {
 	return nodes;
 }
 
-// TODO: refactor this whole file
 function text_to_signs(
 	text: string,
 	wpm: number,
