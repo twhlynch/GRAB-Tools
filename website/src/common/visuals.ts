@@ -295,7 +295,20 @@ export function update_connection_positions(objects: LevelNodeObject[]) {
 		const target_position = new Vector3();
 		path_target.getWorldPosition(target_position);
 
-		const points = [object_position, target_position];
-		line.geometry.setFromPoints(points);
+		// faster update avoiding internal checks
+		const position = line.geometry.attributes.position!;
+		position.setXYZ(
+			0,
+			object_position.x,
+			object_position.y,
+			object_position.z,
+		);
+		position.setXYZ(
+			1,
+			target_position.x,
+			target_position.y,
+			target_position.z,
+		);
+		position.needsUpdate = true;
 	});
 }
