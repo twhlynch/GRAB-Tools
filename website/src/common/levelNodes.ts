@@ -84,7 +84,9 @@ export type LevelNodeObject<T extends LevelNodeTypes = never> = Partial<
 			update?: (delta: number) => void;
 
 			animation_paths?: Group[];
-			relevant_animation_paths?: Group[];
+			relevant_animation_paths?: (Group & {
+				userData: { object: LevelNodeObject };
+			})[];
 			relevant_connections?: Line[];
 			trigger_connections?: Line[];
 			gasm_connections?: Line[];

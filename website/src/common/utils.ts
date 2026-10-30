@@ -4,8 +4,9 @@ import {
 	LevelNode,
 	LevelNodeMaterial,
 	LevelNodeShape,
+	Vector,
 } from '@grab-tools/lib/generated/proto';
-import { Object3D } from 'three';
+import { Object3D, Vector3 } from 'three';
 import { LevelNodeObject } from './levelNodes';
 import { ambienceSettings } from './levels';
 
@@ -108,4 +109,8 @@ export function random_ambience() {
 		random_float(),
 		random_float(),
 	);
+}
+
+export function Vector3toTHREE(vector: Vector | undefined): Vector3 {
+	return new Vector3(vector?.x ?? 0, vector?.y ?? 0, vector?.z ?? 0);
 }

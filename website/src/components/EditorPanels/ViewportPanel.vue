@@ -9,6 +9,11 @@ import {
 	object_contains,
 	shapes,
 } from '@/common/utils';
+import {
+	add_animation_paths,
+	update_animation_paths_transforms,
+	update_animation_paths_visibility,
+} from '@/common/visuals';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -321,7 +326,7 @@ export default defineComponent({
 		moving_event(_: TransformControlsEvent<'change'>) {
 			this.gizmo.selection.forEach((object) => {
 				this.update_node_shader(object);
-				this.update_animation_path_position(object);
+				update_animation_paths_transforms(object);
 				this.update_group_bounds(object);
 			});
 			this.update_connection_positions(this.gizmo.selection);
@@ -434,7 +439,10 @@ export default defineComponent({
 			this.add_hitboxes();
 			this.add_trigger_connections();
 			this.add_gasm_connections();
-			this.add_animation_paths();
+			// add animation paths
+			this.level.nodes.animated.forEach((object) => {
+				add_animation_paths(object, this.show_animations);
+			});
 			this.add_group_bounds();
 
 			if (this.show_shadows) this.update_shadows();
@@ -833,9 +841,7 @@ export default defineComponent({
 		},
 		update_animation_visibility() {
 			this.level.nodes.animated.forEach((object) => {
-				object.userData.animation_paths?.forEach((path) => {
-					path.visible = this.show_animations;
-				});
+				update_animation_paths_visibility(object, this.show_animations);
 			});
 		},
 		update_trigger_connection_visibility() {
@@ -897,81 +903,6 @@ export default defineComponent({
 					});
 				});
 			}
-		},
-		add_animation_paths() {
-			if (this.level.nodes.animated.length) {
-				this.level.nodes.animated.forEach((object) => {
-					this.add_animation_path(object);
-				});
-			}
-		},
-		add_animation_path(object: LevelNodeObject) {
-			const path_material = new THREE.LineBasicMaterial({
-				color: 0x000099,
-			});
-			const points_material = new THREE.PointsMaterial({
-				color: 0x000099,
-				size: 3,
-				sizeAttenuation: false,
-			});
-			const current_points_material = new THREE.PointsMaterial({
-				color: 0x0000ff,
-				size: 3,
-				sizeAttenuation: false,
-			});
-			const current_path_material = new THREE.LineBasicMaterial({
-				color: 0x0000ff,
-			});
-
-			const position = new THREE.Vector3();
-			object.getWorldPosition(position);
-
-			object.userData.node.animations?.forEach((anim, i) => {
-				if (!anim.frames) return;
-				const points = anim.frames.map(
-					(frame) =>
-						new THREE.Vector3(
-							frame.position?.x ?? 0,
-							frame.position?.y ?? 0,
-							frame.position?.z ?? 0,
-						),
-				);
-
-				const line_geometry = new THREE.BufferGeometry().setFromPoints(points);
-				const path_line = new THREE.Line(
-					line_geometry,
-					i === (object.userData.node.activeAnimation ?? 0)
-						? current_path_material
-						: path_material,
-				);
-				const points_line = new THREE.Points(
-					line_geometry,
-					i === (object.userData.node.activeAnimation ?? 0)
-						? current_points_material
-						: points_material,
-				);
-				const path_group = new THREE.Group();
-				path_group.add(path_line);
-				path_group.add(points_line);
-
-				path_group.visible = this.show_animations;
-				(object.userData.animation_paths ??= []).push(path_group);
-				path_group.userData.object = object;
-
-				(object.userData.relevant_animation_paths ??= []).push(path_group);
-
-				object.parent!.add(path_group);
-			});
-
-			this.update_animation_path_position(object);
-		},
-		update_animation_path_position(object: LevelNodeObject) {
-			const paths = object.userData.relevant_animation_paths;
-			if (!paths) return;
-			paths.forEach((path) => {
-				path.position.copy(path.userData.object.position);
-				path.quaternion.copy(path.userData.object.quaternion);
-			});
 		},
 		update_connection_positions(related_objects: LevelNodeObject[] | undefined = undefined) {
 			related_objects ??= [
