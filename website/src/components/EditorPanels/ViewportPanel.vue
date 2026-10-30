@@ -1069,9 +1069,7 @@ export default defineComponent({
 		modify_selection(func: (nodes: LevelNode[]) => LevelNode[]) {
 			if (this.gizmo.empty()) return;
 			this.modifier((json) => {
-				const node_list =
-					this.editing_parent?.userData.node?.levelNodeGroup?.childNodes ??
-					json.levelNodes;
+				const node_list = this.get_editing_nodes(json);
 
 				const new_list = func(node_list);
 
@@ -1268,6 +1266,11 @@ export default defineComponent({
 			if (this.show_gasm_editor) this.refs().gasm_editor.save();
 			this.show_gasm_editor = false;
 		},
+		get_editing_nodes(level: Level) {
+			return this.editing_parent && !(this.editing_parent instanceof THREE.Scene)
+				? (this.editing_parent.userData.node.levelNodeGroup.childNodes ??= [])
+				: (level.levelNodes ??= []);
+		},
 		save_gasm_code(new_json: LevelNodeWith<LevelNodeGASM>) {
 			const id = this.editing_gasm?.userData.id;
 			if (!id) {
@@ -1276,11 +1279,12 @@ export default defineComponent({
 			}
 			this.modifier((json) => {
 				console.log(json);
-				const index = (json.levelNodes ?? []).findIndex(
+				const node_list = this.get_editing_nodes(json);
+				const index = node_list.findIndex(
 					(n) => n === this.level.nodes.all[id - 1]?.userData.node,
 				);
 				if (index !== -1) {
-					(json.levelNodes ??= [])[index] = new_json;
+					node_list[index] = new_json;
 				}
 				return json;
 			});
@@ -1389,11 +1393,12 @@ export default defineComponent({
 			}
 			this.modifier((json) => {
 				console.log(json);
-				const index = (json.levelNodes ?? []).findIndex(
+				const node_list = this.get_editing_nodes(json);
+				const index = node_list.findIndex(
 					(n) => n === this.level.nodes.all[id - 1]?.userData.node,
 				);
 				if (index !== -1) {
-					(json.levelNodes ??= [])[index] = new_node;
+					node_list[index] = new_node;
 				}
 				return json;
 			});
@@ -1825,9 +1830,7 @@ export default defineComponent({
 		},
 		mirror_x() {
 			this.modifier((json) => {
-				const node_list =
-					this.editing_parent?.userData.node?.levelNodeGroup?.childNodes ??
-					json.levelNodes;
+				const node_list = this.get_editing_nodes(json);
 
 				this.level.nodes.all
 					.filter((obj) => node_list.includes(obj.userData.node))
@@ -1857,9 +1860,7 @@ export default defineComponent({
 		},
 		mirror_y() {
 			this.modifier((json) => {
-				const node_list =
-					this.editing_parent?.userData.node?.levelNodeGroup?.childNodes ??
-					json.levelNodes;
+				const node_list = this.get_editing_nodes(json);
 
 				this.level.nodes.all
 					.filter((obj) => node_list.includes(obj.userData.node))
@@ -1889,9 +1890,7 @@ export default defineComponent({
 		},
 		mirror_z() {
 			this.modifier((json) => {
-				const node_list =
-					this.editing_parent?.userData.node?.levelNodeGroup?.childNodes ??
-					json.levelNodes;
+				const node_list = this.get_editing_nodes(json);
 
 				this.level.nodes.all
 					.filter((obj) => node_list.includes(obj.userData.node))

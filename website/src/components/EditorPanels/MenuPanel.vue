@@ -582,9 +582,7 @@ export default defineComponent({
 		insert_selection_nodes(nodes: LevelNode[]) {
 			this.viewport((scope) => {
 				this.modifier((json) => {
-					const node_list = !(scope.editing_parent instanceof THREE.Scene)
-						? (scope.editing_parent?.userData.node.levelNodeGroup.childNodes ?? [])
-						: (json.levelNodes ??= []);
+					const node_list = scope.get_editing_nodes(json);
 					node_list.push(...nodes);
 					return json;
 				});
@@ -1255,9 +1253,7 @@ export default defineComponent({
 		modify_selectable_nodes(func: (node: LevelNode) => void) {
 			this.viewport((scope) => {
 				this.modifier((json) => {
-					const node_list = !(scope.editing_parent instanceof THREE.Scene)
-						? (scope.editing_parent?.userData.node.levelNodeGroup.childNodes ?? [])
-						: (json.levelNodes ??= []);
+					const node_list = scope.get_editing_nodes(json);
 					node_list.forEach((node) => {
 						traverse_node(node, func);
 					});
@@ -1268,9 +1264,7 @@ export default defineComponent({
 		set_selectable_nodes(func: (nodes: LevelNode[]) => void | Promise<void>) {
 			this.viewport((scope) => {
 				this.modifier(async (json) => {
-					const node_list = !(scope.editing_parent instanceof THREE.Scene)
-						? (scope.editing_parent?.userData.node.levelNodeGroup.childNodes ?? [])
-						: (json.levelNodes ??= []);
+					const node_list = scope.get_editing_nodes(json);
 					await func(node_list);
 					console.log(json);
 					return json;
