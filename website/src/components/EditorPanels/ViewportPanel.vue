@@ -148,6 +148,7 @@ export default defineComponent({
 			gizmo: undefined as unknown as Raw<GizmoControls>,
 			trigger_connection_material: undefined as THREE.LineBasicMaterial | undefined,
 			gasm_connection_material: undefined as THREE.LineBasicMaterial | undefined,
+			remove_events: undefined as (() => void) | undefined,
 		};
 	},
 	mounted() {
@@ -181,8 +182,15 @@ export default defineComponent({
 			}
 		});
 		observer.observe(this.refs().viewport);
-		window.addEventListener('keydown', this.keydown.bind(this));
-		window.addEventListener('keyup', this.keyup.bind(this));
+
+		const keydown = this.keydown.bind(this);
+		const keyup = this.keyup.bind(this);
+		window.addEventListener('keydown', keydown);
+		window.addEventListener('keyup', keyup);
+		this.remove_events = () => {
+			window.removeEventListener('keydown', keydown);
+			window.removeEventListener('keyup', keyup);
+		};
 		// await this.set_json(this.json); // ???
 
 		const resize = this.refs().resize;
@@ -191,8 +199,7 @@ export default defineComponent({
 		this.load_camera_state();
 	},
 	unmounted() {
-		window.removeEventListener('keydown', this.keydown.bind(this));
-		window.removeEventListener('keyup', this.keyup.bind(this));
+		this.remove_events?.();
 	},
 	methods: {
 		refs() {

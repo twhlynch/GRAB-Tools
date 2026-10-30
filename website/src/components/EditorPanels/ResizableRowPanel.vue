@@ -8,26 +8,34 @@ export default defineComponent({
 	data() {
 		return {
 			down: false,
+			remove_events: undefined as (() => void) | undefined,
 		};
 	},
 	mounted() {
-		document.addEventListener('mouseup', this.mouseup.bind(this));
-		document.addEventListener('mousemove', this.mousemove.bind(this));
-		window.addEventListener('resize', this.resize.bind(this));
+		const mouseup = this.mouseup.bind(this);
+		const mousemove = this.mousemove.bind(this);
+		const resize = this.resize.bind(this);
+		document.addEventListener('mouseup', mouseup);
+		document.addEventListener('mousemove', mousemove);
+		window.addEventListener('resize', resize);
+		this.remove_events = () => {
+			document.removeEventListener('mouseup', mouseup);
+			document.removeEventListener('mousemove', mousemove);
+			window.removeEventListener('resize', resize);
+		};
 	},
 	unmounted() {
-		document.removeEventListener('mouseup', this.mouseup.bind(this));
-		document.removeEventListener('mousemove', this.mousemove.bind(this));
-		window.removeEventListener('resize', this.resize.bind(this));
+		this.remove_events?.();
+		document.removeEventListener('selectstart', this.prevent);
 	},
 	methods: {
 		mousedown(_: MouseEvent) {
 			this.down = true;
-			document.addEventListener('selectstart', this.prevent.bind(this));
+			document.addEventListener('selectstart', this.prevent);
 		},
 		mouseup(_: MouseEvent) {
 			this.down = false;
-			document.removeEventListener('selectstart', this.prevent.bind(this));
+			document.removeEventListener('selectstart', this.prevent);
 		},
 		mousemove(e: MouseEvent) {
 			if (this.down) {
@@ -42,7 +50,7 @@ export default defineComponent({
 			second!.style.width = bounds.width - (position - bounds.left) - 5 + 'px';
 			this.$emit('resize');
 		},
-		prevent(e: Event) {
+		prevent(this: void, e: Event) {
 			e.preventDefault();
 		},
 		resize() {

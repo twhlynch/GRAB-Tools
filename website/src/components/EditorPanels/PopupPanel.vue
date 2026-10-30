@@ -17,6 +17,7 @@ export default defineComponent({
 	data() {
 		return {
 			visible: false,
+			remove_events: undefined as (() => void) | undefined,
 		};
 	},
 	watch: {
@@ -29,14 +30,19 @@ export default defineComponent({
 		},
 	},
 	mounted() {
-		document.addEventListener('mousedown', this.click.bind(this));
-		document.addEventListener('touchstart', this.click.bind(this));
-		document.addEventListener('keydown', this.keydown.bind(this));
+		const click = this.click.bind(this);
+		const keydown = this.keydown.bind(this);
+		document.addEventListener('mousedown', click);
+		document.addEventListener('touchstart', click);
+		document.addEventListener('keydown', keydown);
+		this.remove_events = () => {
+			document.removeEventListener('mousedown', click);
+			document.removeEventListener('touchstart', click);
+			document.removeEventListener('keydown', keydown);
+		};
 	},
 	unmounted() {
-		document.removeEventListener('mousedown', this.click.bind(this));
-		document.removeEventListener('touchstart', this.click.bind(this));
-		document.removeEventListener('keydown', this.keydown.bind(this));
+		this.remove_events?.();
 	},
 	methods: {
 		run() {
