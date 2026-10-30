@@ -1,12 +1,28 @@
+import { LevelData } from '@/editor/LevelLoader';
+import {
+	triggerTargetData,
+	triggerTargetHasKey,
+} from '@grab-tools/lib/generated/nodes';
+import {
+	LevelNodeGASM,
+	LevelNodeTrigger,
+} from '@grab-tools/lib/generated/proto';
 import {
 	BufferGeometry,
 	Group,
 	Line,
 	LineBasicMaterial,
+	Object3D,
 	Points,
 	PointsMaterial,
+	Scene,
+	Vector3,
 } from 'three';
-import { LevelNodeObject } from './levelNodes';
+import {
+	isLevelNodeObject,
+	LevelNodeObject,
+	LineWithConnectionData,
+} from './levelNodes';
 import { Vector3toTHREE } from './utils';
 
 const points_options = {
@@ -16,6 +32,8 @@ const points_options = {
 
 const animation_path_color = 0x000099;
 const current_animation_path_color = 0x0000ff;
+const trigger_connection_color = 0xff8800;
+const gasm_connection_color = 0x006600;
 
 const animation_path_material = new LineBasicMaterial({
 	color: animation_path_color,
@@ -30,6 +48,12 @@ const current_animation_points_material = new PointsMaterial({
 });
 const current_animation_path_material = new LineBasicMaterial({
 	color: current_animation_path_color,
+});
+const trigger_connection_material = new LineBasicMaterial({
+	color: trigger_connection_color,
+});
+const gasm_connection_material = new LineBasicMaterial({
+	color: gasm_connection_color,
 });
 
 export function add_animation_paths(object: LevelNodeObject, visible: boolean) {
@@ -92,3 +116,175 @@ export function update_animation_paths_visibility(
 	});
 }
 
+export function add_trigger_connections(level: LevelData, visible: boolean) {
+	level.nodes.levelNodeTrigger.forEach((object) => {
+		const targets = object.userData.node.levelNodeTrigger.triggerTargets;
+		if (!targets) return;
+
+		// collect target ids
+		const ids: number[] = [];
+		targets.forEach((target) => {
+			if (triggerTargetHasKey(target, 'objectID')) {
+				const target_data = triggerTargetData(target);
+				if (target_data.objectID) ids.push(target_data.objectID);
+			}
+		});
+
+		// add connections to targets
+		ids.forEach((id) => {
+			const target = level.nodes.all[id - 1];
+			if (!target) return;
+			add_trigger_connection(object, target, visible);
+		});
+	});
+}
+
+export function add_gasm_connections(level: LevelData, visible: boolean) {
+	level.nodes.levelNodeGASM.forEach((object) => {
+		const connections = object.userData.node.levelNodeGASM.connections;
+		if (!connections) return;
+
+		// collect target ids
+		const ids: number[] = [];
+		connections.forEach((connection) => {
+			if (!connection.type && connection.objectID) {
+				ids.push(connection.objectID);
+			}
+		});
+
+		// add connections to targets
+		ids.forEach((id) => {
+			const target = level.nodes.all[id - 1];
+			if (!target) return;
+			add_gasm_connection(object, target, visible);
+		});
+	});
+}
+
+export function add_trigger_connection(
+	object: LevelNodeObject<LevelNodeTrigger>,
+	target_object: LevelNodeObject,
+	visible: boolean,
+) {
+	const line = add_connection(
+		object,
+		target_object,
+		trigger_connection_material,
+		visible,
+	);
+	(object.userData.trigger_connections ??= []).push(line);
+}
+
+export function add_gasm_connection(
+	object: LevelNodeObject<LevelNodeGASM>,
+	target_object: LevelNodeObject,
+	visible: boolean,
+) {
+	const line = add_connection(
+		object,
+		target_object,
+		gasm_connection_material,
+		visible,
+	);
+	(object.userData.gasm_connections ??= []).push(line);
+}
+
+function add_connection(
+	object: LevelNodeObject,
+	target_object: LevelNodeObject,
+	material: LineBasicMaterial,
+	visible: boolean,
+) {
+	const line = create_connection(object, target_object, material);
+
+	line.visible = visible;
+
+	add_relevant_connection(target_object, line);
+	add_relevant_connection(object, line);
+
+	// find scene and add the line to it
+	let current: Object3D | Scene | null = object;
+	while (current && !(current instanceof Scene)) {
+		current = current.parent;
+	}
+	if (current) {
+		current.add(line);
+	}
+
+	return line;
+}
+
+function create_connection(
+	object: LevelNodeObject,
+	target: LevelNodeObject,
+	material: LineBasicMaterial,
+): LineWithConnectionData {
+	const trigger_position = new Vector3();
+	object.getWorldPosition(trigger_position);
+
+	const target_position = new Vector3();
+	target.getWorldPosition(target_position);
+
+	const points = [trigger_position, target_position];
+	const line_geometry = new BufferGeometry().setFromPoints(points);
+
+	const line = Object.assign(new Line(line_geometry, material), {
+		userData: { object, target },
+	});
+
+	return line;
+}
+
+function add_relevant_connection(
+	object: LevelNodeObject,
+	connection: LineWithConnectionData,
+) {
+	let current: Object3D | null = object;
+	while (isLevelNodeObject(current)) {
+		(current.userData.relevant_connections ??= []).push(connection);
+		current = current.parent;
+	}
+}
+
+export function update_trigger_connections_visibility(
+	object: LevelNodeObject<LevelNodeTrigger>,
+	visible: boolean,
+) {
+	object.userData.trigger_connections?.forEach((path) => {
+		path.visible = visible;
+	});
+}
+
+export function update_gasm_connections_visibility(
+	object: LevelNodeObject<LevelNodeGASM>,
+	visible: boolean,
+) {
+	object.userData.gasm_connections?.forEach((path) => {
+		path.visible = visible;
+	});
+}
+
+export function update_connection_positions(objects: LevelNodeObject[]) {
+	if (!objects.length) return;
+
+	const lines = new Set<LineWithConnectionData>();
+	objects.forEach((obj) => {
+		obj.userData.relevant_connections?.forEach((line) => {
+			lines.add(line);
+		});
+	});
+
+	lines.forEach((line) => {
+		const path_target = line.userData.target;
+		const path_object = line.userData.object;
+
+		const object_position = new Vector3();
+		path_object.getWorldPosition(object_position);
+
+		const target_position = new Vector3();
+		path_target.getWorldPosition(target_position);
+
+		const points = [object_position, target_position];
+		line.geometry.setFromPoints(points);
+	});
+}

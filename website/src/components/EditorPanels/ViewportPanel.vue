@@ -11,8 +11,15 @@ import {
 } from '@/common/utils';
 import {
 	add_animation_paths,
+	add_gasm_connection,
+	add_gasm_connections,
+	add_trigger_connection,
+	add_trigger_connections,
 	update_animation_paths_transforms,
 	update_animation_paths_visibility,
+	update_connection_positions,
+	update_gasm_connections_visibility,
+	update_trigger_connections_visibility,
 } from '@/common/visuals';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
@@ -437,8 +444,8 @@ export default defineComponent({
 			});
 			this.level = markRaw(await window._levelLoader!.load(json));
 			this.add_hitboxes();
-			this.add_trigger_connections();
-			this.add_gasm_connections();
+			add_trigger_connections(this.level, this.show_trigger_connections);
+			add_gasm_connections(this.level, this.show_gasm_connections);
 			// add animation paths
 			this.level.nodes.animated.forEach((object) => {
 				add_animation_paths(object, this.show_animations);
@@ -762,12 +769,16 @@ export default defineComponent({
 		},
 		toggle_trigger_connections() {
 			this.show_trigger_connections = !this.show_trigger_connections;
-			this.update_trigger_connection_visibility();
+			this.level.nodes.levelNodeTrigger.forEach((object) => {
+				update_trigger_connections_visibility(object, this.show_trigger_connections);
+			});
 			this.update_connection_positions();
 		},
 		toggle_gasm_connections() {
 			this.show_gasm_connections = !this.show_gasm_connections;
-			this.update_gasm_connection_visibility();
+			this.level.nodes.levelNodeGASM.forEach((object) => {
+				update_gasm_connections_visibility(object, this.show_gasm_connections);
+			});
 			this.update_connection_positions();
 		},
 		toggle_groups() {
@@ -837,165 +848,16 @@ export default defineComponent({
 		},
 		toggle_animations() {
 			this.show_animations = !this.show_animations;
-			this.update_animation_visibility();
-		},
-		update_animation_visibility() {
 			this.level.nodes.animated.forEach((object) => {
 				update_animation_paths_visibility(object, this.show_animations);
 			});
-		},
-		update_trigger_connection_visibility() {
-			this.level.nodes.levelNodeTrigger.forEach((object) => {
-				(object.userData.trigger_connections ?? []).forEach((path) => {
-					path.visible = this.show_trigger_connections;
-				});
-			});
-		},
-		update_gasm_connection_visibility() {
-			this.level.nodes.levelNodeGASM.forEach((object) => {
-				(object.userData.gasm_connections ?? []).forEach((path) => {
-					path.visible = this.show_gasm_connections;
-				});
-			});
-		},
-		add_trigger_connections() {
-			if (this.level.nodes.levelNodeTrigger.length) {
-				this.level.nodes.levelNodeTrigger.forEach((object) => {
-					const node = object.userData.node.levelNodeTrigger;
-					const targets = node.triggerTargets;
-					if (!targets) return;
-
-					const ids: number[] = [];
-					targets.forEach((target) => {
-						const entries = Object.entries(target);
-						const entry = entries.find((e) => e[0].includes('triggerTarget'));
-						if (!entry) return;
-						const connection = entry[1];
-						const objectID = connection.objectID;
-						if (objectID) ids.push(objectID);
-					});
-					ids.forEach((id) => {
-						const target = this.level.nodes.all[id - 1];
-						if (!target) return;
-						this.add_trigger_path(object, target);
-					});
-				});
-			}
-		},
-		add_gasm_connections() {
-			if (this.level.nodes.levelNodeGASM.length) {
-				this.level.nodes.levelNodeGASM.forEach((object) => {
-					const node = object.userData.node.levelNodeGASM;
-					const connections = node.connections;
-					if (!connections) return;
-
-					const ids: number[] = [];
-					connections.forEach((connection) => {
-						if (!connection.type) {
-							const objectID = connection.objectID;
-							if (objectID) ids.push(objectID);
-						}
-					});
-					ids.forEach((id) => {
-						const target = this.level.nodes.all[id - 1];
-						if (!target) return;
-						this.add_gasm_path(object, target);
-					});
-				});
-			}
 		},
 		update_connection_positions(related_objects: LevelNodeObject[] | undefined = undefined) {
 			related_objects ??= [
 				...(this.show_trigger_connections ? this.level.nodes.levelNodeTrigger : []),
 				...(this.show_gasm_connections ? this.level.nodes.levelNodeGASM : []),
 			];
-
-			if (!related_objects.length) return;
-
-			const lines: THREE.Line[] = [];
-			related_objects.forEach((obj) => {
-				if (obj.userData.relevant_connections?.length) {
-					obj.userData.relevant_connections.forEach((line) => {
-						lines.push(line);
-					});
-				}
-			});
-
-			const unique_lines = [...new Set(lines)];
-			unique_lines.forEach((line) => {
-				const path_target = line.userData.target;
-				const path_object = line.userData.object;
-
-				const object_position = new THREE.Vector3();
-				path_object.getWorldPosition(object_position);
-				const position = new THREE.Vector3();
-				path_target.getWorldPosition(position);
-
-				const points = [object_position, position];
-				line.geometry.dispose();
-				line.geometry = new THREE.BufferGeometry().setFromPoints(points);
-			});
-		},
-		add_relevant_connection(object: LevelNodeObject, connection: THREE.Line) {
-			let current: THREE.Object3D | null = object;
-			while (current?.userData.node) {
-				(current.userData.relevant_connections ??= []).push(connection);
-				current = current.parent;
-			}
-		},
-		make_connection(
-			object: LevelNodeObject<LevelNodeTrigger | LevelNodeGASM>,
-			target: LevelNodeObject,
-			material: THREE.LineBasicMaterial,
-		) {
-			const trigger_position = new THREE.Vector3();
-			object.getWorldPosition(trigger_position);
-
-			const target_position = new THREE.Vector3();
-			target.getWorldPosition(target_position);
-
-			const points = [trigger_position, target_position];
-			const line_geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-			const line = new THREE.Line(line_geometry, material);
-			line.userData.object = object;
-			line.userData.target = target;
-
-			return line;
-		},
-		add_gasm_path(object: LevelNodeObject<LevelNodeGASM>, target: LevelNodeObject) {
-			this.gasm_connection_material =
-				this.gasm_connection_material ??
-				markRaw(
-					new THREE.LineBasicMaterial({
-						color: 0x006600,
-					}),
-				);
-
-			const line = this.make_connection(object, target, this.gasm_connection_material);
-			line.visible = this.show_gasm_connections;
-			(object.userData.gasm_connections ??= []).push(line);
-			this.add_relevant_connection(target, line);
-			this.add_relevant_connection(object, line);
-
-			this.level.scene.add(line);
-		},
-		add_trigger_path(object: LevelNodeObject<LevelNodeTrigger>, target: LevelNodeObject) {
-			this.trigger_connection_material =
-				this.trigger_connection_material ??
-				markRaw(
-					new THREE.LineBasicMaterial({
-						color: 0xff8800,
-					}),
-				);
-
-			const line = this.make_connection(object, target, this.trigger_connection_material);
-			line.visible = this.show_trigger_connections;
-			(object.userData.trigger_connections ??= []).push(line);
-			this.add_relevant_connection(target, line);
-			this.add_relevant_connection(object, line);
-
-			this.level.scene.add(line);
+			update_connection_positions(related_objects);
 		},
 		modify_selection(func: (nodes: LevelNode[]) => LevelNode[]) {
 			if (this.gizmo.empty()) return;
@@ -1242,7 +1104,7 @@ export default defineComponent({
 			const target_node = target.userData.node;
 			const id = target.userData.id;
 			const is_new = create_connection(object_node, target_node, id, type);
-			if (is_new) this.add_gasm_path(object, target);
+			if (is_new) add_gasm_connection(object, target, this.show_gasm_connections);
 
 			this.changed();
 		},
@@ -1255,7 +1117,11 @@ export default defineComponent({
 			target.triggerTargetAnimation.objectID = id;
 			trigger.triggerTargets.push(target);
 			if (target_object) {
-				this.add_trigger_path(object as LevelNodeObject<LevelNodeTrigger>, target_object);
+				add_trigger_connection(
+					object as LevelNodeObject<LevelNodeTrigger>,
+					target_object,
+					this.show_trigger_connections,
+				);
 			}
 			this.changed();
 		},

@@ -58,6 +58,10 @@ export type Root = PBRoot & {
 	};
 };
 
+export type LineWithConnectionData = Line & {
+	userData: { object: LevelNodeObject; target: LevelNodeObject };
+};
+
 // object type
 // - all of Object3D
 // - optionally Mesh exclusing material
@@ -87,9 +91,9 @@ export type LevelNodeObject<T extends LevelNodeTypes = never> = Partial<
 			relevant_animation_paths?: (Group & {
 				userData: { object: LevelNodeObject };
 			})[];
-			relevant_connections?: Line[];
-			trigger_connections?: Line[];
-			gasm_connections?: Line[];
+			relevant_connections?: LineWithConnectionData[];
+			trigger_connections?: LineWithConnectionData[];
+			gasm_connections?: LineWithConnectionData[];
 			group_bounds?: LineSegments;
 		} & {
 			[
