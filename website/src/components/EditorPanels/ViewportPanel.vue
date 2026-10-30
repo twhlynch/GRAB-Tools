@@ -446,10 +446,7 @@ export default defineComponent({
 			this.add_hitboxes();
 			add_trigger_connections(this.level, this.show_trigger_connections);
 			add_gasm_connections(this.level, this.show_gasm_connections);
-			// add animation paths
-			this.level.nodes.animated.forEach((object) => {
-				add_animation_paths(object, this.show_animations);
-			});
+			add_animation_paths(this.level, this.show_animations);
 			this.add_group_bounds();
 
 			if (this.show_shadows) this.update_shadows();

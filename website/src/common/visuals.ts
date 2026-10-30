@@ -56,45 +56,56 @@ const gasm_connection_material = new LineBasicMaterial({
 	color: gasm_connection_color,
 });
 
-export function add_animation_paths(object: LevelNodeObject, visible: boolean) {
-	object.userData.node.animations?.forEach((animation, animation_index) => {
-		if (!animation.frames) return;
-
-		const points = animation.frames.map((frame) =>
-			Vector3toTHREE(frame.position),
+export function add_animation_paths(level: LevelData, visible: boolean) {
+	level.nodes.animated.forEach((object) => {
+		object.userData.node.animations?.forEach(
+			(_animation, animation_index) => {
+				add_animation_path(object, animation_index, visible);
+			},
 		);
-		const line_geometry = new BufferGeometry().setFromPoints(points);
-
-		const is_current =
-			animation_index === (object.userData.node.activeAnimation ?? 0);
-
-		const path_line = new Line(
-			line_geometry,
-			is_current
-				? current_animation_path_material
-				: animation_path_material,
-		);
-		const points_line = new Points(
-			line_geometry,
-			is_current
-				? current_animation_points_material
-				: animation_points_material,
-		);
-
-		const path_group = Object.assign(new Group(), {
-			userData: { object },
-		});
-		path_group.add(path_line);
-		path_group.add(points_line);
-		path_group.visible = visible;
-		path_group.position.copy(object.position);
-		path_group.quaternion.copy(object.quaternion);
-
-		(object.userData.animation_paths ??= []).push(path_group);
-		(object.userData.relevant_animation_paths ??= []).push(path_group);
-
-		object.parent!.add(path_group);
 	});
+}
+
+export function add_animation_path(
+	object: LevelNodeObject,
+	animation_index: number,
+	visible: boolean,
+) {
+	const animation = object.userData.node.animations?.[animation_index];
+	if (!animation?.frames) return;
+
+	const points = animation.frames.map((frame) =>
+		Vector3toTHREE(frame.position),
+	);
+	const line_geometry = new BufferGeometry().setFromPoints(points);
+
+	const is_current =
+		animation_index === (object.userData.node.activeAnimation ?? 0);
+
+	const path_line = new Line(
+		line_geometry,
+		is_current ? current_animation_path_material : animation_path_material,
+	);
+	const points_line = new Points(
+		line_geometry,
+		is_current
+			? current_animation_points_material
+			: animation_points_material,
+	);
+
+	const path_group = Object.assign(new Group(), {
+		userData: { object },
+	});
+	path_group.add(path_line);
+	path_group.add(points_line);
+	path_group.visible = visible;
+	path_group.position.copy(object.position);
+	path_group.quaternion.copy(object.quaternion);
+
+	(object.userData.animation_paths ??= []).push(path_group);
+	(object.userData.relevant_animation_paths ??= []).push(path_group);
+
+	object.parent!.add(path_group);
 }
 
 export function update_animation_paths_transforms(object: LevelNodeObject) {
