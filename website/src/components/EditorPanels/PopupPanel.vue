@@ -1,17 +1,27 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { CheckboxInput, Input, OptionInput, RangeInput, UnspecifiedInput } from './inputs';
+import type {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	CheckboxInput,
+	Input,
+	InputResults,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	OptionInput,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	RangeInput,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	UnspecifiedInput,
+} from './inputs';
 
 export default defineComponent({
 	props: {
 		inputs: {
 			type: Array as PropType<Input[]>,
-			required: true,
+			required: false,
 		},
 		func: {
-			type: Function as PropType<(...data: unknown[]) => void>,
-			required: true,
+			type: Function as PropType<(...data: InputResults<Input[]>) => void | Promise<void>>,
+			required: false,
 		},
 	},
 	data() {
@@ -46,7 +56,7 @@ export default defineComponent({
 	},
 	methods: {
 		run() {
-			const data = this.inputs.map((input, index) => {
+			const data = this.inputs!.map((input, index) => {
 				if (input.type === 'file') {
 					return Array.from(
 						(this.$refs[`input-${index}`] as HTMLInputElement[])[0]!.files!,
@@ -59,7 +69,7 @@ export default defineComponent({
 			});
 			this.visible = false;
 			console.log(...data);
-			this.func(...data);
+			void this.func!(...data);
 		},
 		click(e: MouseEvent | TouchEvent) {
 			if (

@@ -3,10 +3,6 @@ export interface BaseInput {
 	text?: string;
 }
 
-export type OptionInput = BaseInput & {
-	type: 'option';
-	options: string[];
-};
 export type TextareaInput = BaseInput & {
 	type: 'textarea';
 };
@@ -27,6 +23,12 @@ export type FileInput = BaseInput & {
 	multiple?: boolean;
 };
 
+export type OptionInput<Options extends readonly string[] = readonly string[]> =
+	BaseInput & {
+		type: 'option';
+		options: Options;
+	};
+
 export type SpecificInput =
 	OptionInput | TextareaInput | RangeInput | CheckboxInput | FileInput;
 export type UnspecifiedInput = BaseInput & {
@@ -37,3 +39,29 @@ export type UnspecifiedInput = BaseInput & {
 };
 
 export type Input = SpecificInput | UnspecifiedInput;
+
+export type InputResult<I> = I extends { type: 'file' }
+	? File[]
+	: I extends { type: 'checkbox' }
+		? boolean
+		: I extends { type: 'range' }
+			? number
+			: I extends { type: 'option'; options: readonly (infer O)[] }
+				? O
+				: string;
+
+export type InputResults<Options extends readonly Input[]> = {
+	[K in keyof Options]: InputResult<Options[K]>;
+};
+
+export type PopupFunction = <const Options extends readonly Input[]>(
+	inputs: Options,
+	func: (...data: InputResults<Options>) => void | Promise<void>,
+) => void;
+
+export interface PopupOptions<
+	Options extends readonly Input[] = readonly Input[],
+> {
+	inputs: Options;
+	func: (...data: InputResults<Options>) => void | Promise<void>;
+}

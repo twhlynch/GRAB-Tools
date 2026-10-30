@@ -2,7 +2,7 @@
 import { createLevel, decodeLevel } from '@/common/levels';
 import { get_protobuf, set_protobuf } from '@/common/root';
 import { add_nodes, deepClone, json_parse } from '@/common/utils';
-import { Input } from '@/components/EditorPanels/inputs';
+import { Input, InputResults, PopupOptions } from '@/components/EditorPanels/inputs';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
 import MyLevelsMenu from '@/components/EditorPanels/MyLevelsMenu.vue';
@@ -41,12 +41,7 @@ export default defineComponent({
 		const json: Raw<Level> = {};
 
 		return {
-			popup_props: {
-				inputs: [] as Input[],
-				func: () => {
-					// noop
-				},
-			},
+			popup_props: undefined as PopupOptions | undefined,
 			show_protobuf_panel: false,
 			show_my_levels_menu: false,
 
@@ -124,9 +119,11 @@ export default defineComponent({
 		run_viewport(func: (scope: InstanceType<typeof ViewportPanel>) => void | Promise<void>) {
 			void func(this.refs().viewport_panel);
 		},
-		set_popup(inputs: Input[], func: (...data: unknown[]) => void) {
-			this.popup_props.inputs = inputs;
-			this.popup_props.func = func;
+		set_popup<const Options extends readonly Input[]>(
+			inputs: Options,
+			func: (...data: InputResults<Options>) => void | Promise<void>,
+		) {
+			this.popup_props = { inputs, func: func as PopupOptions['func'] };
 		},
 		scope(func: (scope: unknown) => void) {
 			func(this);
@@ -216,9 +213,7 @@ export default defineComponent({
 			@modifier="run_modifier"
 			@function="run_function"
 			@viewport="run_viewport as (_: (_: never) => void) => void"
-			@popup="
-				set_popup as (_: Input[], _f: (...data: never[]) => void | Promise<void>) => void
-			"
+			@popup="set_popup"
 			@scope="scope as (_: (_: never) => void) => void"
 		/>
 		<ResizableRowPanel :ref="'main_panel'" class="main-panel" @resize="resize_left">
@@ -254,7 +249,7 @@ export default defineComponent({
 		<footer>
 			<StatisticsPanel ref="statistics" />
 		</footer>
-		<PopupPanel :inputs="popup_props.inputs" :func="popup_props.func" />
+		<PopupPanel :inputs="popup_props?.inputs as Input[]" :func="popup_props?.func" />
 		<MyLevelsMenu
 			v-model:visible="show_my_levels_menu"
 			@open="set_json"

@@ -69,7 +69,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { defineComponent } from 'vue';
 import DropDown from './DropDown.vue';
-import { Input } from './inputs';
+import { Input, InputResults } from './inputs';
 import { Menu } from './menu';
 import ViewportPanel from './ViewportPanel.vue';
 
@@ -81,7 +81,10 @@ export default defineComponent({
 		modifier: (_: (level: Level) => Level | Promise<Level>) => true,
 		function: (_: (level: Level) => void | Promise<void>) => true,
 		viewport: (_: (_: never) => void) => true,
-		popup: <F extends (...data: never[]) => void | Promise<void>>(_: Input[], _f: F) => true,
+		popup: <const Options extends readonly Input[]>(
+			_inputs: Options,
+			_func: (...data: InputResults<Options>) => void | Promise<void>,
+		) => true,
 		scope: (_: (_: never) => void) => true,
 	},
 	data() {
@@ -350,7 +353,11 @@ export default defineComponent({
 		function(func: (level: Level) => void | Promise<void>) {
 			this.$emit('function', func);
 		},
-		popup<F extends (...data: never[]) => void | Promise<void>>(inputs: Input[], func: F) {
+		popup<const Options extends readonly Input[]>(
+			inputs: Options,
+			func: (...data: InputResults<Options>) => void | Promise<void>,
+		) {
+			// @ts-expect-error emit doesnt work with generics
 			this.$emit('popup', inputs, func);
 		},
 		select_by_material(material: LevelNodeMaterial) {
@@ -685,7 +692,7 @@ export default defineComponent({
 						accept: 'audio/*',
 					},
 				],
-				async (samples: string, files: File[]) => {
+				async (samples, files) => {
 					if (!files.length) {
 						window.toast('No audio file chosen', 'error');
 						return;
@@ -731,14 +738,7 @@ export default defineComponent({
 						accept: 'image/*',
 					},
 				],
-				async (
-					width: string,
-					height: string,
-					mode: 'cubes' | 'particles',
-					shape: 'plane' | 'sphere',
-					greedy: boolean,
-					files: File[],
-				) => {
+				async (width, height, mode, shape, greedy, files) => {
 					if (!files.length) {
 						window.toast('No image file chosen', 'error');
 						return;
@@ -763,7 +763,6 @@ export default defineComponent({
 		},
 		insert_video() {
 			this.popup(
-				// TODO: types should be inferred from options
 				[
 					{
 						type: 'number',
@@ -782,12 +781,7 @@ export default defineComponent({
 						accept: '.mp4',
 					},
 				],
-				async (
-					width: string,
-					height: string,
-					mode: 'animations' | 'code',
-					files: File[],
-				) => {
+				async (width, height, mode, files) => {
 					if (!files.length) {
 						window.toast('No video file chosen', 'error');
 						return;
@@ -830,7 +824,7 @@ export default defineComponent({
 						multiple: true,
 					},
 				],
-				async (mode: 'triangles' | 'particles' | 'spheres', files: File[]) => {
+				async (mode, files) => {
 					if (!files.length) {
 						window.toast('No file chosen', 'error');
 						return;
@@ -879,7 +873,7 @@ export default defineComponent({
 						accept: '.svg',
 					},
 				],
-				async (detail: string, files: File[]) => {
+				async (detail, files) => {
 					if (!files.length) {
 						window.toast('No file chosen', 'error');
 						return;
@@ -1059,7 +1053,7 @@ export default defineComponent({
 						options: ['to', ...convertable_materials],
 					},
 				],
-				(from: string, to: string) => {
+				(from, to) => {
 					if (from === 'from' || to === 'to') {
 						window.toast('Nothing selected', 'error');
 						return;
@@ -1098,7 +1092,7 @@ export default defineComponent({
 						],
 					},
 				],
-				(from: string, to: string) => {
+				(from, to) => {
 					if (from === 'from' || to === 'to') {
 						window.toast('Nothing selected', 'error');
 						return;
