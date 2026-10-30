@@ -17,3 +17,12 @@
 #### **Do you have questions about the source code?**
 
 - Ask any question in the [discord server](https://discord.grabvr.tools).
+
+#### Development Conventions
+
+- Name branches using [conventional branch naming](https://conventionalbranch.org/) Purpose Prefixes.
+- Write clear commit messages using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) excluding scopes and breaking change indication.
+- Each commit should be atomic, with one change per commit. Don't bundle unrelated changes or hotfixes.
+- Commit only relevant files. Don't commit configs, logs, or temporary files.
+- Utilitse `pnpm test|check|typecheck|lint|format` before comitting.
+- Don't merge `main` into a PR branch. Intead always rebase and force push.
