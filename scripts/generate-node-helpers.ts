@@ -183,6 +183,22 @@ export function ${camel}HasKey<K extends ${type}DataKey>(
 ): node is ${type}WithKey<K> {
 	return ${camel}_slots[key].some((slot) => !!node[slot]);
 }
+
+export const ${camel}Metadata = [
+	${wrapper_props
+		.map(
+			(i) => `{
+		name: '${i.name}',
+		camel: '${i.camel}',
+		wrapper: '${i.wrapper}',
+		scope: '${i.scope}',
+		props: [${i.props.map((p) => `'${p}'`).join(', ')}],
+		with: ${i.wrapper}With${i.scope},
+		is: is${TitleCase(i.wrapper)}${i.scope},
+	}`,
+		)
+		.join(',\n\t')}
+] as const;
 `;
 	});
 
