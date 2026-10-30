@@ -14,6 +14,7 @@ import {
 	format_type,
 	json_parse,
 	materials,
+	random_ambience,
 	random_material,
 	random_shape,
 	shapes,
@@ -1285,26 +1286,8 @@ export default defineComponent({
 			});
 		},
 		ambience_random() {
-			const random_float = () => {
-				return 2000 * Math.random() - 1000;
-			};
 			this.modifier((json) => {
-				json.ambienceSettings = ambienceSettings(
-					{
-						r: random_float(),
-						g: random_float(),
-						b: random_float(),
-					},
-					{
-						r: random_float(),
-						g: random_float(),
-						b: random_float(),
-					},
-					random_float(),
-					random_float(),
-					random_float(),
-					random_float(),
-				);
+				json.ambienceSettings = random_ambience();
 				return json;
 			});
 		},

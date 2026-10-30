@@ -7,6 +7,7 @@ import {
 } from '@grab-tools/lib/generated/proto';
 import { Object3D } from 'three';
 import { LevelNodeObject } from './levelNodes';
+import { ambienceSettings } from './levels';
 
 export function isObject3D(object: unknown): object is Object3D {
 	return object instanceof Object3D;
@@ -84,4 +85,27 @@ export function object_contains(object: Object3D, child: Object3D) {
 export function copy_object_id(object: LevelNodeObject) {
 	const id = object.userData.id;
 	void navigator.clipboard.writeText(String(id));
+}
+
+export function random_ambience() {
+	const random_float = () => {
+		return 2000 * Math.random() - 1000;
+	};
+
+	return ambienceSettings(
+		{
+			r: random_float(),
+			g: random_float(),
+			b: random_float(),
+		},
+		{
+			r: random_float(),
+			g: random_float(),
+			b: random_float(),
+		},
+		random_float(),
+		random_float(),
+		random_float(),
+		random_float(),
+	);
 }
