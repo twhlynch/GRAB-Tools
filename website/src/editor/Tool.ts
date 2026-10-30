@@ -1,12 +1,12 @@
 import type { LevelNodeObject } from '@/common/levelNodes';
 import type { Level, LevelNodeGroup } from '@grab-tools/lib/generated/proto';
-import type { Camera, WebGLRenderer } from 'three';
+import type { Camera, Scene, WebGLRenderer } from 'three';
 import type GizmoControls from './GizmoControls';
 import type { LevelData } from './LevelLoader';
 
 export interface ViewportInterface {
 	gizmo: GizmoControls;
-	editing_parent: LevelNodeObject<LevelNodeGroup> | THREE.Scene | undefined;
+	editing_parent: LevelNodeObject<LevelNodeGroup> | Scene | undefined;
 	level: LevelData;
 	renderer: WebGLRenderer;
 	camera: Camera;

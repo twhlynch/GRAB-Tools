@@ -72,7 +72,7 @@ export function format_type(type: string) {
 		.join(' ');
 }
 
-export function object_contains(object: THREE.Object3D, child: THREE.Object3D) {
+export function object_contains(object: Object3D, child: Object3D) {
 	let current = child.parent;
 	while (current) {
 		if (current === object) return true;
