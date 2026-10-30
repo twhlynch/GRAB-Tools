@@ -8,10 +8,8 @@ import {
 	downloadLevel,
 	encodeLevel,
 } from '@/common/levels';
-import { load } from '@/common/root';
 import {
 	deepClone,
-	format_type,
 	json_parse,
 	materials,
 	random_ambience,
@@ -21,6 +19,7 @@ import {
 	traverse_node,
 } from '@/common/utils';
 import { FreeControls } from '@/editor/FreeControls';
+import { material_menu, shape_menu, type_menu } from '@/editor/menuUtils';
 import EditorPage from '@/pages/EditorPage.vue';
 import { useConfigStore } from '@/stores/config';
 import audio from '@/tools/audio';
@@ -201,71 +200,13 @@ export default defineComponent({
 				} as unknown as Menu,
 				Select: {
 					All: { func: this.select_all },
-					Shape: {
-						...Object.fromEntries(
-							Array.from(
-								{
-									length:
-										Object.entries(shapes()).length -
-										shapes().__END_OF_SPECIAL_PARTS__ -
-										1,
-								},
-								(_, i) => {
-									return [
-										format_type(shapes()[1000 + i]!),
-										{
-											func: () => {
-												this.select_by_shape?.(1000 + i);
-											},
-										},
-									];
-								},
-							),
-						),
-					},
-					Material: {
-						...Object.fromEntries(
-							Array.from(
-								{
-									length: Object.entries(materials()).length,
-								},
-								(_, i) => {
-									return [
-										format_type(materials()[i]!),
-										{
-											func: () => {
-												this.select_by_material?.(i);
-											},
-											num: i,
-										},
-									] as [string, { func: () => void; num: number }];
-								},
-							).filter((item) => item[1].num !== materials().TRIGGER),
-						),
-					},
-					Type: {
-						...Object.fromEntries(
-							Array.from(
-								{
-									length: load().COD.Level.LevelNode.oneofs.content.oneof.length,
-								},
-								(_, i) => {
-									return [
-										load().COD.Level.LevelNode.oneofs.content.oneof[i],
-										{
-											func: () => {
-												this.select_by_type?.(
-													load().COD.Level.LevelNode.oneofs.content.oneof[
-														i
-													],
-												);
-											},
-										},
-									];
-								},
-							),
-						),
-					},
+					Shape: shape_menu(this.select_by_shape as (shape: LevelNodeShape) => void),
+					Material: material_menu(
+						this.select_by_material as (material: LevelNodeMaterial) => void,
+					),
+					Type: type_menu(this.select_by_type as (type: LevelNodeKey) => void, [
+						'levelNodeLobbyTerminal',
+					]),
 					Color: { func: this.select_by_color },
 				} as unknown as Menu,
 				View: {

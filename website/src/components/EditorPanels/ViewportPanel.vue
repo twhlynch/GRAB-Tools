@@ -1,14 +1,7 @@
 <script lang="ts">
 import { ungroupNode } from '@/common/group';
 import { isLevelNodeObject, LevelNodeObject } from '@/common/levelNodes';
-import {
-	copy_object_id,
-	deepClone,
-	format_type,
-	materials,
-	object_contains,
-	shapes,
-} from '@/common/utils';
+import { copy_object_id, deepClone, object_contains } from '@/common/utils';
 import {
 	add_animation_paths,
 	add_gasm_connection,
@@ -1300,50 +1293,10 @@ export default defineComponent({
 							},
 						}),
 					...(clicked_has_shape && {
-						Shape: {
-							...Object.fromEntries(
-								Array.from(
-									{
-										length:
-											Object.entries(shapes()).length -
-											shapes().__END_OF_SPECIAL_PARTS__ -
-											1,
-									},
-									(_, i) => {
-										return [
-											format_type(shapes()[1000 + i]!),
-											{
-												func: () => {
-													this.set_shape(1000 + i);
-												},
-											},
-										];
-									},
-								),
-							),
-						},
+						Shape: shape_menu(this.set_shape.bind(this)),
 					}),
 					...(clicked_has_material && {
-						Material: {
-							...Object.fromEntries(
-								Array.from(
-									{
-										length: Object.entries(materials()).length,
-									},
-									(_, i) => {
-										return [
-											format_type(materials()[i]!),
-											{
-												func: () => {
-													this.set_material(i);
-												},
-												num: i,
-											},
-										] as [string, { func: () => void; num: number }];
-									},
-								).filter((item) => item[1].num !== LevelNodeMaterial.TRIGGER),
-							),
-						},
+						Material: material_menu(this.set_material.bind(this)),
 					}),
 					...(clicked_can_animate && {
 						'Add Animation': {
