@@ -8,8 +8,7 @@ protobuf_definition = add_modded_types(protobuf_definition);
 set_protobuf(protobuf_definition);
 
 export function load(): Root {
-	return (window._root ??= protobuf.parse(protobuf_definition)
-		.root as Root) as Root;
+	return (window._root ??= protobuf.parse(protobuf_definition).root as Root);
 }
 
 export function set_protobuf(new_definition: string) {
