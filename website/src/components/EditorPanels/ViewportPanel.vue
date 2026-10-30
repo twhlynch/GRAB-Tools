@@ -2,22 +2,6 @@
 import { ungroupNode } from '@/common/group';
 import { isLevelNodeObject, LevelNodeObject } from '@/common/levelNodes';
 import { copy_object_id, deepClone, object_contains } from '@/common/utils';
-import {
-	add_animation_paths,
-	add_gasm_connection,
-	add_gasm_connections,
-	add_group_bounds,
-	add_trigger_connection,
-	add_trigger_connections,
-	update_animation_paths_transforms,
-	update_animation_paths_visibility,
-	update_connection_positions,
-	update_gasm_connections_visibility,
-	update_group_bound_visibility,
-	update_group_bounds_color,
-	update_relevant_group_bounds,
-	update_trigger_connections_visibility,
-} from '@/common/visuals';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -33,6 +17,22 @@ import GizmoControls, {
 import { levelData, LevelLoader } from '@/editor/LevelLoader';
 import { material_menu, shape_menu, type_menu } from '@/editor/menuUtils';
 import { Tool } from '@/editor/Tool';
+import {
+	add_animation_paths,
+	add_gasm_connection,
+	add_gasm_connections,
+	add_group_bounds,
+	add_trigger_connection,
+	add_trigger_connections,
+	update_animation_paths_transforms,
+	update_animation_paths_visibility,
+	update_connection_positions,
+	update_gasm_connections_visibility,
+	update_group_bound_visibility,
+	update_group_bounds_color,
+	update_relevant_group_bounds,
+	update_trigger_connections_visibility,
+} from '@/editor/visuals';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
 import OneSidedScaleIcon from '@/icons/OneSidedScaleIcon.vue';

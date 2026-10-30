@@ -1,3 +1,9 @@
+import {
+	isLevelNodeObject,
+	LevelNodeObject,
+	LineWithConnectionData,
+} from '@/common/levelNodes';
+import { Vector3toTHREE } from '@/common/utils';
 import { LevelData } from '@/editor/LevelLoader';
 import {
 	triggerTargetData,
@@ -24,12 +30,6 @@ import {
 	Scene,
 	Vector3,
 } from 'three';
-import {
-	isLevelNodeObject,
-	LevelNodeObject,
-	LineWithConnectionData,
-} from './levelNodes';
-import { Vector3toTHREE } from './utils';
 
 const points_options = {
 	size: 3,
