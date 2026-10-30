@@ -31,6 +31,7 @@ import GizmoControls, {
 	TransformSpace,
 } from '@/editor/GizmoControls';
 import { levelData, LevelLoader } from '@/editor/LevelLoader';
+import { material_menu, shape_menu, type_menu } from '@/editor/menuUtils';
 import { Tool } from '@/editor/Tool';
 import CursorIcon from '@/icons/CursorIcon.vue';
 import KeyboardIcon from '@/icons/KeyboardIcon.vue';
@@ -1206,6 +1207,13 @@ export default defineComponent({
 									},
 								]),
 						),
+					},
+					Select: {
+						All: { func: this.select_all.bind(this) },
+						Shape: shape_menu(this.select_by_shape.bind(this)),
+						Material: material_menu(this.select_by_material.bind(this)),
+						Type: type_menu(this.select_by_type.bind(this), ['levelNodeLobbyTerminal']),
+						Color: { func: this.select_by_color.bind(this) },
 					},
 				} satisfies Menu;
 			}
