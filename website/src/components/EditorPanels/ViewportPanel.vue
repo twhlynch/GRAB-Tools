@@ -338,7 +338,7 @@ export default defineComponent({
 			this.gizmo.selection.forEach((object) => {
 				this.update_node_shader(object);
 				update_animation_paths_transforms(object);
-				update_relevant_group_bounds(object, this.editing_parent);
+				update_relevant_group_bounds(object);
 			});
 			this.update_connection_positions(this.gizmo.selection);
 		},
@@ -349,7 +349,7 @@ export default defineComponent({
 
 			this.gizmo.selection.forEach((object) => {
 				this.update_node_shader(object);
-				update_relevant_group_bounds(object, this.editing_parent);
+				update_relevant_group_bounds(object);
 			});
 
 			this.update_connection_positions(this.gizmo.selection);

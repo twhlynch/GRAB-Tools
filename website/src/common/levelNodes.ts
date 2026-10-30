@@ -61,7 +61,11 @@ export type Root = PBRoot & {
 	};
 };
 
-export type LineWithConnectionData = Line & {
+type GroupBoundsIgnore<T> = T & {
+	userData: { groupBoundsIgnore: boolean };
+};
+
+export type LineWithConnectionData = GroupBoundsIgnore<Line> & {
 	userData: { object: LevelNodeObject; target: LevelNodeObject };
 };
 
@@ -90,16 +94,18 @@ export type LevelNodeObject<T extends LevelNodeTypes = never> = Partial<
 			currentFrameIndex?: number;
 			update?: (delta: number) => void;
 
-			animation_paths?: Group[];
-			relevant_animation_paths?: (Group & {
+			animation_paths?: GroupBoundsIgnore<Group>[];
+			relevant_animation_paths?: (GroupBoundsIgnore<Group> & {
 				userData: { object: LevelNodeObject };
 			})[];
 			relevant_connections?: LineWithConnectionData[];
 			trigger_connections?: LineWithConnectionData[];
 			gasm_connections?: LineWithConnectionData[];
-			group_bounds?: LineSegments<
-				EdgesGeometry<BoxGeometry>,
-				LineBasicMaterial
+			group_bounds?: GroupBoundsIgnore<
+				LineSegments<
+					GroupBoundsIgnore<EdgesGeometry<BoxGeometry>>,
+					LineBasicMaterial
+				>
 			>;
 		} & {
 			[

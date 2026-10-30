@@ -17,10 +17,10 @@ import {
 	Line,
 	LineBasicMaterial,
 	LineSegments,
+	Matrix4,
 	Object3D,
 	Points,
 	PointsMaterial,
-	Quaternion,
 	Scene,
 	Vector3,
 } from 'three';
@@ -66,7 +66,10 @@ const gasm_connection_material = new LineBasicMaterial({
 const group_bounds_material = new LineBasicMaterial({
 	color: group_bounds_color,
 });
-const group_bounds_geometry = new EdgesGeometry(new BoxGeometry());
+const group_bounds_geometry = Object.assign(
+	new EdgesGeometry(new BoxGeometry()),
+	{ userData: { groupBoundsIgnore: true } },
+);
 
 export function add_animation_paths(level: LevelData, visible: boolean) {
 	level.nodes.animated.forEach((object) => {
@@ -94,19 +97,27 @@ export function add_animation_path(
 	const is_current =
 		animation_index === (object.userData.node.activeAnimation ?? 0);
 
-	const path_line = new Line(
-		line_geometry,
-		is_current ? current_animation_path_material : animation_path_material,
+	const path_line = Object.assign(
+		new Line(
+			line_geometry,
+			is_current
+				? current_animation_path_material
+				: animation_path_material,
+		),
+		{ userData: { groupBoundsIgnore: true } },
 	);
-	const points_line = new Points(
-		line_geometry,
-		is_current
-			? current_animation_points_material
-			: animation_points_material,
+	const points_line = Object.assign(
+		new Points(
+			line_geometry,
+			is_current
+				? current_animation_points_material
+				: animation_points_material,
+		),
+		{ userData: { groupBoundsIgnore: true } },
 	);
 
 	const path_group = Object.assign(new Group(), {
-		userData: { object },
+		userData: { object, groupBoundsIgnore: true },
 	});
 	path_group.add(path_line);
 	path_group.add(points_line);
@@ -241,7 +252,7 @@ function create_connection(
 	object: LevelNodeObject,
 	target: LevelNodeObject,
 	material: LineBasicMaterial,
-): LineWithConnectionData {
+) {
 	const trigger_position = new Vector3();
 	object.getWorldPosition(trigger_position);
 
@@ -252,7 +263,7 @@ function create_connection(
 	const line_geometry = new BufferGeometry().setFromPoints(points);
 
 	const line = Object.assign(new Line(line_geometry, material), {
-		userData: { object, target },
+		userData: { object, target, groupBoundsIgnore: true },
 	});
 
 	return line;
@@ -339,38 +350,61 @@ export function update_group_bound_visibility(
 		object.userData.group_bounds.visible = visible;
 	}
 }
+
+function get_group_bounds(object: LevelNodeObject<LevelNodeGroup>) {
+	object.updateWorldMatrix(true, true);
+
+	const box = new Box3();
+	const inverse_matrix = object.matrixWorld.clone().invert();
+	const matrix = new Matrix4();
+	const vertex = new Vector3();
+
+	object.traverse((child) => {
+		if (child.userData.groupBoundsIgnore) return;
+
+		const geometry = (
+			child as Object3D & {
+				geometry?: BufferGeometry;
+			}
+		).geometry;
+
+		const position = geometry?.attributes.position;
+		if (!position) return;
+
+		matrix.multiplyMatrices(inverse_matrix, child.matrixWorld);
+
+		for (let i = 0; i < position.count; i++) {
+			vertex.fromBufferAttribute(position, i);
+			vertex.applyMatrix4(matrix);
+			box.expandByPoint(vertex);
+		}
+	});
+
+	if (box.isEmpty()) return null;
+
+	return {
+		center: box.getCenter(new Vector3()),
+		size: box.getSize(new Vector3()),
+	};
+}
+
 export function add_group_bound(
 	object: LevelNodeObject<LevelNodeGroup>,
 	visible: boolean,
 ) {
-	if (!object.children[0]) return;
+	const bounds_data = get_group_bounds(object);
+	if (!bounds_data) return;
 
-	const box = new Box3().setFromObject(object);
-	for (const obj of object.children) {
-		box.expandByObject(obj);
-	}
-	const size = new Vector3();
-	const center = new Vector3();
-	box.getSize(size);
-	box.getCenter(center);
-
-	object.worldToLocal(center);
-
-	const child = object.children[0];
-	const child_q = new Quaternion();
-	child.getWorldQuaternion(child_q);
-	const parent_q = new Quaternion();
-	object.getWorldQuaternion(parent_q);
-	const quat = parent_q.clone().invert().multiply(child_q);
-
-	const bounds = new LineSegments(
-		group_bounds_geometry,
-		group_bounds_material.clone(), // to change the color
+	const bounds = Object.assign(
+		new LineSegments(
+			group_bounds_geometry,
+			group_bounds_material.clone(), // to change the color
+		),
+		{ userData: { groupBoundsIgnore: true } },
 	);
 
-	bounds.quaternion.copy(quat.multiply(object.quaternion));
-	bounds.scale.copy(size);
-	bounds.position.copy(center);
+	bounds.position.copy(bounds_data.center);
+	bounds.scale.copy(bounds_data.size);
 
 	bounds.visible = visible;
 	object.userData.group_bounds = bounds;
@@ -387,21 +421,17 @@ export function update_group_bounds_color(
 	);
 }
 
-export function update_relevant_group_bounds(
-	object: Object3D,
-	current_parent: Object3D | undefined,
-) {
+export function update_relevant_group_bounds(object: Object3D) {
 	let current: Object3D | null = object;
 	while (isLevelNodeObject(current)) {
 		if (isLevelNodeObject(current, 'levelNodeGroup')) {
 			const bounds = current.userData.group_bounds;
 			if (bounds) {
-				// TODO: modify the bound rather than recreating it
-				const visible = bounds.visible;
-				current.remove(bounds);
-				add_group_bound(current, visible);
-				if (current === current_parent) {
-					update_group_bounds_color(current, true);
+				const bounds_data = get_group_bounds(current);
+
+				if (bounds_data) {
+					bounds.position.copy(bounds_data.center);
+					bounds.scale.copy(bounds_data.size);
 				}
 			}
 		}
