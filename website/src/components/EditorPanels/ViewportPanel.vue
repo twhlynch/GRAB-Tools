@@ -1069,19 +1069,13 @@ export default defineComponent({
 			this.changed();
 		},
 		add_animation_target(object: LevelNodeObject, target_object?: LevelNodeObject) {
-			if (!isLevelNodeObject(object) || !isLevelNodeTrigger(object.userData.node)) return;
+			if (!isLevelNodeObject(object, 'levelNodeTrigger')) return;
 			const trigger = object.userData.node.levelNodeTrigger;
-			trigger.triggerTargets ??= [];
-			const target = triggerTargetWithAnimation();
-			const id = target_object?.userData.id ?? 0;
-			target.triggerTargetAnimation.objectID = id;
-			trigger.triggerTargets.push(target);
+			(trigger.triggerTargets ??= []).push(
+				triggerTargetWithAnimation({ objectID: target_object?.userData.id }),
+			);
 			if (target_object) {
-				add_trigger_connection(
-					object as LevelNodeObject<LevelNodeTrigger>,
-					target_object,
-					this.show_trigger_connections,
-				);
+				add_trigger_connection(object, target_object, this.show_trigger_connections);
 			}
 			this.changed();
 		},

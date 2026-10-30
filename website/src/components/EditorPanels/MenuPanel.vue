@@ -441,16 +441,17 @@ export default defineComponent({
 
 				for (const [i, shape] of modded_shapes.entries()) {
 					for (const [j, material] of modded_materials.entries()) {
-						const node = levelNodeWithStatic();
-						const data = node.levelNodeStatic;
-						data.shape = shape as LevelNodeShape;
-						data.material = material as LevelNodeMaterial;
-						data.position = { x: Number(i), z: Number(j) };
-						data.color1 = { r: 1, g: 1, b: 1 };
-						data.color2 = { r: 1, g: 1, b: 1 };
-						data.isNeon = true;
-						data.isTransparent = true;
-						nodes.push(node);
+						nodes.push(
+							levelNodeWithStatic({
+								shape: shape as LevelNodeShape,
+								material: material as LevelNodeMaterial,
+								position: { x: Number(i), z: Number(j) },
+								color1: { r: 1, g: 1, b: 1 },
+								color2: { r: 1, g: 1, b: 1 },
+								isNeon: true,
+								isTransparent: true,
+							}),
+						);
 					}
 				}
 				const level = createLevel(
@@ -830,14 +831,13 @@ export default defineComponent({
 			);
 		},
 		insert_static() {
-			const node = levelNodeWithStatic();
+			const node = levelNodeWithStatic({});
 			delete node.levelNodeStatic.color1;
 			delete node.levelNodeStatic.color2;
 			this.insert_selection_nodes([node]);
 		},
 		insert_crumbling() {
-			const node = levelNodeWithCrumbling();
-			this.insert_selection_nodes([node]);
+			this.insert_selection_nodes([levelNodeWithCrumbling()]);
 		},
 		insert_animated() {
 			const node = levelNodeWithStatic();
@@ -848,9 +848,9 @@ export default defineComponent({
 			this.insert_selection_nodes([node]);
 		},
 		insert_colored() {
-			const node = levelNodeWithStatic();
-			node.levelNodeStatic.material = 8;
-			this.insert_selection_nodes([node]);
+			this.insert_selection_nodes([
+				levelNodeWithStatic({ material: LevelNodeMaterial.DEFAULT_COLORED }),
+			]);
 		},
 		insert_sign() {
 			this.insert_selection_nodes([levelNodeWithSign()]);
@@ -880,12 +880,13 @@ export default defineComponent({
 			this.insert_selection_nodes([levelNodeWithGASM()]);
 		},
 		insert_colored_lava() {
-			const node = levelNodeWithStatic({
-				material: 3,
-				color1: { r: 1 },
-				color2: { b: 1 },
-			});
-			this.insert_selection_nodes([node]);
+			this.insert_selection_nodes([
+				levelNodeWithStatic({
+					material: 3,
+					color1: { r: 1 },
+					color2: { b: 1 },
+				}),
+			]);
 		},
 		insert_ambience_trigger() {
 			this.insert_selection_nodes([
