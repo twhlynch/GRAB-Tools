@@ -65,6 +65,7 @@ import {
 	isLevelNodeTrigger,
 	levelNodeData,
 	LevelNodeKey,
+	levelNodeMetadata,
 	LevelNodeWith,
 	triggerSourceWithBasic,
 	triggerSourceWithBlockNames,
@@ -802,7 +803,6 @@ export default defineComponent({
 			update_connection_positions(related_objects);
 		},
 		modify_selection(func: (nodes: LevelNode[]) => LevelNode[]) {
-			if (this.gizmo.empty()) return;
 			this.modifier((json) => {
 				const node_list = this.get_editing_nodes(json);
 
@@ -861,6 +861,32 @@ export default defineComponent({
 				),
 				...ungroupNode(node),
 			]);
+		},
+		insert_nodes(nodes: LevelNode[]) {
+			this.modify_selection((node_list) => [...node_list, ...nodes]);
+		},
+		insert_nodes_at_mouse(nodes: LevelNode[], { x, y }: { x: number; y: number }) {
+			if (!(this.controls instanceof OrbitControls)) return;
+
+			const distance = this.camera.position.distanceTo(this.controls.target);
+			const mouse = new THREE.Vector2();
+			const canvasSize = this.renderer.domElement.getBoundingClientRect();
+			mouse.x = ((x - canvasSize.left) / canvasSize.width) * 2 - 1;
+			mouse.y = -(((y - canvasSize.top) / canvasSize.height) * 2) + 1;
+
+			const raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse, this.camera);
+			const position = new THREE.Vector3();
+			position
+				.copy(raycaster.ray.direction)
+				.multiplyScalar(distance)
+				.add(this.camera.position);
+
+			nodes.forEach((node) => {
+				levelNodeData(node).position = { ...position };
+			});
+
+			this.insert_nodes(nodes);
 		},
 		keyup(e: KeyboardEvent) {
 			if (this.active_tool?.on_key_up?.(e)) return;
@@ -1166,8 +1192,30 @@ export default defineComponent({
 			this.modifier((json) => json);
 		},
 		build_context_menu(x: number, y: number) {
+			if (this.controls instanceof FreeControls) return;
+
 			const clicked_object = this.cast_for_node(x, y);
-			if (!clicked_object) return;
+			if (!clicked_object) {
+				return {
+					'Insert Node': {
+						...Object.fromEntries(
+							levelNodeMetadata
+								.filter(
+									(metadata) =>
+										!['LobbyTerminal', 'Group'].includes(metadata.scope),
+								)
+								.map((metadata) => [
+									metadata.scope,
+									{
+										func: () => {
+											this.insert_nodes_at_mouse([metadata.with()], { x, y });
+										},
+									},
+								]),
+						),
+					},
+				} satisfies Menu;
+			}
 
 			const clicked_node = clicked_object.userData.node;
 
