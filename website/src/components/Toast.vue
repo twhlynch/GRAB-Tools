@@ -52,7 +52,7 @@ export default defineComponent({
 		async copyMessage(message: Message) {
 			await navigator.clipboard.writeText(message.value);
 
-			if (message.severity.startsWith('err')) {
+			if (message.severity == 'error') {
 				if (message.error) {
 					captureException(message.error);
 				} else {
@@ -73,7 +73,7 @@ export default defineComponent({
 			@click="copyMessage(message)"
 		>
 			<span>{{ message.value }}</span>
-			<span v-if="message.severity.startsWith('err')" class="extra">
+			<span v-if="message.severity == 'error'" class="extra">
 				Click to copy and report this error to the discord server if you believe it is not
 				your fault.
 			</span>
@@ -106,16 +106,14 @@ export default defineComponent({
 	cursor: pointer;
 	max-width: min(90svw, 50ch);
 
-	&.toast-warning,
-	&.toast-warn {
+	&.toast-warning {
 		border: 2px solid var(--yellow);
 	}
 	&.toast-error,
-	&.toast-err {
+	&.toast-misuse {
 		border: 2px solid var(--red);
 	}
-	&.toast-message,
-	&.toast-info {
+	&.toast-message {
 		border: 2px solid var(--blue);
 	}
 }

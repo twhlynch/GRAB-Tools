@@ -16,7 +16,7 @@ export default defineComponent({
 			const files = Array.from(fileInput.files ?? []);
 			const file = files[0];
 			if (!file) {
-				window.toast('No file chosen', 'error');
+				window.toast('No file chosen', 'misuse');
 				return;
 			}
 
@@ -25,7 +25,7 @@ export default defineComponent({
 			const mode = modeInput.value as 'triangles' | 'particles' | 'spheres';
 
 			if (!objFile) {
-				window.toast('No .obj file selected', 'error');
+				window.toast('No .obj file selected', 'misuse');
 				return;
 			}
 

@@ -2,7 +2,7 @@ import { Root } from '@/common/levelNodes';
 import { LevelLoader } from '@/editor/LevelLoader';
 import { Reactive } from 'vue';
 
-type Severity = 'message' | 'info' | 'warn' | 'warning' | 'err' | 'error';
+type Severity = 'message' | 'warning' | 'error' | 'misuse';
 
 declare global {
 	interface Window {

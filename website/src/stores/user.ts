@@ -99,7 +99,7 @@ export const useUserStore = defineStore('user', {
 		session_expired() {
 			if (!this.logged_in) return;
 			this.logout();
-			window.toast('Session expired, please log in again', 'error');
+			window.toast('Session expired, please log in again', 'misuse');
 		},
 		check_expiry() {
 			if (

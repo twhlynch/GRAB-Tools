@@ -341,7 +341,7 @@ export default defineComponent({
 				);
 
 				if (query_metric) this.top_metrics.push(query_metric);
-				else window.toast('Failed to find user');
+				else window.toast('Failed to find user', 'misuse');
 			}
 			requestAnimationFrame(() => {
 				const playersList = this.$refs.players as HTMLElement;

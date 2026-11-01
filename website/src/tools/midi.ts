@@ -57,7 +57,7 @@ async function midi(
 		// Can't make a non-looping start active animation in grab.
 		window.toast(
 			'Cannot make an animation start active and not looping.',
-			'error',
+			'misuse',
 		);
 		return null;
 	}

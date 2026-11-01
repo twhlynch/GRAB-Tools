@@ -105,7 +105,7 @@ export function asm_to_json(
 	const instructions = code
 		.map((line) => {
 			const json = instruction_asm_to_json(line, node);
-			if (!json) window.toast(`Invalid instruction: ${line}`, 'warn');
+			if (!json) window.toast(`Invalid instruction: ${line}`, 'warning');
 			return json;
 		})
 		.filter((i) => i !== undefined);

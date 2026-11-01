@@ -84,7 +84,7 @@ export class Terminal {
 		} catch (e) {
 			console.error(e);
 			if (e instanceof Error) {
-				window.toast(e.message, 'error');
+				window.toast(e.message, 'misuse');
 			}
 		}
 	}

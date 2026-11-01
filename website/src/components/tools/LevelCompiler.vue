@@ -29,7 +29,7 @@ export default defineComponent({
 			}
 
 			if (!files.length) {
-				window.toast('No files chosen', 'error');
+				window.toast('No files chosen', 'misuse');
 				return;
 			}
 

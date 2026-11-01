@@ -20,7 +20,7 @@ export default defineComponent({
 			const files = Array.from(fileInput.files ?? []);
 			const file = files[0];
 			if (!file) {
-				window.toast('No file chosen', 'error');
+				window.toast('No file chosen', 'misuse');
 				return;
 			}
 

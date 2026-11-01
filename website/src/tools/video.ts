@@ -45,7 +45,7 @@ async function video(
 async function read_video(file: File, callback: (percent: number) => void) {
 	console.log(file);
 	if (file.size === 0) {
-		window.toast('Invalid Video: Size is 0', 'error');
+		window.toast('Invalid Video: Size is 0', 'misuse');
 		return null;
 	}
 

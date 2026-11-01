@@ -180,7 +180,7 @@ export default defineComponent({
 			window.toast('WebGL context lost, reload recommended', 'error');
 		});
 		this.renderer.domElement.addEventListener('webglcontextrestored', () => {
-			window.toast('WebGL context restored', 'info');
+			window.toast('WebGL context restored');
 		});
 
 		const observer = new ResizeObserver((entries) => {

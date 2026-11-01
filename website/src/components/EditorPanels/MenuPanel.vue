@@ -595,7 +595,7 @@ export default defineComponent({
 					speedIndex: string,
 				) => {
 					if (!files.length) {
-						window.toast('No midi file chosen', 'error');
+						window.toast('No midi file chosen', 'misuse');
 						return;
 					}
 
@@ -637,7 +637,7 @@ export default defineComponent({
 				],
 				async (samples, files) => {
 					if (!files.length) {
-						window.toast('No audio file chosen', 'error');
+						window.toast('No audio file chosen', 'misuse');
 						return;
 					}
 
@@ -683,7 +683,7 @@ export default defineComponent({
 				],
 				async (width, height, mode, shape, greedy, files) => {
 					if (!files.length) {
-						window.toast('No image file chosen', 'error');
+						window.toast('No image file chosen', 'misuse');
 						return;
 					}
 
@@ -726,7 +726,7 @@ export default defineComponent({
 				],
 				async (width, height, mode, files) => {
 					if (!files.length) {
-						window.toast('No video file chosen', 'error');
+						window.toast('No video file chosen', 'misuse');
 						return;
 					}
 
@@ -769,14 +769,14 @@ export default defineComponent({
 				],
 				async (mode, files) => {
 					if (!files.length) {
-						window.toast('No file chosen', 'error');
+						window.toast('No file chosen', 'misuse');
 						return;
 					}
 
 					const objFile = files.find((f) => f.name.endsWith('.obj'));
 					const mtlFile = files.find((f) => f.name.endsWith('.mtl'));
 					if (!objFile) {
-						window.toast('No .obj file selected', 'error');
+						window.toast('No .obj file selected', 'misuse');
 						return;
 					}
 
@@ -818,7 +818,7 @@ export default defineComponent({
 				],
 				async (detail, files) => {
 					if (!files.length) {
-						window.toast('No file chosen', 'error');
+						window.toast('No file chosen', 'misuse');
 						return;
 					}
 
@@ -998,7 +998,7 @@ export default defineComponent({
 				],
 				(from, to) => {
 					if (from === 'from' || to === 'to') {
-						window.toast('Nothing selected', 'error');
+						window.toast('Nothing selected', 'misuse');
 						return;
 					}
 
@@ -1037,7 +1037,7 @@ export default defineComponent({
 				],
 				(from, to) => {
 					if (from === 'from' || to === 'to') {
-						window.toast('Nothing selected', 'error');
+						window.toast('Nothing selected', 'misuse');
 						return;
 					}
 

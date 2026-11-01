@@ -20,11 +20,11 @@ export default class BrushTool implements Tool {
 
 	activate(viewport: ViewportInterface) {
 		if (viewport.gizmo.empty()) {
-			window.toast('Select objects first to use as a brush', 'warn');
+			window.toast('Select objects first to use as a brush', 'warning');
 			return false;
 		}
 		if (viewport.editing_parent !== viewport.level.scene) {
-			window.toast('Brush does not work inside a group', 'warn');
+			window.toast('Brush does not work inside a group', 'warning');
 			return false;
 		}
 
