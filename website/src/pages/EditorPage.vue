@@ -248,6 +248,10 @@ export default defineComponent({
 		</ResizableRowPanel>
 		<footer>
 			<StatisticsPanel ref="statistics" />
+			<div class="axis-hints">
+				<span class="hint-x">X</span><span class="hint-y">Y</span
+				><span class="hint-z">Z</span>
+			</div>
 		</footer>
 		<PopupPanel :inputs="popup_props?.inputs as Input[]" :func="popup_props?.func" />
 		<MyLevelsMenu
@@ -295,6 +299,7 @@ footer {
 	height: 1.2rem;
 	font-size: 0.8rem;
 	background-color: #1e1e1e;
+	display: flex;
 }
 .main-panel {
 	height: calc(100% - 3rem - 1rem);
@@ -307,6 +312,25 @@ footer {
 }
 .left-panel {
 	height: 100%;
+}
+
+.axis-hints {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	span {
+		width: 1rem;
+		line-height: 0;
+	}
+}
+.hint-x {
+	color: red;
+}
+.hint-y {
+	color: green;
+}
+.hint-z {
+	color: blue;
 }
 
 @keyframes spin {
