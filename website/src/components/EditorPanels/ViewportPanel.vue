@@ -1183,7 +1183,9 @@ export default defineComponent({
 			if (this.controls instanceof FreeControls) return;
 
 			const clicked_object = this.cast_for_node(x, y);
-			if (!clicked_object) {
+			const selection = this.gizmo.selection;
+
+			if (!clicked_object || !selection[0]) {
 				return {
 					'Insert Node': {
 						...Object.fromEntries(
@@ -1213,9 +1215,6 @@ export default defineComponent({
 			}
 
 			const clicked_node = clicked_object.userData.node;
-
-			const selection = this.gizmo.selection;
-			if (!selection.length || !selection[0]) return;
 
 			const single_selection = selection.length === 1;
 			const selected_object = selection[0];
