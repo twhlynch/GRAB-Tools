@@ -5,12 +5,14 @@ old_version=$(node -p "require('./website/package.json').version")
 
 # update with pnpm
 pnpm version "$1" --no-git-tag-version
+pnpm config set git-checks false
 cd website
 pnpm version "$1" --no-git-tag-version
 cd -
 cd lib
 pnpm version "$1" --no-git-tag-version
 cd -
+pnpm config set git-checks true
 
 # get new version from package.json
 new_version=$(node -p "require('./website/package.json').version")
