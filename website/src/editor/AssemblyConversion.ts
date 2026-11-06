@@ -507,6 +507,15 @@ function preprocess_scopes(
 				throw err(`Expected number but found '${step_arg}'`, line);
 			}
 
+			// sanity check for trivial infinite loops
+			if (step === 0) {
+				throw err(`Step cannot be zero`, line);
+			} else if (step > 0 && start > stop) {
+				throw err(`Step is positive but start > stop`, line);
+			} else if (step < 0 && start < stop) {
+				throw err(`Step is negative but start < stop`, line);
+			}
+
 			const end = find_end(i);
 			const block = lines.slice(i + 1, end);
 
