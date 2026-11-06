@@ -84,6 +84,12 @@ export function ambienceSettings(
 		starRotationEuler: vector(),
 		starSize: 0,
 		starVisibility: 0,
+		cloudColor: color(),
+		cloudShading: 0,
+		cloudDensity: 0,
+		cloudHeight: 0,
+		cloudSpeedX: 0,
+		cloudSpeedZ: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;
@@ -259,6 +265,17 @@ export function triggerSourceBlockNames(
 	return obj;
 }
 
+export function triggerSourceHand(
+	overrides?: Partial<proto.TriggerSourceHand>,
+): proto.TriggerSourceHand {
+	const obj: proto.TriggerSourceHand = {
+		hand: proto.TriggerSourceHandHand.BOTH,
+		buttons: [],
+	};
+	if (overrides) merge(obj, overrides);
+	return obj;
+}
+
 export function triggerSource(
 	overrides?: Partial<proto.TriggerSource>,
 ): proto.TriggerSource {
@@ -351,6 +368,12 @@ export function triggerTargetAmbience(
 		starRotationEuler: vector(),
 		starSize: 0,
 		starVisibility: 0,
+		cloudColor: color(),
+		cloudShading: 0,
+		cloudDensity: 0,
+		cloudHeight: 0,
+		cloudSpeedX: 0,
+		cloudSpeedZ: 0,
 	};
 	if (overrides) merge(obj, overrides);
 	return obj;

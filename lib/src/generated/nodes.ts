@@ -16,6 +16,7 @@ import {
 	triggerSource,
 	triggerSourceBasic,
 	triggerSourceBlockNames,
+	triggerSourceHand,
 	triggerTarget,
 	triggerTargetAmbience,
 	triggerTargetAnimation,
@@ -42,6 +43,7 @@ import {
 	TriggerSource,
 	TriggerSourceBasic,
 	TriggerSourceBlockNames,
+	TriggerSourceHand,
 	TriggerTarget,
 	TriggerTargetAmbience,
 	TriggerTargetAnimation,
@@ -561,6 +563,8 @@ const triggerSource_slots: Record<
 > = {
 	type: ['triggerSourceBasic'],
 	names: ['triggerSourceBlockNames'],
+	hand: ['triggerSourceHand'],
+	buttons: ['triggerSourceHand'],
 };
 
 export function triggerSourceHasKey<K extends TriggerSourceDataKey>(
@@ -588,6 +592,15 @@ export const triggerSourceMetadata = [
 		props: ['names'],
 		with: triggerSourceWithBlockNames,
 		is: isTriggerSourceBlockNames,
+	},
+	{
+		name: 'TriggerSourceHand',
+		camel: 'triggerSourceHand',
+		wrapper: 'triggerSource',
+		scope: 'Hand',
+		props: ['hand', 'buttons'],
+		with: triggerSourceWithHand,
+		is: isTriggerSourceHand,
 	},
 ] as const;
 
@@ -720,6 +733,12 @@ const triggerTarget_slots: Record<
 	starRotationEuler: ['triggerTargetAmbience'],
 	starSize: ['triggerTargetAmbience'],
 	starVisibility: ['triggerTargetAmbience'],
+	cloudColor: ['triggerTargetAmbience'],
+	cloudShading: ['triggerTargetAmbience'],
+	cloudDensity: ['triggerTargetAmbience'],
+	cloudHeight: ['triggerTargetAmbience'],
+	cloudSpeedX: ['triggerTargetAmbience'],
+	cloudSpeedZ: ['triggerTargetAmbience'],
 };
 
 export function triggerTargetHasKey<K extends TriggerTargetDataKey>(
@@ -799,6 +818,12 @@ export const triggerTargetMetadata = [
 			'starRotationEuler',
 			'starSize',
 			'starVisibility',
+			'cloudColor',
+			'cloudShading',
+			'cloudDensity',
+			'cloudHeight',
+			'cloudSpeedX',
+			'cloudSpeedZ',
 		],
 		with: triggerTargetWithAmbience,
 		is: isTriggerTargetAmbience,
@@ -934,6 +959,17 @@ export function isTriggerSourceBlockNames(
 	node: TriggerSource,
 ): node is TriggerSourceWith<TriggerSourceBlockNames> {
 	return !!node.triggerSourceBlockNames;
+}
+
+export function triggerSourceWithHand(overrides?: Partial<TriggerSourceHand>) {
+	return triggerSourceWith({
+		triggerSourceHand: triggerSourceHand(overrides),
+	});
+}
+export function isTriggerSourceHand(
+	node: TriggerSource,
+): node is TriggerSourceWith<TriggerSourceHand> {
+	return !!node.triggerSourceHand;
 }
 
 export function triggerTargetWithAnimation(

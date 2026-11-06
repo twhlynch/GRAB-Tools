@@ -56,6 +56,12 @@ export interface AmbienceSettings {
 	starRotationEuler?: Vector;
 	starSize?: number;
 	starVisibility?: number;
+	cloudColor?: Color;
+	cloudShading?: number;
+	cloudDensity?: number;
+	cloudHeight?: number;
+	cloudSpeedX?: number;
+	cloudSpeedZ?: number;
 }
 
 export enum LevelNodeShape {
@@ -222,9 +228,15 @@ export interface TriggerSourceBlockNames {
 	names?: string[];
 }
 
+export interface TriggerSourceHand {
+	hand?: TriggerSourceHandHand;
+	buttons?: TriggerSourceHandButton[];
+}
+
 export interface TriggerSource {
 	triggerSourceBasic?: TriggerSourceBasic; // undefined
 	triggerSourceBlockNames?: TriggerSourceBlockNames; // undefined
+	triggerSourceHand?: TriggerSourceHand; // undefined
 }
 
 export interface TriggerTargetAnimation {
@@ -278,6 +290,12 @@ export interface TriggerTargetAmbience {
 	starRotationEuler?: Vector;
 	starSize?: number;
 	starVisibility?: number;
+	cloudColor?: Color;
+	cloudShading?: number;
+	cloudDensity?: number;
+	cloudHeight?: number;
+	cloudSpeedX?: number;
+	cloudSpeedZ?: number;
 }
 
 export interface TriggerTarget {
@@ -492,6 +510,20 @@ export enum TriggerSourceBasicType {
 	FEET = 3,
 	BLOCK = 4,
 	SPAWN = 5,
+}
+
+export enum TriggerSourceHandHand {
+	BOTH = 0,
+	LEFT = 1,
+	RIGHT = 2,
+}
+
+export enum TriggerSourceHandButton {
+	BOTTOM_BUTTON = 0,
+	TOP_BUTTON = 1,
+	GRAB = 2,
+	TRIGGER = 3,
+	TRIGGER_WITHOUT_GRAPPLE = 4,
 }
 
 export enum TriggerTargetAnimationMode {
