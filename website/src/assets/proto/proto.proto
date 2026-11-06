@@ -72,6 +72,13 @@ message AmbienceSettings {
   Vector starRotationEuler = 14;
   optional float starSize = 15;
   optional float starVisibility = 16;
+
+  Color cloudColor = 17;
+  optional float cloudShading = 18;
+  optional float cloudDensity = 19;
+  optional float cloudHeight = 20;
+  optional float cloudSpeedX = 21;
+  optional float cloudSpeedZ = 22;
 }
 
 enum LevelNodeShape {
@@ -285,10 +292,30 @@ message TriggerSourceBlockNames {
   repeated string names = 1;
 }
 
+message TriggerSourceHand {
+  enum Hand {
+    BOTH = 0;
+    LEFT = 1;
+    RIGHT = 2;
+  }
+
+  enum Button {
+    BOTTOM_BUTTON = 0;
+    TOP_BUTTON = 1;
+    GRAB = 2;
+    TRIGGER = 3;
+    TRIGGER_WITHOUT_GRAPPLE = 4;
+  }
+
+  Hand hand = 1;
+  repeated Button buttons = 2;
+}
+
 message TriggerSource {
   oneof content {
     TriggerSourceBasic triggerSourceBasic = 1;
     TriggerSourceBlockNames triggerSourceBlockNames = 2;
+    TriggerSourceHand triggerSourceHand = 3;
   }
 }
 
@@ -378,6 +405,13 @@ message TriggerTargetAmbience {
   Vector starRotationEuler = 16;
   optional float starSize = 17;
   optional float starVisibility = 18;
+
+  Color cloudColor = 19;
+  optional float cloudShading = 20;
+  optional float cloudDensity = 21;
+  optional float cloudHeight = 22;
+  optional float cloudSpeedX = 23;
+  optional float cloudSpeedZ = 24;
 }
 
 message TriggerTarget {
