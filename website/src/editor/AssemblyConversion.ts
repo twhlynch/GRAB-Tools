@@ -127,7 +127,7 @@ export function compile_gasm(asm: string): string[] {
 }
 
 function preprocess_asm(str_lines: string[]): string[] {
-	let lines = parse_lines(str_lines);
+	let lines = parse_lines(join_continued_lines(str_lines));
 	lines = preprocess_scopes(lines);
 	preprocess_characters(lines);
 	verify_labels(lines);
@@ -209,14 +209,47 @@ function verify_lengths(lines: Line[]) {
 	}
 }
 
-function parse_lines(strings: string[]): Line[] {
+function join_continued_lines(strings: string[]): Line[] {
 	const lines: Line[] = [];
 
+	let current = '';
+	let start = 0;
+
 	for (let i = 0; i < strings.length; i++) {
-		const string = strings[i]!;
+		const string = strings[i]!.split(';')[0]!.trimEnd();
+
+		if (!current) start = i + 1;
+
+		const continued = string.endsWith('\\');
+		current += string.slice(0, continued ? -1 : undefined);
+
+		if (continued) {
+			current += ' ';
+			continue;
+		}
+
+		const value = current.trim();
+		if (value) {
+			lines.push({
+				number: start,
+				string: value,
+				operator: '',
+				operands: [],
+			});
+		}
+
+		current = '';
+	}
+
+	return lines;
+}
+
+function parse_lines(input: Line[]): Line[] {
+	const lines: Line[] = [];
+
+	for (const { number, string } of input) {
 		if (!string.length) continue;
 
-		const number = i + 1;
 		const is_macro = string.startsWith('#');
 
 		// split words and 'characters'
