@@ -270,7 +270,7 @@ class GizmoControls {
 			}
 		}
 
-		if (node.levelNodeSound || node.levelNodeLight) {
+		if (node.levelNodeSound) {
 			if (mode === 'scale') {
 				object.scale.x = 1;
 				object.scale.y = 1;
@@ -280,6 +280,14 @@ class GizmoControls {
 				object.quaternion.y = 0;
 				object.quaternion.z = 0;
 				object.quaternion.w = 1;
+			}
+		}
+
+		if (node.levelNodeLight) {
+			if (mode === 'scale') {
+				object.scale.x = 1;
+				object.scale.y = 1;
+				object.scale.z = 1;
 			}
 		}
 
