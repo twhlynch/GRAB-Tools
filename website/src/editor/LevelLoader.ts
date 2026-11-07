@@ -61,6 +61,13 @@ import {
 	LevelNodeStatic,
 	LevelNodeTrigger,
 } from '@grab-tools/lib/generated/proto';
+import {
+	ambienceFromProto,
+	AmbienceSettingsData,
+	ComputedAmbienceData,
+	defaultAmbience,
+	sunDirectionThree,
+} from './AmbienceLoader';
 
 let textureLoader: THREE.TextureLoader;
 let gltfLoader: GLTFLoader;
@@ -79,6 +86,7 @@ export interface LevelData {
 	} & {
 		[K in LevelNodeKey]: LevelNodeObject<LevelNodeTypeFor<K>>[];
 	};
+	ambience: AmbienceSettingsData & ComputedAmbienceData;
 	sun: THREE.DirectionalLight | undefined;
 	complexity: number;
 	scene: THREE.Scene;
@@ -118,6 +126,8 @@ type LevelNodeUniforms = {
 	isColoredLava: THREE.IUniform<number>;
 	isGradient: THREE.IUniform<number>;
 	isAdditive: THREE.IUniform<number>;
+	sunBrightness: THREE.IUniform<number>;
+	ambientTint: THREE.IUniform<[number, number, number]>;
 	diffuseColor2: THREE.IUniform<[number, number, number]>;
 	gradientDirection: THREE.IUniform<[number, number, number]>;
 };
@@ -151,6 +161,7 @@ export function levelData(): LevelData {
 				[K in LevelNodeKey]: LevelNodeObject<LevelNodeTypeFor<K>>[];
 			}),
 		},
+		ambience: defaultAmbience(),
 		sun: undefined,
 		complexity: 0,
 		scene: new THREE.Scene(),
@@ -587,60 +598,17 @@ class LevelLoader {
 		const scene = level.scene;
 		level.nodes.namedSpawns = {};
 
-		let sunAngle = new THREE.Euler(
-			THREE.MathUtils.degToRad(45),
-			THREE.MathUtils.degToRad(315),
-			0.0,
-		);
-		let sunAltitude = 45.0;
-		let horizonColor: [number, number, number] = [0.916, 0.9574, 0.9574];
-		if (decoded.ambienceSettings) {
-			sunAngle = new THREE.Euler(
-				THREE.MathUtils.degToRad(
-					decoded.ambienceSettings.sunAltitude ?? 0,
-				),
-				THREE.MathUtils.degToRad(
-					decoded.ambienceSettings.sunAzimuth ?? 0,
-				),
-				0.0,
-			);
-			sunAltitude = decoded.ambienceSettings.sunAltitude ?? 0;
-			horizonColor = [
-				decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
-				decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
-				decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
-			];
+		// Ambience
+		const ambience = ambienceFromProto(decoded.ambienceSettings);
+		level.ambience = ambience;
 
-			this.skyMaterial.uniforms.cameraFogColor0 = {
-				value: [
-					decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
-					decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
-					decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
-				],
-			};
-			this.skyMaterial.uniforms.cameraFogColor1 = {
-				value: [
-					decoded.ambienceSettings.skyZenithColor?.r ?? 0,
-					decoded.ambienceSettings.skyZenithColor?.g ?? 0,
-					decoded.ambienceSettings.skyZenithColor?.b ?? 0,
-				],
-			};
-			this.skyMaterial.uniforms.sunSize = {
-				value: decoded.ambienceSettings.sunSize ?? 0,
-			};
-		} else {
-			this.skyMaterial.uniforms.cameraFogColor0 = {
-				value: [0.916, 0.9574, 0.9574],
-			};
-			this.skyMaterial.uniforms.cameraFogColor1 = {
-				value: [0.28, 0.476, 0.73],
-			};
-			this.skyMaterial.uniforms.sunSize = { value: 1.0 };
-		}
-
-		const sunDirection = new THREE.Vector3(0, 0, 1);
-		sunDirection.applyEuler(sunAngle);
-		sunDirection.normalize();
+		const horizonColor = ambience.skyHorizonColor.slice(0, 3);
+		const zenithColor = ambience.skyZenithColor.slice(0, 3);
+		const sunColor = ambience.sunColor.slice(0, 3);
+		const ambientTint = ambience.ambientColor
+			.slice(0, 3)
+			.map((c) => c * ambience.ambientBrightness);
+		const sunDirection = new THREE.Vector3(...sunDirectionThree(ambience));
 
 		if (level.sun) {
 			const distance = 1000;
@@ -653,17 +621,9 @@ class LevelLoader {
 
 		const skySunDirection = sunDirection.clone();
 
-		let sunColorFactor = 1.0 - sunAltitude / 90.0;
-		sunColorFactor *= sunColorFactor;
-		sunColorFactor = 1.0 - sunColorFactor;
-		sunColorFactor *= 0.8;
-		sunColorFactor += 0.2;
-		const sunColor = [
-			horizonColor[0] * (1.0 - sunColorFactor) + sunColorFactor,
-			horizonColor[1] * (1.0 - sunColorFactor) + sunColorFactor,
-			horizonColor[2] * (1.0 - sunColorFactor) + sunColorFactor,
-		];
-
+		this.skyMaterial.uniforms.cameraFogColor0 = { value: horizonColor };
+		this.skyMaterial.uniforms.cameraFogColor1 = { value: zenithColor };
+		this.skyMaterial.uniforms.sunSize = { value: ambience.sunSize };
 		this.skyMaterial.uniforms.sunDirection = { value: skySunDirection };
 		this.skyMaterial.uniforms.sunColor = { value: sunColor };
 
@@ -676,45 +636,19 @@ class LevelLoader {
 
 		const allMaterials = [...materials, ...objectMaterials];
 
-		for (const material of allMaterials) {
-			let density = 0.0;
-			if (decoded.ambienceSettings) {
-				material.uniforms.cameraFogColor0 = {
-					value: [
-						decoded.ambienceSettings.skyHorizonColor?.r ?? 0,
-						decoded.ambienceSettings.skyHorizonColor?.g ?? 0,
-						decoded.ambienceSettings.skyHorizonColor?.b ?? 0,
-					],
-				};
-				material.uniforms.cameraFogColor1 = {
-					value: [
-						decoded.ambienceSettings.skyZenithColor?.r ?? 0,
-						decoded.ambienceSettings.skyZenithColor?.g ?? 0,
-						decoded.ambienceSettings.skyZenithColor?.b ?? 0,
-					],
-				};
-				material.uniforms.sunSize = {
-					value: decoded.ambienceSettings.sunSize ?? 0,
-				};
-				density = decoded.ambienceSettings.fogDensity ?? 0;
-			} else {
-				material.uniforms.cameraFogColor0 = {
-					value: [0.916, 0.9574, 0.9574],
-				};
-				material.uniforms.cameraFogColor1 = {
-					value: [0.28, 0.476, 0.73],
-				};
-				material.uniforms.sunSize = { value: 1.0 };
-			}
+		const fogDensityX = ambience.fogDistanceX;
+		const fogDensityY = 1.0 / (1.0 - Math.exp(-1500.0 * fogDensityX));
 
+		for (const material of allMaterials) {
+			material.uniforms.cameraFogColor0 = { value: horizonColor };
+			material.uniforms.cameraFogColor1 = { value: zenithColor };
+			material.uniforms.sunSize = { value: ambience.sunSize };
 			material.uniforms.sunDirection = { value: skySunDirection };
 			material.uniforms.sunColor = { value: sunColor };
-
-			const densityFactor = density * density * density * density;
-			const fogDensityX =
-				0.5 * densityFactor + 0.000001 * (1.0 - densityFactor);
-			const fogDensityY = 1.0 / (1.0 - Math.exp(-1500.0 * fogDensityX));
-
+			material.uniforms.sunBrightness = {
+				value: ambience.sunBrightness,
+			};
+			material.uniforms.ambientTint = { value: ambientTint };
 			material.uniforms.cameraFogDistance = {
 				value: [fogDensityX, fogDensityY],
 			};
@@ -1943,6 +1877,8 @@ function getMaterialForTexture(
 		isColoredLava: { value: 0.0 },
 		isGradient: { value: 0.0 },
 		isAdditive: { value: 0.0 },
+		sunBrightness: { value: 1.0 },
+		ambientTint: { value: [1.0, 1.0, 1.0] },
 		diffuseColor2: { value: [1.0, 1.0, 1.0] },
 		gradientDirection: { value: [0.0, 1.0, 0.0] },
 	};

@@ -10,6 +10,8 @@ uniform vec3 cameraFogColor0;
 uniform vec3 cameraFogColor1;
 uniform float sunSize;
 uniform vec3 sunColor;
+uniform float sunBrightness;
+uniform vec3 ambientTint;
 uniform vec3 sunDirection;
 uniform vec4 specularColor;
 
@@ -34,7 +36,7 @@ void main()
     vec3 halfVector = normalize((-sunDirection - cameraToVertex));
     float lightSpecular = clamp(dot(normalize(vNormal), halfVector), 0.0, 1.0);
 
-    color.rgb = 0.5 * color.rgb + sunColor * clamp(sunSize * 0.7 + 0.3, 0.0, 1.0) * (color.rgb * lightFactor + pow(lightSpecular, specularColor.a) * specularColor.rgb * finalLight);
+    color.rgb = 0.5 * ambientTint * color.rgb + sunColor * sunBrightness * (color.rgb * lightFactor + pow(lightSpecular, specularColor.a) * specularColor.rgb * finalLight);
 
     //Fog
     if (fogEnabled > 0.5)
