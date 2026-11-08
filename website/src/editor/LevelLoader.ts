@@ -68,6 +68,7 @@ import {
 	defaultAmbience,
 	sunDirectionThree,
 } from './AmbienceLoader';
+import { Lights } from './Lights';
 
 let textureLoader: THREE.TextureLoader;
 let gltfLoader: GLTFLoader;
@@ -87,6 +88,7 @@ export interface LevelData {
 		[K in LevelNodeKey]: LevelNodeObject<LevelNodeTypeFor<K>>[];
 	};
 	ambience: AmbienceSettingsData & ComputedAmbienceData;
+	lights: Lights;
 	sun: THREE.DirectionalLight | undefined;
 	complexity: number;
 	scene: THREE.Scene;
@@ -130,11 +132,44 @@ type LevelNodeUniforms = {
 	ambientTint: THREE.IUniform<[number, number, number]>;
 	diffuseColor2: THREE.IUniform<[number, number, number]>;
 	gradientDirection: THREE.IUniform<[number, number, number]>;
+	lightData: THREE.IUniform<THREE.DataTexture>;
+	pointLightCount: THREE.IUniform<number>;
+	spotLightCount: THREE.IUniform<number>;
 };
 
 type LevelNodeShaderMaterial = THREE.ShaderMaterial & {
 	uniforms: LevelNodeUniforms;
 };
+
+type MaterialsList = [
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+	LevelNodeShaderMaterial,
+];
+
+type ObjectMaterialsList = [
+	THREE.ShaderMaterial, // start
+	THREE.ShaderMaterial, // finish
+	LevelNodeShaderMaterial, // sign
+	LevelNodeShaderMaterial, // neon
+	LevelNodeShaderMaterial, // trigger
+	LevelNodeShaderMaterial, // sublevel trigger
+	THREE.ShaderMaterial, // alt start
+	THREE.ShaderMaterial, // particle
+	LevelNodeShaderMaterial, // sound
+	LevelNodeShaderMaterial, // code
+	THREE.ShaderMaterial, // start direction
+	THREE.ShaderMaterial, // alt start
+	LevelNodeShaderMaterial, // light
+];
 
 export function levelData(): LevelData {
 	const root = load();
@@ -162,6 +197,7 @@ export function levelData(): LevelData {
 			}),
 		},
 		ambience: defaultAmbience(),
+		lights: new Lights(),
 		sun: undefined,
 		complexity: 0,
 		scene: new THREE.Scene(),
@@ -200,35 +236,9 @@ class LevelLoader {
 	shapePromise: Promise<void>;
 	objectPromise: Promise<void>;
 	fontPromise: Promise<void>;
-	materials: [
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-		LevelNodeShaderMaterial,
-	];
-	objectMaterials: [
-		THREE.ShaderMaterial, // start
-		THREE.ShaderMaterial, // finish
-		LevelNodeShaderMaterial, // sign
-		LevelNodeShaderMaterial, // neon
-		LevelNodeShaderMaterial, // trigger
-		LevelNodeShaderMaterial, // sublevel trigger
-		THREE.ShaderMaterial, // alt start
-		THREE.ShaderMaterial, // particle
-		LevelNodeShaderMaterial, // sound
-		LevelNodeShaderMaterial, // code
-		THREE.ShaderMaterial, // start direction
-		THREE.ShaderMaterial, // alt start
-		LevelNodeShaderMaterial, // light
-	];
-	skyMaterial: THREE.ShaderMaterial;
+	materials: MaterialsList = undefined!;
+	objectMaterials: ObjectMaterialsList = undefined!;
+	skyMaterial: THREE.ShaderMaterial = undefined!;
 
 	constructor(options: Partial<LevelConfig> = {}) {
 		this.config(options);
@@ -268,274 +278,6 @@ class LevelLoader {
 			this.objects[2]!.rotateX(Math.PI / 2); // start arrow
 		});
 
-		this.materials = [
-			getMaterialForTexture(
-				textureDefaultURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureGrabbableURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.2, 0.2, 0.2, 16.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureIceURL,
-				0.1,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.6, 0.6, 0.6, 64.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureLavaURL,
-				0.1,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.0, 0.0, 0.0, 1.0],
-				0.0,
-				1.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureWoodURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.2, 0.2, 0.2, 32.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureGrapplableURL,
-				0.1,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.3, 0.3, 0.3, 32.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureGrapplableLavaURL,
-				0.1,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.0, 0.0, 0.0, 1.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureGrabbableCrumblingURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.2, 0.2, 0.2, 16.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureDefaultColoredURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.15, 0.15, 0.15, 10.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureBouncingURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.8, 0.8, 0.8, 64.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureSnowURL,
-				0.1,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.6, 0.6, 0.6, 64.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-		];
-
-		const startMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.startFinishVS,
-			fragmentShader: SHADERS.startFinishFS,
-			transparent: true,
-			depthWrite: false,
-			uniforms: {
-				diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		const finishMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.startFinishVS,
-			fragmentShader: SHADERS.startFinishFS,
-			transparent: true,
-			depthWrite: false,
-			uniforms: {
-				diffuseColor: { value: [1.0, 0.0, 0.0, 1.0] },
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		const altStartMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.startFinishVS,
-			fragmentShader: SHADERS.startFinishFS,
-			transparent: true,
-			depthWrite: false,
-			uniforms: {
-				diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		const particleMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.particleVS,
-			fragmentShader: SHADERS.particleFS,
-			uniforms: {
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		const startDirectionMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.startFinishVS,
-			fragmentShader: SHADERS.startDirectionFS,
-			transparent: true,
-			depthWrite: false,
-			uniforms: {
-				diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		const altStartDirectionMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.startFinishVS,
-			fragmentShader: SHADERS.startDirectionFS,
-			transparent: true,
-			depthWrite: false,
-			uniforms: {
-				diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
-				fogEnabled: { value: this.options.fog ? 1.0 : 0.0 },
-				isSelected: { value: false },
-			},
-		});
-
-		this.objectMaterials = [
-			startMaterial,
-			finishMaterial,
-			getMaterialForTexture(
-				textureWoodURL,
-				1.0,
-				SHADERS.signVS,
-				SHADERS.signFS,
-				[0.3, 0.3, 0.3, 16.0],
-				0.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureDefaultColoredURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureTriggerURL,
-				3.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureSublevelTriggerURL,
-				3.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			altStartMaterial,
-			particleMaterial,
-			getMaterialForTexture(
-				textureSoundURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			getMaterialForTexture(
-				textureCodeURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-			startDirectionMaterial,
-			altStartDirectionMaterial,
-			getMaterialForTexture(
-				textureLightURL,
-				1.0,
-				SHADERS.levelVS,
-				SHADERS.levelFS,
-				[0.4, 0.4, 0.4, 64.0],
-				1.0,
-				0.0,
-				this.options.fog ? 1.0 : 0.0,
-			),
-		];
-
-		this.skyMaterial = new THREE.ShaderMaterial({
-			vertexShader: SHADERS.skyVS,
-			fragmentShader: SHADERS.skyFS,
-			depthWrite: false,
-			side: THREE.BackSide,
-		});
-
 		this.root = load();
 
 		this.fontPromise = new Promise<Font>((resolve, reject) => {
@@ -548,6 +290,14 @@ class LevelLoader {
 		}).then((font) => {
 			this.font = font;
 		});
+
+		const { materials, objectMaterials, skyMaterial } = buildMaterials(
+			new Lights(),
+			this.options,
+		);
+		this.materials = materials;
+		this.objectMaterials = objectMaterials;
+		this.skyMaterial = skyMaterial;
 	}
 
 	config(options: Partial<LevelConfig> = {}) {
@@ -555,9 +305,9 @@ class LevelLoader {
 	}
 
 	async load(data: Uint8Array | Level): Promise<LevelData> {
-		const { root, shapes, objects, materials, objectMaterials } = this;
-
 		const level = levelData();
+
+		const { root, shapes, objects, materials, objectMaterials } = this;
 
 		if (this.options.lights) {
 			const ambientLight = new THREE.AmbientLight(0x404040);
@@ -579,6 +329,7 @@ class LevelLoader {
 			for (const object of level.nodes.levelNodeParticleEmitter) {
 				updateObjectParticles(object, delta);
 			}
+			level.lights.update();
 		};
 
 		const LevelMessage = root.lookupType('COD.Level.Level');
@@ -655,6 +406,20 @@ class LevelLoader {
 		}
 
 		level.complexity = 0;
+
+		// clone and restore the shared light uniforms to this level
+		const cloneMaterial = <T extends THREE.ShaderMaterial>(
+			material: T,
+		): T => {
+			const clone = material.clone();
+			const uniforms = clone.uniforms;
+			if (uniforms.lightData) {
+				uniforms.lightData = { value: level.lights.texture };
+				uniforms.pointLightCount = level.lights.pointCount;
+				uniforms.spotLightCount = level.lights.spotCount;
+			}
+			return clone;
+		};
 
 		const loadLevelNodes = (
 			nodes: (LevelNode | undefined)[],
@@ -1155,7 +920,7 @@ class LevelLoader {
 						material = objectMaterials[3];
 					}
 
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1312,7 +1077,7 @@ class LevelLoader {
 					level.complexity += 2;
 				} else if (node.levelNodeCrumbling) {
 					const material = materials[7];
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1397,7 +1162,7 @@ class LevelLoader {
 						material = objectMaterials[4];
 					}
 
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1464,7 +1229,7 @@ class LevelLoader {
 				} else if (node.levelNodeGASM) {
 					const material = objectMaterials[9];
 
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1515,7 +1280,7 @@ class LevelLoader {
 				} else if (node.levelNodeSound) {
 					const material = objectMaterials[8];
 
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1561,7 +1326,7 @@ class LevelLoader {
 				} else if (node.levelNodeLight) {
 					const material = objectMaterials[12];
 
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1577,6 +1342,13 @@ class LevelLoader {
 					object.position.x = node.levelNodeLight.position?.x ?? 0;
 					object.position.y = node.levelNodeLight.position?.y ?? 0;
 					object.position.z = node.levelNodeLight.position?.z ?? 0;
+
+					object.quaternion.set(
+						node.levelNodeLight.rotation?.x ?? 0,
+						node.levelNodeLight.rotation?.y ?? 0,
+						node.levelNodeLight.rotation?.z ?? 0,
+						node.levelNodeLight.rotation?.w ?? 0,
+					);
 
 					object.scale.x = 1;
 					object.scale.y = 1;
@@ -1603,6 +1375,7 @@ class LevelLoader {
 					object.visible = this.options.light;
 
 					level.nodes.levelNodeLight.push(object);
+					level.lights.add(object, node.levelNodeLight);
 					level.complexity += 5;
 				} else if (node.levelNodeStart) {
 					const isDefaultSpawn =
@@ -1685,7 +1458,7 @@ class LevelLoader {
 					level.nodes.levelNodeFinish.push(object);
 				} else if (node.levelNodeSign) {
 					const material = objectMaterials[2];
-					const newMaterial = material.clone();
+					const newMaterial = cloneMaterial(material);
 					newMaterial.uniforms.colorTexture =
 						material.uniforms.colorTexture;
 
@@ -1842,6 +1615,8 @@ class LevelLoader {
 		};
 
 		loadLevelNodes(decoded.levelNodes ?? [], scene);
+		scene.updateMatrixWorld(true);
+		level.lights.update();
 
 		return level;
 	}
@@ -1856,6 +1631,7 @@ function getMaterialForTexture(
 	neonEnabled = 0.0,
 	isLava = 0.0,
 	fogEnabled = 1.0,
+	lights: Lights,
 ): LevelNodeShaderMaterial {
 	const texture = textureLoader.load(name);
 	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -1881,9 +1657,12 @@ function getMaterialForTexture(
 		ambientTint: { value: [1.0, 1.0, 1.0] },
 		diffuseColor2: { value: [1.0, 1.0, 1.0] },
 		gradientDirection: { value: [0.0, 1.0, 0.0] },
+		lightData: { value: lights.texture },
+		pointLightCount: lights.pointCount,
+		spotLightCount: lights.spotCount,
 	};
 
-	return new THREE.ShaderMaterial({
+	const material = new THREE.ShaderMaterial({
 		vertexShader,
 		fragmentShader,
 		lights: true,
@@ -1892,6 +1671,305 @@ function getMaterialForTexture(
 			uniforms,
 		]) as LevelNodeUniforms,
 	}) as LevelNodeShaderMaterial;
+
+	// UniformsUtils.merge clones uniforms, so reattach the shared light data
+	material.uniforms.lightData = { value: lights.texture };
+	material.uniforms.pointLightCount = lights.pointCount;
+	material.uniforms.spotLightCount = lights.spotCount;
+
+	return material;
+}
+
+function buildMaterials(lights: Lights, options: LevelConfig) {
+	const materials: MaterialsList = [
+		getMaterialForTexture(
+			textureDefaultURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureGrabbableURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.2, 0.2, 0.2, 16.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureIceURL,
+			0.1,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.6, 0.6, 0.6, 64.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureLavaURL,
+			0.1,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.0, 0.0, 0.0, 1.0],
+			0.0,
+			1.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureWoodURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.2, 0.2, 0.2, 32.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureGrapplableURL,
+			0.1,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.3, 0.3, 0.3, 32.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureGrapplableLavaURL,
+			0.1,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.0, 0.0, 0.0, 1.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureGrabbableCrumblingURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.2, 0.2, 0.2, 16.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureDefaultColoredURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.15, 0.15, 0.15, 10.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureBouncingURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.8, 0.8, 0.8, 64.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureSnowURL,
+			0.1,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.6, 0.6, 0.6, 64.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+	];
+
+	const startMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.startFinishVS,
+		fragmentShader: SHADERS.startFinishFS,
+		transparent: true,
+		depthWrite: false,
+		uniforms: {
+			diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		},
+	});
+
+	const finishMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.startFinishVS,
+		fragmentShader: SHADERS.startFinishFS,
+		transparent: true,
+		depthWrite: false,
+		uniforms: {
+			diffuseColor: { value: [1.0, 0.0, 0.0, 1.0] },
+			fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		},
+	});
+
+	const altStartMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.startFinishVS,
+		fragmentShader: SHADERS.startFinishFS,
+		transparent: true,
+		depthWrite: false,
+		uniforms: {
+			diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		},
+	});
+
+	const startDirectionMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.startFinishVS,
+		fragmentShader: SHADERS.startDirectionFS,
+		transparent: true,
+		depthWrite: false,
+		uniforms: {
+			diffuseColor: { value: [0.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		},
+	});
+
+	const altStartDirectionMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.startFinishVS,
+		fragmentShader: SHADERS.startDirectionFS,
+		transparent: true,
+		depthWrite: false,
+		uniforms: {
+			diffuseColor: { value: [1.0, 1.0, 0.0, 1.0] },
+			fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+			isSelected: { value: false },
+		},
+	});
+
+	const objectMaterials: ObjectMaterialsList = [
+		startMaterial,
+		finishMaterial,
+		getMaterialForTexture(
+			textureWoodURL,
+			1.0,
+			SHADERS.signVS,
+			SHADERS.signFS,
+			[0.3, 0.3, 0.3, 16.0],
+			0.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureDefaultColoredURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureTriggerURL,
+			3.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureSublevelTriggerURL,
+			3.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		altStartMaterial,
+		new THREE.ShaderMaterial({
+			vertexShader: SHADERS.particleVS,
+			fragmentShader: SHADERS.particleFS,
+			uniforms: {
+				fogEnabled: { value: options.fog ? 1.0 : 0.0 },
+				isSelected: { value: false },
+			},
+		}),
+		getMaterialForTexture(
+			textureSoundURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		getMaterialForTexture(
+			textureCodeURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+		startDirectionMaterial,
+		altStartDirectionMaterial,
+		getMaterialForTexture(
+			textureLightURL,
+			1.0,
+			SHADERS.levelVS,
+			SHADERS.levelFS,
+			[0.4, 0.4, 0.4, 64.0],
+			1.0,
+			0.0,
+			options.fog ? 1.0 : 0.0,
+			lights,
+		),
+	];
+
+	const skyMaterial = new THREE.ShaderMaterial({
+		vertexShader: SHADERS.skyVS,
+		fragmentShader: SHADERS.skyFS,
+		depthWrite: false,
+		side: THREE.BackSide,
+	});
+
+	return {
+		materials,
+		objectMaterials,
+		skyMaterial,
+	};
 }
 
 async function getGeometryForModel(
