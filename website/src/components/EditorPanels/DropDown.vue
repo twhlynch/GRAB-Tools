@@ -30,18 +30,23 @@ export default defineComponent({
 	<ul class="menu-dropdown">
 		<li v-for="[name, item] of Object.entries(menu)" :key="name">
 			<template v-if="is_leaf(item)">
-				<a v-if="'href' in item" class="menu-btn" :href="item.href">
+				<a v-if="'href' in item" class="menu-btn" :href="item.href" :data-menu-item="name">
 					{{ name }}
 				</a>
 
-				<button v-else class="menu-btn" @click="!item.file && call(item.func)">
+				<button
+					v-else
+					class="menu-btn"
+					:data-menu-item="name"
+					@click="!item.file && call(item.func)"
+				>
 					{{ name }}
 					<input v-if="item.file" type="file" @change="call(item.func, $event)" />
 				</button>
 			</template>
 
 			<template v-else>
-				<button class="menu-btn">
+				<button class="menu-btn" :data-menu-item="name">
 					{{ name }}
 				</button>
 
