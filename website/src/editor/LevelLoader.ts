@@ -1,7 +1,5 @@
 import * as SHADERS from '@/assets/shaders/shaders';
 import * as THREE from 'three';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import modelConeURL from '@/assets/models/cone.gltf';
@@ -69,10 +67,10 @@ import {
 	sunDirectionThree,
 } from './AmbienceLoader';
 import { Lights } from './Lights';
+import { TextLoader } from './TextLoader';
 
 let textureLoader: THREE.TextureLoader;
 let gltfLoader: GLTFLoader;
-let fontLoader: FontLoader;
 
 export interface LevelData {
 	level: Level;
@@ -218,7 +216,7 @@ export function levelData(): LevelData {
 
 class LevelLoader {
 	root: Root;
-	font: Font | undefined;
+	textLoader: TextLoader;
 	options: LevelConfig = {
 		sky: true,
 		lights: true,
@@ -235,7 +233,6 @@ class LevelLoader {
 	objects: THREE.BufferGeometry[] = [];
 	shapePromise: Promise<void>;
 	objectPromise: Promise<void>;
-	fontPromise: Promise<void>;
 	materials: MaterialsList = undefined!;
 	objectMaterials: ObjectMaterialsList = undefined!;
 	skyMaterial: THREE.ShaderMaterial = undefined!;
@@ -245,7 +242,7 @@ class LevelLoader {
 
 		textureLoader = new THREE.TextureLoader();
 		gltfLoader = new GLTFLoader();
-		fontLoader = new FontLoader();
+		this.textLoader = new TextLoader();
 
 		const shapePromises = [
 			getGeometryForModel(modelCubeURL),
@@ -279,17 +276,6 @@ class LevelLoader {
 		});
 
 		this.root = load();
-
-		this.fontPromise = new Promise<Font>((resolve, reject) => {
-			fontLoader.load(
-				'/fonts/Roboto_Regular.json',
-				resolve,
-				undefined,
-				reject,
-			);
-		}).then((font) => {
-			this.font = font;
-		});
 
 		const { materials, objectMaterials, skyMaterial } = buildMaterials(
 			new Lights(),
@@ -344,7 +330,7 @@ class LevelLoader {
 
 		await this.shapePromise;
 		await this.objectPromise;
-		await this.fontPromise;
+		await this.textLoader.load();
 
 		const scene = level.scene;
 		level.nodes.namedSpawns = {};
@@ -1499,75 +1485,19 @@ class LevelLoader {
 					const signText = node.levelNodeSign.text;
 
 					if (signText && this.options.text) {
-						const letterSize = 0.059; //Size of the text characters
-						const processString = (inputStr: string) => {
-							const words = inputStr.split(/\s+/);
-							let currentLineWidth = 0;
-							let finalStr = '';
-
-							words.forEach((word) => {
-								const wordLength = word.length + 1;
-								const wordWidth = wordLength * letterSize;
-
-								/* 1.2 is a magical number to represent the width of the sign */
-								if (currentLineWidth + wordWidth >= 1.2) {
-									currentLineWidth = wordWidth;
-									finalStr += '\n' + word + ' ';
-								} else {
-									currentLineWidth += wordWidth;
-									finalStr += word + ' ';
-								}
-							});
-
-							return finalStr.trim();
-						};
-
-						const processedText = processString(signText);
-
 						const color = new THREE.Color(1, 1, 1);
 						if (node.levelNodeSign.color) {
 							color.r = node.levelNodeSign.color.r ?? 0;
 							color.g = node.levelNodeSign.color.g ?? 0;
 							color.b = node.levelNodeSign.color.b ?? 0;
 						}
-						const lines = processedText.split('\n');
-						for (const [index, line] of lines.entries()) {
-							const textGeometry = new TextGeometry(line, {
-								font: this.font!,
-								size: letterSize,
-								height: 0,
-								curveSegments: 1,
-								bevelEnabled: false,
-							});
 
-							const textMaterial = new THREE.MeshBasicMaterial({
-								color: color,
-							});
-							const textMesh = new THREE.Mesh(
-								textGeometry,
-								textMaterial,
-							);
-
-							textGeometry.computeBoundingBox();
-							const boundingBox = textGeometry.boundingBox;
-							const textWidth =
-								(boundingBox?.max.x ?? 0) -
-								(boundingBox?.min.x ?? 0);
-							const textHeight =
-								(boundingBox?.max.y ?? 0) -
-								(boundingBox?.min.y ?? 0);
-
-							const verticalSpacing =
-								(textHeight + 0.2 * (index + 1)) / 2;
-							textMesh.position.add(
-								new THREE.Vector3(
-									-textWidth / 2,
-									-verticalSpacing +
-										0.05 * (lines.length + 1),
-									node.levelNodeSign.hideModel ? 0 : 0.021,
-								),
-							);
-
+						const textMeshes = this.textLoader.createSignTextMeshes(
+							signText,
+							color,
+							!!node.levelNodeSign.hideModel,
+						);
+						for (const textMesh of textMeshes) {
 							object.add(textMesh);
 						}
 					}
