@@ -328,6 +328,7 @@ export default defineComponent({
 				node.updateMatrixWorld(true);
 				this.update_node_shader(node);
 			});
+			this.level.lights.update();
 		},
 		moving_event(_: TransformControlsEvent<'change'>) {
 			this.gizmo.selection.forEach((object) => {
@@ -336,6 +337,7 @@ export default defineComponent({
 				update_relevant_group_bounds(object);
 			});
 			this.update_connection_positions(this.gizmo.selection);
+			this.level.lights.update();
 		},
 		edit_event(e: TransformControlsEvent<'dragging-changed'>) {
 			(this.controls as OrbitControls).enabled = !e.value;
@@ -348,6 +350,7 @@ export default defineComponent({
 			});
 
 			this.update_connection_positions(this.gizmo.selection);
+			this.level.lights.update();
 			this.changed();
 		},
 		cast_for_node(x: number, y: number): LevelNodeObject | undefined {
