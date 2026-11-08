@@ -889,13 +889,11 @@ class LevelLoader {
 					level.nodes.levelNodeParticleEmitter.push(object);
 					level.complexity += 8;
 				} else if (node.levelNodeStatic) {
-					let material =
-						materials[
-							Math.min(
-								Math.max(node.levelNodeStatic.material ?? 0, 0),
-								materials.length - 1,
-							)
-						]!;
+					const mat = node.levelNodeStatic.material ?? 0;
+					const mat_index = Number.isInteger(mat)
+						? THREE.MathUtils.clamp(mat, 0, materials.length - 1)
+						: (console.log(mat), 0);
+					let material = materials[mat_index]!;
 
 					// Neon
 					if (
