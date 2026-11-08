@@ -359,9 +359,7 @@ function get_group_bounds(object: LevelNodeObject<LevelNodeGroup>) {
 	const matrix = new Matrix4();
 	const vertex = new Vector3();
 
-	object.traverse((child) => {
-		if (child.userData.groupBoundsIgnore) return;
-
+	function include_geometry(child: Object3D) {
 		const geometry = (
 			child as Object3D & {
 				geometry?: BufferGeometry;
@@ -378,7 +376,25 @@ function get_group_bounds(object: LevelNodeObject<LevelNodeGroup>) {
 			vertex.applyMatrix4(matrix);
 			box.expandByPoint(vertex);
 		}
-	});
+	}
+
+	function visit(child: Object3D) {
+		if (child.userData.groupBoundsIgnore) return;
+
+		// reuse nested group bounds
+		if (isLevelNodeObject(child, 'levelNodeGroup')) {
+			const bounds = child.userData.group_bounds;
+			if (bounds) {
+				include_geometry(bounds);
+				return;
+			}
+		}
+
+		include_geometry(child);
+		child.children.forEach(visit);
+	}
+
+	object.children.forEach(visit);
 
 	if (box.isEmpty()) return null;
 
