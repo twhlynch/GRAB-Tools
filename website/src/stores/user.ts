@@ -1,4 +1,5 @@
 import { SERVER_URL } from '@/config';
+import { revoke_access_token_request } from '@/requests/RevokeAccessTokenRequest';
 import { user_info_request } from '@/requests/UserInfoRequest';
 import { useCookiesStore } from '@/stores/cookies';
 import { UserInfo } from '@grab-tools/lib/data/types';
@@ -93,6 +94,7 @@ export const useUserStore = defineStore('user', {
 			}
 		},
 		logout() {
+			revoke_access_token_request();
 			this.$reset();
 			setUser({ username: undefined });
 		},
