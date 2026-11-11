@@ -580,11 +580,14 @@ export default defineComponent({
 			this.free_movement = (e.target as HTMLInputElement).checked;
 
 			if ((e.target as HTMLInputElement).checked) {
-				// FIXME: burh
 				const direction = new THREE.Vector3();
 				this.camera.getWorldDirection(direction);
-				const yaw = Math.atan2(direction.x, direction.z);
-				const pitch = Math.asin(-direction.y);
+
+				// FreeControls is YXZ with no roll
+				// forward is (-cos(pitch)sin(yaw), sin(pitch), -cos(pitch)cos(yaw))
+				const yaw = Math.atan2(-direction.x, -direction.z);
+				const pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+
 				this.controls = markRaw(new FreeControls(this.camera, this.renderer.domElement));
 				this.controls.eulerVector.set(pitch, yaw, 0);
 				this.gizmo.clear();
