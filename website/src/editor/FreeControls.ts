@@ -11,6 +11,7 @@ class FreeControls extends THREE.EventDispatcher {
 	movementSpeed: number;
 	rollSpeed: number;
 	isMouseActive: boolean;
+	enabled: boolean;
 
 	moveState: {
 		left: number, right: number, forward: number, back: number, up: number, down: number,
@@ -62,6 +63,7 @@ class FreeControls extends THREE.EventDispatcher {
 		this.movementSpeed = 10.0;
 		this.rollSpeed = 0.01;
 		this.isMouseActive = false;
+		this.enabled = true;
 
 		// disable default target object behavior
 
@@ -153,7 +155,7 @@ class FreeControls extends THREE.EventDispatcher {
 
 		this.mousedown = function ( event ) {
 
-			if(this.isMouseActive)
+			if(this.enabled && this.isMouseActive)
 			{
 				switch ( event.button ) {
 
@@ -167,7 +169,7 @@ class FreeControls extends THREE.EventDispatcher {
 
 		this.mousemove = function ( event ) {
 
-			if(this.isMouseActive)
+			if(this.enabled && this.isMouseActive)
 			{
 				this.moveState.yawLeft = -event.movementX;
 				this.moveState.pitchDown = event.movementY;
@@ -178,7 +180,7 @@ class FreeControls extends THREE.EventDispatcher {
 
 		this.mouseup = function ( event ) {
 
-			if(this.isMouseActive)
+			if(this.enabled && this.isMouseActive)
 			{
 				switch ( event.button ) {
 
@@ -234,6 +236,13 @@ class FreeControls extends THREE.EventDispatcher {
 		};
 
 		this.update = function ( delta ) {
+
+			if ( ! scope.enabled ) {
+
+				scope.rotationVector.set( 0, 0, 0 );
+				return;
+
+			}
 
 			const moveMult = delta * scope.movementSpeed * scope.movementSpeedMultiplier;
 			const rotMult = scope.rollSpeed;

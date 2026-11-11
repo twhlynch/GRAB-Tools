@@ -340,7 +340,7 @@ export default defineComponent({
 			this.level.lights.update();
 		},
 		edit_event(e: TransformControlsEvent<'dragging-changed'>) {
-			(this.controls as OrbitControls).enabled = !e.value;
+			this.controls.enabled = !e.value;
 			if (e.value) return;
 			this.dragging = true;
 
@@ -383,7 +383,6 @@ export default defineComponent({
 				if (dx * dx + dy * dy > 9) return;
 			}
 
-			if (this.free_movement) return;
 			if (this.active_tool?.on_click?.(e)) return;
 
 			const intersect = this.cast_for_node(e.clientX, e.clientY);
@@ -590,7 +589,6 @@ export default defineComponent({
 
 				this.controls = markRaw(new FreeControls(this.camera, this.renderer.domElement));
 				this.controls.eulerVector.set(pitch, yaw, 0);
-				this.gizmo.clear();
 			} else {
 				const direction = new THREE.Vector3();
 				this.camera.getWorldDirection(direction);
@@ -650,7 +648,9 @@ export default defineComponent({
 
 			if (this.active_tool?.on_mouse_up?.(e)) return;
 
-			(this.controls as FreeControls).isMouseActive = false;
+			if (this.controls instanceof FreeControls) {
+				this.controls.isMouseActive = false;
+			}
 		},
 		set_transform_mode(mode: 'one_sided' | TransformMode) {
 			this.transform_mode = mode;
@@ -674,7 +674,6 @@ export default defineComponent({
 			this.transform_space = this.gizmo.get_space();
 		},
 		select_nodes(nodes: THREE.Object3D[]) {
-			if (this.free_movement) return;
 			this.is_animating = false;
 			this.gizmo.clear();
 			nodes
@@ -866,9 +865,10 @@ export default defineComponent({
 			this.modify_selection((node_list) => [...node_list, ...nodes]);
 		},
 		insert_nodes_at_mouse(nodes: LevelNode[], { x, y }: { x: number; y: number }) {
-			if (!(this.controls instanceof OrbitControls)) return;
-
-			const distance = this.camera.position.distanceTo(this.controls.target);
+			const distance =
+				this.controls instanceof OrbitControls
+					? this.camera.position.distanceTo(this.controls.target)
+					: 20;
 			const mouse = new THREE.Vector2();
 			const canvasSize = this.renderer.domElement.getBoundingClientRect();
 			mouse.x = ((x - canvasSize.left) / canvasSize.width) * 2 - 1;
@@ -1186,8 +1186,6 @@ export default defineComponent({
 			this.modifier((json) => json);
 		},
 		build_context_menu(x: number, y: number) {
-			if (this.controls instanceof FreeControls) return;
-
 			const clicked_object = this.cast_for_node(x, y);
 			const selection = this.gizmo.selection;
 
