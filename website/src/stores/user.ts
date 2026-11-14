@@ -32,24 +32,27 @@ export const useUserStore = defineStore('user', {
 			return state.logged_in;
 		},
 		is_admin: (state) => {
-			return state.user?.is_admin;
+			return state.user?.is_admin === true;
 		},
 		is_supermoderator: (state) => {
-			return state.user?.is_admin ?? state.user?.is_supermoderator;
+			return (
+				state.user?.is_admin === true ||
+				state.user?.is_supermoderator === true
+			);
 		},
 		is_moderator: (state) => {
 			return (
-				state.user?.is_admin ??
-				state.user?.is_supermoderator ??
-				state.user?.is_moderator
+				state.user?.is_admin === true ||
+				state.user?.is_supermoderator === true ||
+				state.user?.is_moderator === true
 			);
 		},
 		is_verifier: (state) => {
 			return (
-				state.user?.is_admin ??
-				state.user?.is_supermoderator ??
-				state.user?.is_moderator ??
-				state.user?.is_verifier
+				state.user?.is_admin === true ||
+				state.user?.is_supermoderator === true ||
+				state.user?.is_moderator === true ||
+				state.user?.is_verifier === true
 			);
 		},
 		user_info: (state) => {
