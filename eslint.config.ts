@@ -5,6 +5,7 @@ import vue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import vueParser from 'vue-eslint-parser';
+import { noUnknownSpread } from './eslint/no-unknown-spreads';
 
 const sourceFiles = ['**/*.ts', '**/*.vue'];
 
@@ -34,6 +35,14 @@ export default [
 	{
 		files: sourceFiles,
 
+		plugins: {
+			local: {
+				rules: {
+					'no-unknown-spread': noUnknownSpread,
+				},
+			},
+		},
+
 		languageOptions: {
 			parser: vueParser,
 
@@ -54,6 +63,8 @@ export default [
 		},
 
 		rules: {
+			'local/no-unknown-spread': 'error',
+
 			'no-unused-vars': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
 			'@typescript-eslint/no-unused-vars': [
