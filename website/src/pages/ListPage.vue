@@ -1,4 +1,5 @@
 <script lang="ts">
+import { maximum, minimum } from '@/common/utils';
 import HardestLevelsList from '@/components/HardestLevelsList.vue';
 import ListRow from '@/components/ListRow.vue';
 import GHLLogoIcon from '@/icons/GHLLogoIcon.vue';
@@ -251,10 +252,8 @@ export default defineComponent({
 						values.raw[key] = values[key];
 					});
 					// mon / max
-					adjustments[key] = {
-						max: Math.max(...Object.values(metrics).map((values) => values[key] || 0)),
-						min: Math.min(...Object.values(metrics).map((values) => values[key] || 0)),
-					};
+					const vals = Object.values(metrics).map((values) => values[key] || 0);
+					adjustments[key] = { max: maximum(vals), min: minimum(vals) };
 					// adjust values
 					Object.values(metrics).forEach((values) => {
 						const { max, min } = adjustments[key];

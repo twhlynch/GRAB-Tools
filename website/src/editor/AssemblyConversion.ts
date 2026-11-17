@@ -1,4 +1,5 @@
 import { load } from '@/common/root';
+import { append } from '@/common/utils';
 import { SPECIAL_REGISTERS } from '@grab-tools/lib/common/registers';
 import { LevelNodeWith } from '@grab-tools/lib/generated/nodes';
 import {
@@ -111,7 +112,7 @@ export function asm_to_json(
 		.filter((i) => i !== undefined);
 
 	node.program.instructions.length = 0;
-	node.program.instructions.push(...instructions);
+	append(node.program.instructions, instructions);
 
 	return old_json;
 }
@@ -447,7 +448,7 @@ function preprocess_scopes(
 			}
 
 			const split = updated.match(/'.*'|\S+/g) ?? [];
-			new_operands.push(...split);
+			append(new_operands, split);
 		}
 
 		const result: Line = {
@@ -556,7 +557,7 @@ function preprocess_scopes(
 				const ctx = { ...context, [var_name]: val };
 
 				const block_output = preprocess_scopes(block, ctx);
-				output.push(...block_output);
+				append(output, block_output);
 			}
 
 			i = end;
@@ -595,7 +596,7 @@ function preprocess_scopes(
 			if (cond) {
 				const block = lines.slice(i + 1, end);
 				const block_output = preprocess_scopes(block, context);
-				output.push(...block_output);
+				append(output, block_output);
 			}
 
 			i = end;

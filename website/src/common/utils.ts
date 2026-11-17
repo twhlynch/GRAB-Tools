@@ -48,8 +48,34 @@ export function random_shape(): LevelNodeShape {
 	return 1000 + Math.floor(Math.random() * length);
 }
 
+export function append<T>(target: T[], items: T[] | undefined) {
+	for (const item of items ?? []) {
+		target.push(item);
+	}
+}
+
+export function maximum(values: number[], init = -Infinity) {
+	let max = init;
+
+	for (const value of values) {
+		max = Math.max(max, value);
+	}
+
+	return max;
+}
+
+export function minimum(values: number[], init = Infinity) {
+	let min = init;
+
+	for (const value of values) {
+		min = Math.min(min, value);
+	}
+
+	return min;
+}
+
 export function add_nodes(level: Level, nodes: LevelNode[] | undefined) {
-	(level.levelNodes ??= []).push(...(nodes ?? []));
+	append((level.levelNodes ??= []), nodes);
 }
 
 export function json_parse<T>(text: string): T | null {

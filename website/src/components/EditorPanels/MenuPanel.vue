@@ -9,6 +9,7 @@ import {
 	encodeLevel,
 } from '@/common/levels';
 import {
+	append,
 	deepClone,
 	json_parse,
 	materials,
@@ -533,7 +534,7 @@ export default defineComponent({
 			this.viewport((scope) => {
 				this.modifier((json) => {
 					const node_list = scope.get_editing_nodes(json);
-					node_list.push(...nodes);
+					append(node_list, nodes);
 					return json;
 				});
 			});
@@ -1100,7 +1101,7 @@ export default defineComponent({
 		},
 		duplicate_level() {
 			this.set_selectable_nodes((nodes) => {
-				nodes.push(...deepClone(nodes));
+				append(nodes, deepClone(nodes));
 			});
 		},
 		monochrome_level() {

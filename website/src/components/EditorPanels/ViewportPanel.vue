@@ -1,7 +1,7 @@
 <script lang="ts">
 import { ungroupNode } from '@/common/group';
 import { isLevelNodeObject, LevelNodeObject } from '@/common/levelNodes';
-import { copy_object_id, deepClone, object_contains } from '@/common/utils';
+import { append, copy_object_id, deepClone, object_contains } from '@/common/utils';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -808,7 +808,7 @@ export default defineComponent({
 				const new_list = func(node_list);
 
 				node_list.length = 0;
-				node_list.push(...new_list);
+				append(node_list, new_list);
 
 				return json;
 			});

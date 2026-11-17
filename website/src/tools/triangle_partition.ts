@@ -66,12 +66,12 @@ function dot(a: Vec2, b: Vec2, c: Vec2) {
 const ISOSCELES_TOLERANCE = 1e-10; // yeah thats pretty small
 
 function is_isosceles(a: Vec2, b: Vec2, c: Vec2) {
-	const d = [dist(a,b), dist(b,c), dist(a,c)];
+	const d = [dist(a,b), dist(b,c), dist(a,c)] as const;
 	const eps = Math.max(...d) * ISOSCELES_TOLERANCE;
 	return (
-		Math.abs(d[0]! - d[1]!) < eps ||
-		Math.abs(d[1]! - d[2]!) < eps ||
-		Math.abs(d[2]! - d[0]!) < eps
+		Math.abs(d[0] - d[1]) < eps ||
+		Math.abs(d[1] - d[2]) < eps ||
+		Math.abs(d[2] - d[0]) < eps
 	);
 }
 

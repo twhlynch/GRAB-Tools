@@ -1,4 +1,5 @@
 <script lang="ts">
+import { maximum } from '@/common/utils';
 import { LevelData } from '@/editor/LevelLoader';
 import PauseIcon from '@/icons/PauseIcon.vue';
 import PlayIcon from '@/icons/PlayIcon.vue';
@@ -39,7 +40,7 @@ export default defineComponent({
 				return 0;
 			});
 
-			this.max = Math.max(0, ...animation_times);
+			this.max = maximum(animation_times, 0);
 		},
 		set_time(time: number) {
 			if (!this.dragging) {

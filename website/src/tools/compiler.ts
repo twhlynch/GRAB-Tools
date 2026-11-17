@@ -1,3 +1,4 @@
+import { append } from '@/common/utils';
 import { levelNodeGroupFrom } from '@grab-tools/lib/common/group';
 import { levelNodeData, LevelNodeWith } from '@grab-tools/lib/generated/nodes';
 import { LevelNode, LevelNodeGroup } from '@grab-tools/lib/generated/proto';
@@ -146,7 +147,7 @@ export function compile(level_nodes: LevelNode[][], options: CompileOptions) {
 			}
 		}
 
-		result.push(...nodes);
+		append(result, nodes);
 	}
 
 	return result;

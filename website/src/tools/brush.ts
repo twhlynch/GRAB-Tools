@@ -1,4 +1,4 @@
-import { deepClone } from '@/common/utils';
+import { append, deepClone } from '@/common/utils';
 import type { Tool, ViewportInterface } from '@/editor/Tool';
 import {
 	levelNodeData,
@@ -100,7 +100,7 @@ export default class BrushTool implements Tool {
 
 		// add to level
 		viewport.modifier((level: Level) => {
-			(level.levelNodes ??= []).push(...clones);
+			append((level.levelNodes ??= []), clones);
 			return level;
 		});
 

@@ -1,5 +1,5 @@
 import { unmodded_root } from '@/common/root';
-import { materials, shapes } from '@/common/utils';
+import { append, materials, shapes } from '@/common/utils';
 import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 import { Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
@@ -67,7 +67,7 @@ function collect_enums(type: Type | Root | ReflectionObject) {
 
 	if ('nested' in type) {
 		for (const nested of Object.values(type.nested ?? {})) {
-			enums.push(...collect_enums(nested));
+			append(enums, collect_enums(nested));
 		}
 	}
 

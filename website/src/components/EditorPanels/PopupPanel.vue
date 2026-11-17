@@ -68,7 +68,8 @@ export default defineComponent({
 				return (this.$refs[`input-${index}`] as HTMLInputElement[])[0]!.value;
 			});
 			this.visible = false;
-			console.log(...data);
+			console.log(data);
+			// eslint-disable-next-line local/no-unknown-spread
 			void this.func!(...data);
 		},
 		click(e: MouseEvent | TouchEvent) {

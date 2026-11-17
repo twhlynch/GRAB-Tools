@@ -12,6 +12,7 @@ import {
 	LevelNodeStart,
 } from '@grab-tools/lib/generated/proto';
 import { Quaternion, Vector3 } from 'three';
+import { append } from './utils';
 
 export function ungroupNode(group: LevelNodeWith<LevelNodeGroup>): LevelNode[] {
 	const group_position = new Vector3(
@@ -116,7 +117,7 @@ export function recursiveUngroup(nodes?: LevelNode[]): LevelNode[] {
 		const [node] = nodes.splice(index, 1);
 
 		if (node && isLevelNode(node, 'levelNodeGroup')) {
-			nodes.push(...ungroupNode(node));
+			append(nodes, ungroupNode(node));
 		}
 
 		index = nodes.findIndex((levelnode) =>

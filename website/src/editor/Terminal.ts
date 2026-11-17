@@ -19,7 +19,7 @@ const terminal_context = {
 	...helpers,
 	...nodes,
 	levelNodeGroupFrom,
-};
+} as const;
 
 const completion_options = [
 	{ label: 'LEVEL', type: 'keyword' },
@@ -76,9 +76,10 @@ export class Terminal {
 
 	run_command(command: string, level: Level) {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call, local/no-unknown-spread
 			new Function('LEVEL', ...Object.keys(terminal_context), command)(
 				level,
+				// eslint-disable-next-line local/no-unknown-spread
 				...Object.values(terminal_context),
 			);
 		} catch (e) {

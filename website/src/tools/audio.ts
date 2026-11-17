@@ -1,6 +1,6 @@
 // SFX2GL Tool by TheTrueFax (https://github.com/thetruefax/)
 
-import { deepClone } from '@/common/utils';
+import { append, deepClone, maximum } from '@/common/utils';
 import { levelNodeGroupFrom } from '@grab-tools/lib/common/group';
 import { animation, animationFrame } from '@grab-tools/lib/generated/helpers';
 import {
@@ -204,7 +204,7 @@ function trackNotesAcrossFrames(
 		}
 	}
 
-	notes.push(...activeNotes);
+	append(notes, activeNotes);
 
 	return notes;
 }
@@ -255,7 +255,7 @@ function getPitches(
 		if (cull) {
 			const kept = notes.filter((note) => bares.includes(note.pitch));
 			notes.length = 0;
-			notes.push(...kept);
+			append(notes, kept);
 		}
 	}
 
@@ -296,7 +296,7 @@ function getVolumes(
 		if (cull) {
 			const kept = notes.filter((note) => bares.includes(note.intensity));
 			notes.length = 0;
-			notes.push(...kept);
+			append(notes, kept);
 		}
 	}
 
@@ -498,8 +498,8 @@ async function generate(pitchSamps: number, volumeSamps: number, file: File) {
 		frames.push(frm);
 	}
 
-	const max = Math.max(
-		...triggers.map((node) => node.levelNodeTrigger.position!.y!),
+	const max = maximum(
+		triggers.map((node) => node.levelNodeTrigger.position!.y!),
 	);
 
 	const wall = levelNodeWithStatic({

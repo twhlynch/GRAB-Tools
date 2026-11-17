@@ -1,3 +1,4 @@
+import { append } from '@/common/utils';
 import {
 	LevelNodeWith,
 	levelNodeWithStatic,
@@ -26,7 +27,7 @@ async function svg(file: File, complexity: number) {
 		const d = element.getAttribute('d');
 		if (!d) return null;
 
-		nodes.push(...build_path(d, width, color, complexity));
+		append(nodes, build_path(d, width, color, complexity));
 	}
 
 	return nodes;
