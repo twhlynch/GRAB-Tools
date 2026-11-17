@@ -8,7 +8,15 @@ import {
 	levelNodeWithTrigger,
 	triggerTargetWithAnimation,
 } from '@grab-tools/lib/generated/nodes';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.hoisted(() => {
+	Object.defineProperty(globalThis, 'window', {
+		value: {},
+		writable: true,
+		configurable: true,
+	});
+});
 
 describe('compiler', () => {
 	it('correctly offsets node ids and removes starts and finishes', () => {
