@@ -1,4 +1,5 @@
 <script lang="ts">
+import { markRawStrict, StrictRaw } from '@/common/utils';
 import { asm_to_json, json_to_asm } from '@/editor/AssemblyConversion';
 import build_editor from '@/editor/EditorSetup';
 import {
@@ -16,7 +17,7 @@ import { LevelNodeGASM } from '@grab-tools/lib/generated/proto';
 import { vim } from '@replit/codemirror-vim';
 import { basicSetup, EditorView } from 'codemirror';
 import { mapState } from 'pinia';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
 	emits: {
@@ -24,8 +25,8 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			json: undefined as LevelNodeWith<LevelNodeGASM> | undefined,
-			view: null! as EditorView,
+			json: undefined as StrictRaw<LevelNodeWith<LevelNodeGASM>> | undefined,
+			view: null! as StrictRaw<EditorView>,
 		};
 	},
 	computed: {
@@ -59,7 +60,7 @@ export default defineComponent({
 	},
 	methods: {
 		create_editor() {
-			this.view = markRaw(
+			this.view = markRawStrict(
 				build_editor(
 					this.$refs.code_container as HTMLElement,
 					' ',
@@ -76,7 +77,7 @@ export default defineComponent({
 			);
 		},
 		set_json(json: LevelNodeWith<LevelNodeGASM>) {
-			this.json = markRaw(json);
+			this.json = markRawStrict(json);
 			const asm = json_to_asm(json);
 			this.view.dispatch({
 				changes: {

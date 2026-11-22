@@ -1,11 +1,12 @@
 <script lang="ts">
+import { markRawStrict, StrictRaw } from '@/common/utils';
 import build_editor from '@/editor/EditorSetup';
 import { foldGutter, StreamLanguage } from '@codemirror/language';
 import { protobuf } from '@codemirror/legacy-modes/mode/protobuf';
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
 import { EditorView } from 'codemirror';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
 	emits: {
@@ -14,11 +15,11 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			view: null! as EditorView,
+			view: null! as StrictRaw<EditorView>,
 		};
 	},
 	mounted() {
-		this.view = markRaw(
+		this.view = markRawStrict(
 			build_editor(
 				this.$refs.code_container as HTMLElement,
 				'',

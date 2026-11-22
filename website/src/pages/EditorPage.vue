@@ -1,7 +1,7 @@
 <script lang="ts">
 import { createLevel, decodeLevel } from '@/common/levels';
 import { get_protobuf, set_protobuf } from '@/common/root';
-import { add_nodes, deepClone, json_parse } from '@/common/utils';
+import { add_nodes, deepClone, json_parse, markRawStrict, StrictRaw } from '@/common/utils';
 import { Input, InputResults, PopupOptions } from '@/components/EditorPanels/inputs';
 import JsonPanel from '@/components/EditorPanels/JsonPanel.vue';
 import MenuPanel from '@/components/EditorPanels/MenuPanel.vue';
@@ -21,7 +21,7 @@ import { compile } from '@/tools/compiler';
 import downloads from '@/tools/downloads';
 import { Level } from '@grab-tools/lib/generated/proto';
 import { mapState } from 'pinia';
-import { defineComponent, markRaw, Raw } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
 	components: {
@@ -38,7 +38,7 @@ export default defineComponent({
 		ProtobufPanel,
 	},
 	data() {
-		const json: Raw<Level> = {};
+		const json: StrictRaw<Level> = markRawStrict({});
 
 		return {
 			popup_props: undefined as PopupOptions | undefined,
@@ -88,10 +88,10 @@ export default defineComponent({
 						type: 'application/octet-stream',
 					});
 					const data = await decodeLevel(blob);
-					this.json = markRaw(data ?? createLevel());
+					this.json = markRawStrict(data ?? createLevel());
 				}
 			} else {
-				this.json = markRaw(
+				this.json = markRawStrict(
 					this.default_level ? deepClone(this.default_level) : createLevel(),
 				);
 			}
@@ -99,7 +99,7 @@ export default defineComponent({
 			this.set_json(this.json);
 		},
 		set_json(json: Level, skip: string[] = []) {
-			this.json = markRaw(json);
+			this.json = markRawStrict(json);
 			if (!skip.includes('json_panel')) this.refs().json_panel.set_json(this.json);
 			if (!skip.includes('viewport_panel')) this.refs().viewport_panel.set_json(this.json);
 			if (!skip.includes('mcp')) mcp.send_level(json);

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { markRawStrict, StrictRaw } from '@/common/utils';
 import build_editor from '@/editor/EditorSetup';
 import { grabCompletion } from '@/editor/grabCompletion';
 import { redo, undo } from '@codemirror/commands';
@@ -6,8 +7,9 @@ import { json } from '@codemirror/lang-json';
 import { foldGutter } from '@codemirror/language';
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
+import { LevelNode } from '@grab-tools/lib/generated/proto';
 import { EditorView } from 'codemirror';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
 	props: {
@@ -18,14 +20,14 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			view: null! as EditorView,
-			json: {},
+			view: null! as StrictRaw<EditorView>,
+			json: {} as StrictRaw<LevelNode>,
 			ignore_change: false,
 			error: null as null | string,
 		};
 	},
 	mounted() {
-		this.view = markRaw(
+		this.view = markRawStrict(
 			build_editor(
 				this.$refs.json_container as HTMLElement,
 				JSON.stringify(this.json, null, 4),
@@ -50,7 +52,7 @@ export default defineComponent({
 							JSON.stringify(this.json) !== JSON.stringify(new_object)
 						) {
 							this.$emit('changed', new_object);
-							this.json = markRaw(new_object);
+							this.json = markRawStrict(new_object);
 						}
 					}
 				},
@@ -59,7 +61,7 @@ export default defineComponent({
 	},
 	methods: {
 		set_json(data: object) {
-			this.json = markRaw(data);
+			this.json = markRawStrict(data);
 			this.ignore_change = true;
 			this.view.dispatch({
 				changes: {
@@ -80,10 +82,10 @@ export default defineComponent({
 			}
 		},
 		undo() {
-			undo(this.view as EditorView);
+			undo(this.view);
 		},
 		redo() {
-			redo(this.view as EditorView);
+			redo(this.view);
 		},
 	},
 });

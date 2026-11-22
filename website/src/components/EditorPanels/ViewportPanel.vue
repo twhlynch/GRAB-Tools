@@ -1,7 +1,14 @@
 <script lang="ts">
 import { ungroupNode } from '@/common/group';
 import { isLevelNodeObject, LevelNodeObject } from '@/common/levelNodes';
-import { append, copy_object_id, deepClone, object_contains } from '@/common/utils';
+import {
+	append,
+	copy_object_id,
+	deepClone,
+	markRawStrict,
+	object_contains,
+	StrictRaw,
+} from '@/common/utils';
 import AnimationPanel from '@/components/EditorPanels/AnimationPanel.vue';
 import ContextMenu from '@/components/EditorPanels/ContextMenu.vue';
 import GASMPanel from '@/components/EditorPanels/GASMPanel.vue';
@@ -83,7 +90,7 @@ import {
 } from '@grab-tools/lib/generated/proto';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { defineComponent, markRaw, Raw } from 'vue';
+import { defineComponent } from 'vue';
 import type { Menu } from './menu';
 
 export default defineComponent({
@@ -146,17 +153,17 @@ export default defineComponent({
 			is_touch_interaction: false,
 			mouseup_fired: false,
 			right_click_dragged: false,
-			level: markRaw(levelData()),
-			editing_json: undefined as Raw<LevelNodeObject> | undefined,
-			editing_gasm: undefined as Raw<LevelNodeObject<LevelNodeGASM>> | undefined,
+			level: markRawStrict(levelData()),
+			editing_json: undefined as StrictRaw<LevelNodeObject> | undefined,
+			editing_gasm: undefined as StrictRaw<LevelNodeObject<LevelNodeGASM>> | undefined,
 			editing_parent: undefined as
-				Raw<LevelNodeObject<LevelNodeGroup> | THREE.Scene> | undefined,
-			renderer: undefined as unknown as Raw<THREE.WebGLRenderer>,
-			clock: undefined as unknown as Raw<THREE.Clock>,
-			scene: undefined as unknown as Raw<THREE.Scene>,
-			camera: undefined as unknown as Raw<THREE.PerspectiveCamera>,
-			controls: undefined as unknown as Raw<OrbitControls | FreeControls>,
-			gizmo: undefined as unknown as Raw<GizmoControls>,
+				StrictRaw<LevelNodeObject<LevelNodeGroup> | THREE.Scene> | undefined,
+			renderer: undefined as unknown as StrictRaw<THREE.WebGLRenderer>,
+			clock: undefined as unknown as StrictRaw<THREE.Clock>,
+			scene: undefined as unknown as StrictRaw<THREE.Scene>,
+			camera: undefined as unknown as StrictRaw<THREE.PerspectiveCamera>,
+			controls: undefined as unknown as StrictRaw<OrbitControls | FreeControls>,
+			gizmo: undefined as unknown as StrictRaw<GizmoControls>,
 			trigger_connection_material: undefined as THREE.LineBasicMaterial | undefined,
 			gasm_connection_material: undefined as THREE.LineBasicMaterial | undefined,
 			remove_events: undefined as (() => void) | undefined,
@@ -254,7 +261,7 @@ export default defineComponent({
 		setup_renderer() {
 			// renderer
 			try {
-				this.renderer = markRaw(
+				this.renderer = markRawStrict(
 					new THREE.WebGLRenderer({
 						antialias: true,
 						preserveDrawingBuffer: true,
@@ -285,9 +292,9 @@ export default defineComponent({
 			this.refs().viewport.appendChild(this.renderer.domElement);
 			this.renderer.domElement.tabIndex = 0;
 			// scene
-			this.clock = markRaw(new THREE.Clock());
-			this.scene = markRaw(new THREE.Scene());
-			this.camera = markRaw(
+			this.clock = markRawStrict(new THREE.Clock());
+			this.scene = markRawStrict(new THREE.Scene());
+			this.camera = markRawStrict(
 				new THREE.PerspectiveCamera(
 					70,
 					this.refs().viewport.clientWidth / this.refs().viewport.clientHeight,
@@ -297,11 +304,11 @@ export default defineComponent({
 			);
 			this.camera.position.set(0, 10, 10);
 			// controls
-			this.controls = markRaw(new OrbitControls(this.camera, this.renderer.domElement));
+			this.controls = markRawStrict(new OrbitControls(this.camera, this.renderer.domElement));
 			this.controls.zoomToCursor = this.zoom_to_cursor;
 			this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
 			// editing
-			this.gizmo = markRaw(
+			this.gizmo = markRawStrict(
 				new GizmoControls(
 					this.camera,
 					this.renderer.domElement,
@@ -443,7 +450,7 @@ export default defineComponent({
 				fog: this.show_fog,
 				GASM: true,
 			});
-			this.level = markRaw(await window._levelLoader!.load(json));
+			this.level = markRawStrict(await window._levelLoader!.load(json));
 			this.add_hitboxes();
 			add_trigger_connections(this.level, this.show_trigger_connections);
 			add_gasm_connections(this.level, this.show_gasm_connections);
@@ -587,7 +594,9 @@ export default defineComponent({
 				const yaw = Math.atan2(-direction.x, -direction.z);
 				const pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
 
-				this.controls = markRaw(new FreeControls(this.camera, this.renderer.domElement));
+				this.controls = markRawStrict(
+					new FreeControls(this.camera, this.renderer.domElement),
+				);
 				this.controls.eulerVector.set(pitch, yaw, 0);
 			} else {
 				const direction = new THREE.Vector3();
@@ -596,7 +605,9 @@ export default defineComponent({
 					this.camera.position,
 					direction.multiplyScalar(1),
 				);
-				this.controls = markRaw(new OrbitControls(this.camera, this.renderer.domElement));
+				this.controls = markRawStrict(
+					new OrbitControls(this.camera, this.renderer.domElement),
+				);
 				this.controls.zoomToCursor = this.zoom_to_cursor;
 				this.controls.mouseButtons = { LEFT: 2, MIDDLE: 1, RIGHT: 0 };
 				this.controls.target.copy(look_at);
@@ -823,7 +834,7 @@ export default defineComponent({
 		},
 		activate_tool(tool: Tool) {
 			if (this.active_tool) this.deactivate_tool();
-			if (tool.activate(this)) this.active_tool = markRaw(tool);
+			if (tool.activate(this)) this.active_tool = markRawStrict(tool);
 		},
 		deactivate_tool() {
 			if (this.active_tool) {
@@ -1009,13 +1020,13 @@ export default defineComponent({
 			if (isLevelNodeObject(this.editing_parent, 'levelNodeGroup')) {
 				update_group_bounds_color(this.editing_parent, false);
 			}
-			this.editing_parent = markRaw(object);
+			this.editing_parent = markRawStrict(object);
 			if (isLevelNodeObject(this.editing_parent, 'levelNodeGroup')) {
 				update_group_bounds_color(this.editing_parent, true);
 			}
 
 			this.group_depth = 0;
-			let parent = this.editing_parent;
+			let parent = object;
 			while (parent !== this.level.scene) {
 				this.group_depth++;
 				parent = parent.parent as LevelNodeObject<LevelNodeGroup> | THREE.Scene;
@@ -1134,12 +1145,12 @@ export default defineComponent({
 		},
 		edit_object_json(object: LevelNodeObject) {
 			this.show_mini_editor = true;
-			this.editing_json = markRaw(object);
+			this.editing_json = markRawStrict(object);
 			this.refs().mini_editor.set_json(object.userData.node);
 		},
 		edit_gasm_code(object: LevelNodeObject<LevelNodeGASM>) {
 			this.show_gasm_editor = true;
-			this.editing_gasm = markRaw(object);
+			this.editing_gasm = markRawStrict(object);
 			this.refs().gasm_editor.set_json(object.userData.node);
 		},
 		mini_editor_changed(new_node: LevelNode) {

@@ -7,6 +7,7 @@ import {
 	Vector,
 } from '@grab-tools/lib/generated/proto';
 import { Object3D, Vector3 } from 'three';
+import { markRaw, type Raw } from 'vue';
 import { LevelNodeObject } from './levelNodes';
 import { ambienceSettings } from './levels';
 
@@ -139,4 +140,14 @@ export function random_ambience() {
 
 export function Vector3toTHREE(vector: Vector | undefined): Vector3 {
 	return new Vector3(vector?.x ?? 0, vector?.y ?? 0, vector?.z ?? 0);
+}
+
+declare const StrictRawSymbol: unique symbol;
+
+export type StrictRaw<T extends object> = Raw<T> & {
+	[StrictRawSymbol]: true;
+};
+
+export function markRawStrict<T extends object>(value: T): StrictRaw<T> {
+	return markRaw(value) as StrictRaw<T>;
 }

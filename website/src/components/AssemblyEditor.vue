@@ -1,7 +1,8 @@
 <script lang="ts">
+import { markRawStrict, StrictRaw } from '@/common/utils';
 import { BaseEditor, EditorConstructor } from '@/editor/GASMEditor';
 import { ViewUpdate } from '@codemirror/view';
-import { defineComponent, markRaw, PropType } from 'vue';
+import { defineComponent, PropType } from 'vue';
 
 export default defineComponent({
 	props: {
@@ -14,7 +15,7 @@ export default defineComponent({
 		changed: () => true,
 	},
 	data() {
-		const instance: BaseEditor = null!;
+		const instance: StrictRaw<BaseEditor> = null!;
 
 		return {
 			instance,
@@ -25,7 +26,7 @@ export default defineComponent({
 	},
 	methods: {
 		create_editor() {
-			this.instance = markRaw(
+			this.instance = markRawStrict(
 				new this.editor(this.$refs.code_container as HTMLElement, (update: ViewUpdate) => {
 					if (update.docChanged) {
 						this.$emit('changed');

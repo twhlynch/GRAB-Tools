@@ -1,7 +1,8 @@
 <script lang="ts">
+import { StrictRaw, markRawStrict } from '@/common/utils';
 import { Terminal } from '@/editor/Terminal';
 import { Level } from '@grab-tools/lib/generated/proto';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
 	components: {},
@@ -10,7 +11,7 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			terminal: null as unknown as Terminal,
+			terminal: null as unknown as StrictRaw<Terminal>,
 		};
 	},
 	computed: {
@@ -19,7 +20,7 @@ export default defineComponent({
 		},
 	},
 	mounted() {
-		this.terminal = markRaw(new Terminal(this.refs.terminal));
+		this.terminal = markRawStrict(new Terminal(this.refs.terminal));
 	},
 	methods: {
 		keydown(e: KeyboardEvent) {

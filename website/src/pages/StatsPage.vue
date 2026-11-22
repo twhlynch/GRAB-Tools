@@ -1,4 +1,5 @@
 <script lang="ts">
+import { markRawStrict } from '@/common/utils';
 import LeaderboardCard from '@/components/LeaderboardCard.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
 import StatsLoader from '@/editor/StatsLoader';
@@ -34,7 +35,7 @@ import WrenchIcon from '@/icons/WrenchIcon.vue';
 import { useUserStore } from '@/stores/user';
 import { CustomLevelDetails } from '@grab-tools/lib/data/types';
 import { mapState } from 'pinia';
-import { Component, defineComponent, markRaw } from 'vue';
+import { Component, defineComponent } from 'vue';
 
 interface List {
 	icon?: Component;
@@ -85,7 +86,7 @@ export default defineComponent({
 	data() {
 		return {
 			// prettier-ignore
-			sections: markRaw([
+			sections: markRawStrict([
 				{
 					icon: PersonIcon, name: 'Personalised',
 					lists: [
