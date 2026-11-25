@@ -18,6 +18,7 @@ import { greedy_mesh } from './greedy_mesh';
 
 type Mode = 'cubes' | 'particles';
 type Shape = 'plane' | 'sphere';
+type ColorMode = 'average' | 'dominant' | 'center';
 
 interface Pixel {
 	color: Required<Color>;
@@ -30,7 +31,8 @@ export async function generate_pixel_art(
 	height: number,
 	mode: Mode,
 	shape: Shape,
-	greedy?: boolean,
+	colorMode: ColorMode = 'average',
+	greedy: boolean,
 ) {
 	const result: HTMLImageElement = await new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -44,7 +46,7 @@ export async function generate_pixel_art(
 		reader.readAsDataURL(file);
 	});
 
-	const pixels = compute_pixels(result, width, height, shape);
+	const pixels = compute_pixels(result, width, height, shape, colorMode);
 	const level_nodes = build_nodes(pixels, mode, greedy);
 
 	return levelNodeGroupFrom({ childNodes: level_nodes });
@@ -55,6 +57,7 @@ function compute_pixels(
 	width: number,
 	height: number,
 	shape: Shape,
+	colorMode: ColorMode,
 ) {
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -65,7 +68,7 @@ function compute_pixels(
 	ctx.drawImage(img, 0, 0);
 
 	if (shape === 'plane') {
-		return sample_grid(ctx, img, width, height);
+		return sample_grid(ctx, img, width, height, colorMode);
 	} else {
 		return sample_sphere(ctx, img, width, height);
 	}
@@ -76,21 +79,36 @@ function sample_grid(
 	img: HTMLImageElement,
 	width: number,
 	height: number,
+	colorMode: ColorMode,
 ): Pixel[] {
 	const pixels = [];
 
 	const step_x = img.width / width;
 	const step_y = img.height / height;
+	const image_data = ctx.getImageData(0, 0, img.width, img.height).data;
 
 	for (let x = 0; x < width; x++) {
 		for (let y = 0; y < height; y++) {
-			const pixel = ctx.getImageData(x * step_x, y * step_y, 1, 1);
+			const x0 = Math.floor(x * step_x);
+			const y0 = Math.floor(y * step_y);
+			const x1 = Math.max(x0 + 1, Math.floor((x + 1) * step_x));
+			const y1 = Math.max(y0 + 1, Math.floor((y + 1) * step_y));
+
+			const sampled = sample_color(
+				image_data,
+				img.width,
+				x0,
+				y0,
+				x1,
+				y1,
+				colorMode,
+			);
 
 			const color = {
-				r: pixel.data[0]! / 255,
-				g: pixel.data[1]! / 255,
-				b: pixel.data[2]! / 255,
-				a: pixel.data[3]!,
+				r: sampled.r / 255,
+				g: sampled.g / 255,
+				b: sampled.b / 255,
+				a: sampled.a,
 			};
 			const position = { x: x, y: -y, z: 10 };
 
@@ -99,6 +117,90 @@ function sample_grid(
 	}
 
 	return pixels;
+}
+
+function sample_color(
+	data: Uint8ClampedArray,
+	img_width: number,
+	x0: number,
+	y0: number,
+	x1: number,
+	y1: number,
+	colorMode: ColorMode,
+) {
+	if (colorMode === 'center') {
+		const cx = Math.floor((x0 + x1) / 2);
+		const cy = Math.floor((y0 + y1) / 2);
+		const index = (cy * img_width + cx) * 4;
+		return {
+			r: data[index]!,
+			g: data[index + 1]!,
+			b: data[index + 2]!,
+			a: data[index + 3]!,
+		};
+	}
+
+	if (colorMode === 'dominant') {
+		const counts = new Map<number, number>();
+		let best_key = -1;
+		let best_count = 0;
+		let alpha_sum = 0;
+		let count = 0;
+
+		for (let y = y0; y < y1; y++) {
+			for (let x = x0; x < x1; x++) {
+				const index = (y * img_width + x) * 4;
+				const r = data[index]!;
+				const g = data[index + 1]!;
+				const b = data[index + 2]!;
+				alpha_sum += data[index + 3]!;
+				count++;
+
+				// quantise to 5 bits per channel so near-identical colors group
+				const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+				const seen = (counts.get(key) ?? 0) + 1;
+				counts.set(key, seen);
+				if (seen > best_count) {
+					best_count = seen;
+					best_key = key;
+				}
+			}
+		}
+
+		return {
+			// reverse quantisation
+			r: ((best_key >> 10) << 3) + 4,
+			g: (((best_key >> 5) & 0x1f) << 3) + 4,
+			b: ((best_key & 0x1f) << 3) + 4,
+			a: Math.round(alpha_sum / count),
+		};
+	}
+
+	// if (colorMode == 'average') {
+	let r_sum = 0;
+	let g_sum = 0;
+	let b_sum = 0;
+	let a_sum = 0;
+	let count = 0;
+
+	for (let y = y0; y < y1; y++) {
+		for (let x = x0; x < x1; x++) {
+			const index = (y * img_width + x) * 4;
+			r_sum += data[index]!;
+			g_sum += data[index + 1]!;
+			b_sum += data[index + 2]!;
+			a_sum += data[index + 3]!;
+			count++;
+		}
+	}
+
+	return {
+		r: Math.round(r_sum / count),
+		g: Math.round(g_sum / count),
+		b: Math.round(b_sum / count),
+		a: Math.round(a_sum / count),
+	};
+	// }
 }
 
 function sample_sphere(
@@ -160,7 +262,7 @@ function gamma_to_linear(value: number) {
 		: Math.pow((value + 0.055) / 1.055, 2.4);
 }
 
-function build_nodes(pixels: Pixel[], mode: Mode, greedy?: boolean) {
+function build_nodes(pixels: Pixel[], mode: Mode, greedy: boolean) {
 	if (mode === 'particles') {
 		return build_particles(pixels);
 	} else {
@@ -168,7 +270,7 @@ function build_nodes(pixels: Pixel[], mode: Mode, greedy?: boolean) {
 	}
 }
 
-function build_pixels(pixels: Pixel[], greedy?: boolean) {
+function build_pixels(pixels: Pixel[], greedy: boolean) {
 	const nodes = pixels.map((pixel) => {
 		return levelNodeWithStatic({
 			material: LevelNodeMaterial.DEFAULT_COLORED,

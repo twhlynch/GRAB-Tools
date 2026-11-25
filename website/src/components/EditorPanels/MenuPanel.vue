@@ -670,6 +670,10 @@ export default defineComponent({
 					},
 					{
 						type: 'option',
+						options: ['average', 'dominant', 'center'],
+					},
+					{
+						type: 'option',
 						options: ['plane', 'sphere'],
 					},
 					{
@@ -682,7 +686,7 @@ export default defineComponent({
 						accept: 'image/*',
 					},
 				],
-				async (width, height, mode, shape, greedy, files) => {
+				async (width, height, mode, colorMode, shape, greedy, files) => {
 					if (!files.length) {
 						window.toast('No image file chosen', 'misuse');
 						return;
@@ -698,6 +702,7 @@ export default defineComponent({
 						parsedHeight,
 						mode,
 						shape,
+						colorMode,
 						greedy,
 					);
 

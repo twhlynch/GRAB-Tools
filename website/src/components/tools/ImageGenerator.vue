@@ -13,6 +13,7 @@ export default defineComponent({
 			const widthInput = this.$refs.width as HTMLInputElement;
 			const heightInput = this.$refs.height as HTMLInputElement;
 			const modeInput = this.$refs.mode as HTMLInputElement;
+			const colorModeInput = this.$refs.colorMode as HTMLInputElement;
 			const shapeInput = this.$refs.shape as HTMLInputElement;
 			const greedyInput = this.$refs.greedy as HTMLInputElement;
 			const fileInput = this.$refs.file as HTMLInputElement;
@@ -28,9 +29,18 @@ export default defineComponent({
 			const height = parseInt(heightInput.value) || 50;
 			const mode = modeInput.value as 'cubes' | 'particles';
 			const shape = shapeInput.value as 'plane' | 'sphere';
+			const colorMode = colorModeInput.value as 'average' | 'dominant' | 'center';
 			const greedy = greedyInput.checked;
 
-			const node = await generate_pixel_art(file, width, height, mode, shape, greedy);
+			const node = await generate_pixel_art(
+				file,
+				width,
+				height,
+				mode,
+				shape,
+				colorMode,
+				greedy,
+			);
 
 			const obj = createLevel([node], 'Image', 'Generated with GRAB Tools', [
 				'.index',
@@ -53,6 +63,11 @@ export default defineComponent({
 		<select ref="mode">
 			<option value="cubes" selected>cubes</option>
 			<option value="particles">particles</option>
+		</select>
+		<select ref="colorMode">
+			<option value="average" selected>average</option>
+			<option value="dominant">dominant</option>
+			<option value="center">center</option>
 		</select>
 		<select ref="shape">
 			<option value="plane" selected>plane</option>
